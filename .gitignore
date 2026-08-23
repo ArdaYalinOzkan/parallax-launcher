@@ -35,10 +35,11 @@ builder-effective-config.yaml
 # ---------------------------------------------------------------
 # Secrets
 #
-# Keys live in the user's own config directory and are typed in by
-# whoever runs the app — none ship with it. These patterns are here
-# so that a copy left in the working tree can never be committed by
-# accident.
+# One Steam Web API key ships deliberately, in main.js; see the note
+# there. Everything below is the opposite case — a key someone typed
+# in, or a credential that landed in the working tree. None of it is
+# meant to be published, and these patterns keep it from being
+# committed by accident.
 # ---------------------------------------------------------------
 api_keys.json
 igdb_config.json

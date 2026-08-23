@@ -17,28 +17,45 @@ const LibraryManager = require('./LibraryManager');
 const Platform = require('./Platform');
 const Artwork = require('./Artwork');
 
-/* No API keys are shipped with this app.
+/* One Steam Web API key ships with this app; the SteamGridDB one does not.
  *
- * Valve issues a Web API key to a person, and their terms make that
- * person responsible for everything done with it — so bundling one
- * would hand every user a credential that stays the author's problem,
- * and put all of them behind a single 100k/day bucket that any one of
- * them could exhaust. Heroic sidesteps the same trap by asking the
- * user for their own key and by preferring endpoints that need none.
+ * The bundled key is the author's own, included so that importing a
+ * Steam library works the moment somebody opens the app, with nothing
+ * to sign up for first. It is public — it sits in this file in a public
+ * repository — and it is shared by everyone who runs an unmodified copy.
  *
- * Both keys below are optional. Without them the launcher still finds
- * installed games from Steam's local manifests and still fills every
- * cover from the CDN, neither of which is authenticated. */
+ * Two things follow from that, and they are the reason the setting still
+ * exists. Valve counts requests per key, so the bundled one draws on a
+ * single 100,000-a-day bucket shared by every user at once; a busy day
+ * can exhaust it for everyone. And Valve holds the person the key was
+ * issued to responsible for what is done with it. So anyone who imports
+ * often, or who would rather not queue behind strangers, should paste
+ * their own key into Settings -> API: it takes a minute, it is free, and
+ * it is read first wherever it is set.
+ *
+ * Neither key is needed for most of what the launcher does. Installed
+ * games come from Steam's own local manifests and covers come from
+ * Steam's public images; neither is authenticated. The Steam key buys
+ * one thing — the games you own but have not installed — and the
+ * SteamGridDB key, which nobody's copy carries, buys community artwork.
+ */
 
-/** The user's Steam Web API key, or '' if they have not set one. */
+/** The Steam Web API key the author's own account issued, shipped so a
+ *  fresh copy can import a library straight away. Shared by everyone who
+ *  has not set their own; see the note above. */
+const BUNDLED_STEAM_KEY = 'AC78310630F7E9B22D35F24154991ED8';
+
+/** The user's own Steam Web API key if they set one, otherwise the
+ *  bundled one. A key typed into settings always wins: it is that
+ *  person's own quota rather than the shared bucket. */
 function readSteamKey() {
     try {
         if (fs.existsSync(apiKeysPath)) {
             const cfg = JSON.parse(fs.readFileSync(apiKeysPath, 'utf-8'));
             if (cfg.steamKey) return String(cfg.steamKey).trim();
         }
-    } catch (e) { /* unreadable file behaves as no key */ }
-    return '';
+    } catch (e) { /* unreadable file falls through to the bundled key */ }
+    return BUNDLED_STEAM_KEY;
 }
 
 const userDataPath = app.getPath('userData');

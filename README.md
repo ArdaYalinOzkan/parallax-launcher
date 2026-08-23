@@ -56,16 +56,30 @@ key or install the bundled `.desktop` file.
 
 ### API keys
 
-Both are optional and none ship with the app.
+Most of what the launcher does needs no key at all. Installed games are read
+from Steam's own local manifests and covers come from Steam's public images;
+neither is authenticated. Two things sit behind a key:
 
-| Key | What it unlocks | Where to get it |
+| Key | What it unlocks | Shipped? |
 |---|---|---|
-| Steam Web API | Importing your whole Steam library, including games you have not installed. Needed once. | [steamcommunity.com/dev/apikey](https://steamcommunity.com/dev/apikey) |
-| SteamGridDB | Community artwork, instead of Steam's single official cover. | [steamgriddb.com/profile/api](https://steamgriddb.com/profile/api) |
+| Steam Web API | Importing your whole Steam library, including games you have not installed. | **Yes** — one is built in |
+| SteamGridDB | Community artwork — often hundreds of alternatives per game, instead of Steam's single official cover. | No |
 
-Without either one, the launcher still finds your installed games and covers
-them with Steam's public artwork. Keys are typed into Settings → API and
-stored in your own config directory — never in this repository.
+The built-in Steam key belongs to the author and is included so that importing
+a library works the moment you open the app. It is public and shared: Steam
+counts requests per key, so everyone running an unmodified copy draws on the
+same 100,000-a-day allowance, and a busy day can use it up.
+
+If you import often — or would rather not queue behind strangers — get your own
+at [steamcommunity.com/dev/apikey](https://steamcommunity.com/dev/apikey). It is
+free and takes a minute. A key set in Settings → API is always read first.
+
+Community artwork needs a key of your own from
+[steamgriddb.com/profile/api](https://steamgriddb.com/profile/api); none ships
+with the app.
+
+Keys you enter are stored in your own config directory, never in this
+repository.
 
 ## Languages
 
