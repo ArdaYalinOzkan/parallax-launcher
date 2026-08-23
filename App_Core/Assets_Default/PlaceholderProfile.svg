@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Default avatar. The plain head-and-shoulders mark, because that
+       is the one symbol everyone already reads as "a person with no
+       picture yet" — the same reason Windows and half the web use it.
+       Drawn to survive the circular crop the header applies: the
+       shoulders run past the edges rather than stopping inside it. -->
+  <defs>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1A1F29"/>
+      <stop offset="1" stop-color="#0B0E14"/>
+    </linearGradient>
+    <radialGradient id="pool" cx="0.5" cy="0.34" r="0.66">
+      <stop offset="0" stop-color="#33415C" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#33415C" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#ink)"/>
+  <rect width="512" height="512" fill="url(#pool)"/>
+
+  <g fill="#8A94A5" fill-opacity="0.62">
+    <circle cx="256" cy="199" r="82"/>
+    <path d="M256 300c-108 0-196 62-196 142v70h392v-70c0-80-88-142-196-142z"/>
+  </g>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <!-- Shown when a game has no cover art yet. It should read as an
+       empty slot in the shelf, not as a broken image, so it carries
+       the Parallax mark at low contrast and nothing else. -->
+  <defs>
+    <linearGradient id="slot" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#161A22"/>
+      <stop offset="1" stop-color="#0B0E14"/>
+    </linearGradient>
+    <radialGradient id="pool" cx="0.5" cy="0.42" r="0.62">
+      <stop offset="0" stop-color="#2A3446" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#2A3446" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="400" height="600" fill="url(#slot)"/>
+  <rect width="400" height="600" fill="url(#pool)"/>
+
+  <g transform="translate(200 262) scale(1.35) translate(-50 -42)"
+     fill="none" stroke="#8A94A5" stroke-opacity="0.28" stroke-width="3.2">
+    <path d="M50 14L64 22V38L50 46L36 38V22L50 14Z"/>
+    <path d="M36 38L50 46V62L36 70L22 62V46L36 38Z"/>
+    <path d="M64 38L78 46V62L64 70L50 62V46L64 38Z"/>
+  </g>
+
+  <text x="200" y="392" text-anchor="middle"
+        font-family="'JetBrains Mono', ui-monospace, monospace"
+        font-size="13" letter-spacing="4.5"
+        fill="#59626F" fill-opacity="0.85">NO ARTWORK</text>
+
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="620" viewBox="0 0 1600 620">
+  <!-- Banner fallback on the game details screen. The title and Play
+       button sit over the lower half, so the artwork stays empty and
+       dark down there and puts its only interest up top. -->
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#171C26"/>
+      <stop offset="0.55" stop-color="#0D1017"/>
+      <stop offset="1" stop-color="#090B10"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.18" r="0.75">
+      <stop offset="0" stop-color="#33405A" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#33405A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1600" height="620" fill="url(#field)"/>
+  <rect width="1600" height="620" fill="url(#glow)"/>
+
+  <g transform="translate(800 205) scale(1.5) translate(-50 -42)"
+     fill="none" stroke="#8A94A5" stroke-opacity="0.2" stroke-width="3">
+    <path d="M50 14L64 22V38L50 46L36 38V22L50 14Z"/>
+    <path d="M36 38L50 46V62L36 70L22 62V46L36 38Z"/>
+    <path d="M64 38L78 46V62L64 70L50 62V46L64 38Z"/>
+  </g>
+</svg>

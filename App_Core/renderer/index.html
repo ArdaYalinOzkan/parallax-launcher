@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parallax Launcher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Inter carries names and prose; JetBrains Mono carries every
+         reading and label, so the two roles never blur together. -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- The Gateway (Account Selection) -->
+        <div id="gateway" class="screen active">
+            <div class="gateway-bg-decoration"></div>
+            <div class="gateway-inner">
+                <header class="gateway-header">
+                    <div class="gateway-logo-container">
+                        <svg class="parallax-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M50 14L64 22V38L50 46L36 38V22L50 14Z" stroke="url(#logoGrad)"
+                                stroke-width="3.2" />
+                            <!-- Bottom Left Hexagon -->
+                            <path d="M36 38L50 46V62L36 70L22 62V46L36 38Z" stroke="url(#logoGrad)"
+                                stroke-width="3.2" />
+                            <!-- Bottom Right Hexagon -->
+                            <path d="M64 38L78 46V62L64 70L50 62V46L64 38Z" stroke="url(#logoGrad)"
+                                stroke-width="3.2" />
+                            <defs>
+                                <linearGradient id="logoGrad" x1="0" y1="0" x2="100" y2="100">
+                                    <stop stop-color="#fff" />
+                                    <stop offset="1" stop-color="#888" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span class="gateway-logo-small" data-i18n="WELCOME_TO"
+                            style="display: block; margin-top: -5px;">Welcome To</span>
+                        <h1 class="gateway-logo-large" data-i18n="PARALLAX_LAUNCHER">Parallax Launcher</h1>
+                    </div>
+                </header>
+
+                <main class="account-selection-area">
+                    <div id="accountList" class="account-grid">
+                        <!-- Account cards will be injected here -->
+                    </div>
+
+                    <div class="gateway-footer-actions">
+                        <!-- Guest button removed from here as per request -->
+                    </div>
+                </main>
+            </div>
+
+            <!-- Add Account Modal -->
+            <div id="addAccountModal" class="modal hidden">
+                <div class="modal-overlay"></div>
+                <div class="modal-content account-choice-card">
+                    <div id="addAccountSelection">
+                        <div class="modal-header">
+                            <h2 data-i18n="EXPAND_COLLECTION">EXPAND COLLECTION</h2>
+                            <p data-i18n="EXPAND_COLLECTION_DESC">Create a fresh start or import your existing legacy.
+                            </p>
+                        </div>
+                        <div class="choice-container" style="grid-template-columns: 1fr;">
+                            <button id="createNewAccountBtn" class="premium-choice-btn">
+                                <span class="btn-icon">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                    </svg>
+                                </span>
+                                <div class="btn-text">
+                                    <strong data-i18n="CREATE_NEW">CREATE NEW</strong>
+                                </div>
+                            </button>
+                        </div>
+                        <button id="cancelAddAccountBtn" class="minimal-cancel-btn" data-i18n="CLOSE">CLOSE</button>
+                    </div>
+
+                    <!-- Step 2: Name Input -->
+                    <div id="accountCreationForm" class="hidden">
+                        <div class="modal-header">
+                            <h2 data-i18n="ACCOUNT_NAME">ACCOUNT NAME</h2>
+                            <p data-i18n="ACCOUNT_NAME_DESC">Give your new collection a unique identification.</p>
+                        </div>
+                        <div class="creation-input-container">
+                            <input type="text" id="newAccountNameInput" placeholder="Enter name..." data-i18n-placeholder="NAME_PLACEHOLDER"
+                                class="premium-input">
+                        </div>
+                        <div class="modal-footer">
+                            <button id="confirmAccountCreationBtn" class="premium-btn" data-i18n="CONFIRM"
+                                style="padding: 15px 40px;">CONFIRM</button>
+                            <button id="backToSelectionBtn" class="premium-btn" data-i18n="BACK"
+                                style="background: transparent; border: none; font-size: 0.7rem; opacity: 0.6; padding: 10px;">BACK</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Recovery List -->
+                    <div id="accountRecoveryForm" class="hidden">
+                        <div class="modal-header">
+                            <h2 style="color: var(--accent);" data-i18n="RECOVERY_VAULT">RECOVERY VAULT</h2>
+                            <p data-i18n="RECOVERY_CHOOSE">Select a recently deleted account to restore it.</p>
+                        </div>
+                        <div id="recoveryList" style="margin: 20px 0; max-height: 250px; overflow-y: auto;">
+                            <!-- Deleted accounts will be injected here -->
+                        </div>
+                        <div class="modal-footer">
+                            <button id="backToSelectionFromRecoveryBtn" class="minimal-cancel-btn"
+                                data-i18n="BACK">BACK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- The Library Grid (Main App) -->
+        <div id="library" class="screen hidden">
+            <div class="main-layout">
+                <!-- Sidebar -->
+                <nav class="side-nav">
+                    <div class="side-nav-brand">
+                        <svg class="logo-svg-sidebar" viewBox="0 0 100 100" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="M50 14L64 22V38L50 46L36 38V22L50 14Z" stroke="currentColor" stroke-width="4.5" />
+                            <path d="M36 38L50 46V62L36 70L22 62V46L36 38Z" stroke="currentColor" stroke-width="4.5" />
+                            <path d="M64 38L78 46V62L64 70L50 62V46L64 38Z" stroke="currentColor" stroke-width="4.5" />
+                        </svg>
+                    </div>
+                    <div class="side-nav-divider"></div>
+                    <div class="side-nav-top">
+                        <button id="navLibraryBtn" class="side-nav-btn active" title="Library" data-i18n-title="NAV_LIBRARY">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m16 6 4 14" />
+                                <path d="M12 6v14" />
+                                <path d="M8 8v12" />
+                                <path d="M4 4v16" />
+                            </svg>
+                        </button>
+                        <div class="side-nav-divider" style="margin: 5px 0;"></div>
+                        <button id="navSocialBtn" class="side-nav-btn" title="Social" data-i18n-title="NAV_SOCIAL">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                                <path
+                                    d="M23 21V19C22.9993 18.1137 22.7044 17.2521 22.1614 16.5523C21.6184 15.8524 20.8581 15.3516 20 15.13"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" stroke-opacity="0.5" />
+                                <path
+                                    d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" stroke-opacity="0.5" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="side-nav-bottom">
+                        <div class="side-nav-divider"></div>
+                        <button id="sideSettingsBtn" class="side-nav-btn" title="Settings" data-i18n-title="SETTINGS">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3" />
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                            </svg>
+                        </button>
+                        <div class="side-nav-divider"></div>
+                        <button id="switchAccountBtn" class="side-nav-btn logout-btn" title="Switch Account"
+                            data-i18n-title="SWITCH_ACCOUNT">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6M8 17l-5-5 5-5M15 12H3" />
+                            </svg>
+                        </button>
+                    </div>
+                </nav>
+
+                <div class="library-content">
+                    <header class="app-header">
+                        <div class="header-left-group">
+                            <h1 class="logo-text-header">Parallax Launcher</h1>
+                            <div class="header-action-group">
+                                <button id="addGameBtn" class="add-game-header-btn" data-i18n="ADD_GAME">+ ADD
+                                    GAME</button>
+                            </div>
+                        </div>
+
+                        <!-- Icon and clear button are real elements, not CSS
+                             pseudo-elements: those could not be clicked and broke
+                             apart whenever the field changed size. -->
+                        <div class="search-container" id="searchWrap">
+                            <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true">
+                                <circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor"
+                                    stroke-width="1.6" />
+                                <path d="M10.6 10.6L14.5 14.5" stroke="currentColor"
+                                    stroke-width="1.6" stroke-linecap="round" />
+                            </svg>
+                            <input type="text" id="searchInput" placeholder="Search your collection..."
+                                class="premium-input-pill" autocomplete="off" spellcheck="false"
+                                data-i18n-placeholder="SEARCH_COLLECTION">
+                            <button type="button" id="searchClear" class="search-clear hidden"
+                                data-i18n-title="CLEAR_SEARCH" title="Clear search">
+                                <svg viewBox="0 0 14 14" aria-hidden="true">
+                                    <path d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5" stroke="currentColor"
+                                        stroke-width="1.7" stroke-linecap="round" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="header-profile" id="headerProfile">
+                            <span class="header-user-name" id="headerUserName">Arda</span>
+                            <div class="header-avatar-container">
+                                <img src="../Vault_Assets/default_avatar.png" alt="Profile" class="header-avatar"
+                                    id="headerAvatar">
+                            </div>
+                        </div>
+                    </header>
+
+                    <div id="libraryMainView">
+                        <div class="filter-bar">
+                            <div class="filter-row">
+                                <div class="filter-group">
+                                    <span class="filter-label" data-i18n="PLATFORM">PLATFORM</span>
+                                    <select id="platformFilter" class="filter-select">
+                                        <option value="All" data-i18n="ALL_PLATFORMS">All Platforms</option>
+                                        <option value="Steam" data-i18n="STEAM">Steam</option>
+                                        <option value="EpicGames" data-i18n="EPICGAMES">EpicGames</option>
+                                        <option value="GOG" data-i18n="GOG">GOG</option>
+                                        <option value="Microsoft" data-i18n="MICROSOFT">Microsoft</option>
+                                        <option value="Cracked" data-i18n="CRACKED">Cracked</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <span class="filter-label" data-i18n="STATUS">STATUS</span>
+                                    <select id="statusFilter" class="filter-select">
+                                        <option value="All" data-i18n="ALL_GAMES">All Games</option>
+                                        <option value="Installed" data-i18n="INSTALLED">Installed</option>
+                                        <option value="Uninstalled" data-i18n="UNINSTALLED">Uninstalled</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group sort-group">
+                                    <span class="filter-label" data-i18n="SORT_BY">SORT BY</span>
+                                    <select id="sortFilter" class="filter-select">
+                                        <option value="none" data-i18n="DEFAULT">Default</option>
+                                        <option value="playtime" data-i18n="PLAY_TIME_MAX">Play Time (Max)</option>
+                                        <option value="alphabetical" data-i18n="NAME_AZ">Name (A-Z)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid-container" id="gameGrid">
+                            <!-- Game cards will be injected here -->
+                        </div>
+                    </div>
+
+                    <div id="socialMainView" class="hidden">
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; text-align: center; padding: 40px; opacity: 0.3;">
+                            <svg viewBox="0 0 24 24" width="60" height="60" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <h2 style="letter-spacing: 3px; font-size: 0.9rem; font-weight: 600;" data-i18n="LOCAL_MODE">LOCAL MODE</h2>
+                            <p style="font-size: 0.75rem; max-width: 300px; line-height: 1.6;" data-i18n="LOCAL_MODE_DESC">Social features are not available in local mode.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Details Screen -->
+        <div id="gameDetails" class="screen hidden">
+            <div class="details-container">
+                <div class="top-nav">
+                    <div class="mini-title-nav">
+                        <button class="back-btn back-to-library" data-i18n="BACK_TO_COLLECTION">← BACK TO
+                            COLLECTION</button>
+                        <span id="detailsMiniTitle" class="mini-title">GAME NAME</span>
+                    </div>
+                    <div class="top-nav-actions">
+                        <button id="gamePropsBtn" class="edit-btn" data-i18n="PROPERTIES" title="Properties" data-i18n-title="PROPERTIES">PROPERTIES</button>
+                        <button id="editGame" class="edit-btn" data-i18n="EDIT">✎ EDIT</button>
+                    </div>
+                </div>
+
+                <div class="banner-section" id="detailsBanner">
+                    <img id="detailsBannerImg" src="" class="banner-img">
+                    <div class="banner-overlay">
+                        <div class="banner-content">
+                            <h1 id="detailsTitle" class="game-title">GAME NAME</h1>
+                            <div class="action-container">
+                                <button id="playBtn" class="play-btn" data-i18n="PLAY">PLAY</button>
+
+                                <!-- Shown instead of Play when the game is not
+                                     installed. Steam does the downloading. -->
+                                <button id="installBtn" class="play-btn install-btn hidden"
+                                    data-i18n="INSTALL">INSTALL</button>
+
+                                <!-- Download progress, read from Steam's own
+                                     manifest so nobody has to watch Steam. -->
+                                <div id="installProgress" class="install-progress hidden">
+                                    <div class="install-progress-bar"><span id="installProgressFill"></span></div>
+                                    <div class="install-progress-text" id="installProgressText" data-i18n="INSTALL_PREPARING">Preparing…</div>
+                                </div>
+
+                                <div id="browseMode" class="browse-container hidden">
+                                    <span id="locationPath" class="location-path-overlay" data-i18n="NOT_SET">NOT
+                                        SET</span>
+                                    <div class="browse-actions">
+                                        <button id="browseBtn" class="browse-btn-premium"
+                                            data-i18n="BROWSE">BROWSE</button>
+                                        <button id="clearPathBtn" class="clear-path-btn"
+                                            data-i18n-title="SET_UNINSTALLED" title="Set as Uninstalled">×</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-content">
+                    <div class="content-placeholder">
+                        <div class="meta-container">
+                            <div class="meta-left">
+                                <div class="playtime-container">
+                                    <span class="playtime-label" data-i18n="PLAY_TIME">PLAY TIME</span>
+                                    <span id="detailsPlayTime" class="game-playtime">0.0 Hours</span>
+                                </div>
+                                <div class="platform-container">
+                                    <span class="platform-label" data-i18n="PLATFORM">PLATFORM</span>
+                                    <span id="detailsPlatform" class="game-platform">PC</span>
+                                    <select id="platformSelect" class="platform-select hidden">
+                                        <option value="Steam" data-i18n="STEAM">Steam</option>
+                                        <option value="EpicGames" data-i18n="EPICGAMES">EpicGames</option>
+                                        <option value="GOG" data-i18n="GOG">GOG</option>
+                                        <option value="Microsoft" data-i18n="MICROSOFT">Microsoft</option>
+                                        <option value="Cracked" data-i18n="CRACKED">Cracked</option>
+                                    </select>
+                                </div>
+                                <div class="status-container">
+                                    <span class="status-label" data-i18n="STATUS">STATUS</span>
+                                    <span id="detailsStatus" class="game-status-text">Installed</span>
+                                </div>
+                            </div>
+
+                            <!-- Asset Edit Section (Now on the Right) -->
+                            <div id="assetEditMode" class="asset-edit-section hidden">
+                                <div class="edit-header-row">
+                                    <span class="edit-section-header" data-i18n="COVER_BANNER">COVER / BANNER</span>
+                                </div>
+                                <div class="edit-assets-group">
+                                    <div class="edit-assets-wrapper" style="gap: 15px;">
+                                        <div class="asset-edit-column">
+                                            <div class="asset-box cover-edit" id="editCoverBtn">
+                                                <img id="previewCover" src="" class="asset-preview">
+                                                <div class="edit-icon-small">✎</div>
+                                                <button id="pasteCoverBtn" class="paste-btn-bottom"
+                                                    data-i18n="PASTE">PASTE</button>
+                                            </div>
+                                        </div>
+                                        <div class="asset-edit-column banner-col">
+                                            <div class="asset-box banner-edit" id="editBannerBtn">
+                                                <img id="previewBanner" src="" class="asset-preview">
+                                                <div class="edit-icon-small">✎</div>
+                                                <button id="pasteBannerBtn" class="paste-btn-bottom"
+                                                    data-i18n="PASTE">PASTE</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="find-asset-container">
+                                        <button id="findCoverBtnAsset" class="find-asset-btn"
+                                            data-i18n="FIND_COVER">FIND
+                                            COVER</button>
+                                        <button id="findBannerBtnAsset" class="find-asset-btn"
+                                            data-i18n="FIND_BANNER">FIND
+                                            BANNER</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="section-title" data-i18n="INTERNAL_NOTES">INTERNAL NOTES</p>
+                        <p id="detailsNotes" class="game-notes"></p>
+
+                        <div id="dangerZone" class="danger-zone hidden">
+                            <button id="deleteGameBtn" class="delete-game-btn" data-i18n="DELETE_GAME">DELETE GAME FROM
+                                COLLECTION</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Details Screen -->
+        <div id="profileDetails" class="screen hidden">
+            <div class="details-container">
+                <div class="top-nav">
+                    <div class="mini-title-nav">
+                        <button class="back-btn back-to-library" data-i18n="BACK_TO_COLLECTION">← BACK TO
+                            COLLECTION</button>
+                        <span id="profileMiniTitle" class="mini-title" data-i18n="PROFILE">PROFILE</span>
+                    </div>
+                    <div class="top-nav-actions">
+                        <!-- Same button as every other toolbar action; the
+                             inline sizing that made it the odd one out is
+                             gone, and the glyph is an icon rather than a
+                             character that renders differently per font. -->
+                        <button id="openMainSettingsBtn" class="edit-btn edit-btn-icon" title="Settings"
+                            data-i18n-title="SETTINGS">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="3.1" />
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                            </svg>
+                        </button>
+                        <button id="editProfile" class="edit-btn" data-i18n="EDIT">✎ EDIT</button>
+                    </div>
+                </div>
+
+                <div class="banner-section" id="profileBanner">
+                    <img id="profileBannerImg" src="" class="banner-img">
+                    <div class="banner-overlay">
+                        <div class="profile-header-content">
+                            <div class="profile-header-group">
+                                <div class="profile-accent-line"></div>
+                                <div class="profile-info-dimmed">
+                                    <div class="profile-avatar-large-container">
+                                        <img src="../Vault_Assets/default_avatar.png" id="profileAvatarImg"
+                                            class="profile-avatar-large">
+                                    </div>
+                                    <div class="profile-name-group">
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <h1 id="profileDisplayName" class="profile-display-name">Arda</h1>
+                                            <div id="devBadge" class="dev-badge hidden" data-i18n="DEVELOPER">DEVELOPER</div>
+                                        </div>
+                                        <span class="profile-badge" id="profileBadge"
+                                            data-i18n="ARCHITECT">ARCHITECT</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="profileAssetEditMode" class="asset-edit-section hidden"
+                                style="margin-top: 10px; padding-right: 20px;">
+                                <div class="edit-header-row">
+                                    <span class="edit-section-header" data-i18n="PHOTO_BANNER">PHOTO / BANNER</span>
+                                </div>
+                                <div class="edit-assets-wrapper" style="gap: 15px; align-items: flex-end;">
+                                    <div class="asset-edit-column">
+                                        <div class="asset-box cover-edit" id="editProfilePhotoBtn">
+                                            <img id="previewProfilePhoto" src="" class="asset-preview">
+                                            <div class="edit-icon-small">✎</div>
+                                            <button id="pasteProfilePhotoBtn" class="paste-btn-bottom"
+                                                data-i18n="PASTE">PASTE</button>
+                                        </div>
+                                    </div>
+                                    <div class="asset-edit-column banner-col">
+                                        <div class="asset-box banner-edit" id="editProfileBannerBtn">
+                                            <img id="previewProfileBanner" src="" class="asset-preview">
+                                            <div class="edit-icon-small">✎</div>
+                                            <button id="pasteProfileBannerBtn" class="paste-btn-bottom"
+                                                data-i18n="PASTE">PASTE</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-content">
+                    <div class="content-placeholder">
+                        <div class="meta-container profile-stats-container">
+                            <div class="meta-left">
+                                <div class="playtime-container">
+                                    <span class="playtime-label" data-i18n="TOTAL_GAMES">TOTAL GAMES</span>
+                                    <span id="profileTotalGames" class="game-playtime">0</span>
+                                </div>
+                                <div class="platform-container">
+                                    <span class="platform-label" data-i18n="TOTAL_PLAY_TIME">JOURNEY TIME</span>
+                                    <span id="profileTotalPlayTime" class="game-platform">0.0 Hours</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="section-title" data-i18n="ABOUT_ME">ABOUT ME</p>
+                        <p id="profileAbout" class="game-notes" data-i18n="WELCOME_COLLECTION">Welcome to my collection.
+                        </p>
+                    </div>
+
+                    <div id="profileDangerZone" class="danger-zone">
+                        <div class="profile-action-bar">
+                            <!-- EXPORT -->
+                            <button id="profileExportBtn" class="premium-btn secondary-btn" data-i18n="EXPORT_LIBRARY">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                EXPORT LIBRARY
+                            </button>
+
+                            <!-- IMPORT -->
+                            <button id="openImportModalBtn" class="premium-btn secondary-btn"
+                                data-i18n="IMPORT_LIBRARY">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                IMPORT LIBRARY
+                            </button>
+
+                            <!-- LOGOUT / DELETE -->
+                            <button id="logoutActionBtn" class="premium-btn" data-i18n="LOGOUT"
+                                style="background: rgba(255,0,85,0.1); color: #ff0055; border-color: rgba(255,0,85,0.3);">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                                LOGOUT
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Universal Asset Adjuster -->
+        <div id="assetAdjuster" class="modal hidden">
+            <div class="modal-overlay"></div>
+            <div class="adjuster-container">
+                <div class="adjuster-header">
+                    <h3 id="adjusterTitle" data-i18n="ADJUST_PHOTO">ADJUST PHOTO</h3>
+                    <p data-i18n="ADJUST_DESC">Drag image to position, use slider to zoom</p>
+                </div>
+
+                <div class="crop-area-container" id="cropArea">
+                    <div class="crop-mask"></div>
+                    <img id="adjustImage" src="" class="crop-canvas-img">
+                </div>
+
+                <div class="adjuster-controls">
+                    <div class="slider-container">
+                        <span data-i18n="ZOOM">zoom</span>
+                        <input type="range" id="adjustSlider" min="1" max="5" step="0.01" value="1">
+                    </div>
+
+                    <div class="modal-actions">
+                        <button id="cancelAdjust" class="m-btn secondary" data-i18n="CANCEL">CANCEL</button>
+                        <button id="saveAdjust" class="m-btn primary" data-i18n="APPLY">APPLY</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div id="deleteAccountModal" class="modal hidden" style="z-index: 9000;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content auth-portal-panel" style="width: 480px; text-align: center;">
+            <div class="modal-header">
+                <h2 class="auth-title" style="color: #ff2828; font-size: 1.4rem; letter-spacing: 4px;"
+                    data-i18n="TERMINATE_ACCOUNT">TERMINATE ACCOUNT
+                </h2>
+                <p style="opacity: 0.6; font-size: 0.85rem; line-height: 1.6; margin-top: 15px;"
+                    data-i18n="TERMINATE_DESC">
+                    This action will permanently erase your <strong>Cloud Profile</strong> and <strong>Local
+                        Library</strong>.
+                    This cannot be undone.
+                </p>
+            </div>
+
+            <div class="creation-input-container" style="margin: 30px 0;">
+                <p style="font-size: 0.75rem; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 12px; font-weight: 600;"
+                    data-i18n="DELETE_TO_CONFIRM">
+                    TYPE <span style="color: #fff; border-bottom: 2px solid #ff2828;">DELETE</span> TO CONFIRM
+                </p>
+                <input type="text" id="deleteConfirmInput" placeholder="REQUIRED" class="premium-input"
+                    style="text-align: center; letter-spacing: 8px; font-weight: 800; text-transform: uppercase;"
+                    data-i18n-placeholder="REQUIRED">
+            </div>
+
+            <div class="auth-button-stack">
+                <button id="confirmAccountDeleteFinalBtn" class="premium-btn"
+                    style="background: rgba(255, 40, 40, 0.1); color: #ff2828; border-color: rgba(255, 40, 40, 0.2); width: 100%;"
+                    data-i18n="CONFIRM_TERMINATION">
+                    CONFIRM PERMANENT TERMINATION
+                </button>
+                <button id="cancelAccountDeleteBtn" class="minimal-text-btn" style="margin-top: 12px;"
+                    data-i18n="GO_BACK">GO BACK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sysWipeModal" class="modal hidden" style="z-index: 9500;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content auth-portal-panel"
+            style="width: 500px; text-align: center; border: 1px solid rgba(255, 40, 40, 0.3);">
+            <div class="modal-header">
+                <h2 class="auth-title" style="color: #ff2828; font-size: 1.6rem; letter-spacing: 6px;"
+                    data-i18n="NUCLEAR_OPTION">NUCLEAR OPTION
+                </h2>
+                <p style="opacity: 0.6; font-size: 0.85rem; line-height: 1.6; margin-top: 15px;"
+                    data-i18n="NUCLEAR_DESC">
+                    This will <strong>ERASE EVERY ACCOUNT</strong>, library, and archive on this machine.
+                    Cloud profiles linked to the current session will also be TERMINATED.
+                </p>
+            </div>
+
+            <div class="creation-input-container" style="margin: 30px 0;">
+                <p style="font-size: 0.75rem; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 12px; font-weight: 600;"
+                    data-i18n="WIPE_TO_EXECUTE">
+                    TYPE <span style="color: #fff; border-bottom: 2px solid #ff2828;">WIPE</span> TO EXECUTE
+                </p>
+                <input type="text" id="sysWipeConfirmInput" placeholder="REQUIRED" class="premium-input"
+                    style="text-align: center; letter-spacing: 12px; font-weight: 900; text-transform: uppercase;"
+                    data-i18n-placeholder="REQUIRED">
+            </div>
+
+            <div class="auth-button-stack">
+                <button id="confirmSysWipeBtn" class="premium-btn"
+                    style="background: #ff2828; color: #fff; border: none; width: 100%; box-shadow: 0 0 20px rgba(255, 40, 40, 0.2);"
+                    data-i18n="EXECUTE_WIPE">
+                    EXECUTE TOTAL SYSTEM WIPE
+                </button>
+                <button id="cancelSysWipeBtn" class="minimal-text-btn" style="margin-top: 12px;"
+                    data-i18n="CANCEL_OPERATION">CANCEL
+                    OPERATION</button>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- System Error Modal -->
+    <div id="errorModal" class="modal hidden" style="z-index: 5000;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content account-choice-card"
+            style="max-width: 450px; padding: 40px; border-top: 4px solid #ff4444;">
+            <div class="modal-header" style="text-align: center;">
+                <div class="error-icon"
+                    style="color: #ff4444; margin-bottom: 20px; display: flex; justify-content: center;">
+                    <svg viewBox="0 0 24 24" width="60" height="60" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                </div>
+                <h2 class="notification-title" data-i18n="SYSTEM_ERROR">SYSTEM ERROR</h2>
+            </div>
+            <div id="errorMessage" data-i18n="UNEXPECTED_ERROR"
+                style="color: rgba(255,255,255,0.6); text-align: center; padding: 20px 0; line-height: 1.6; font-size: 0.95rem;">
+                An unexpected error occurred.
+            </div>
+            <div class="modal-footer" style="margin-top: 20px;">
+                <button id="closeErrorBtn" class="confirm-btn" data-i18n="DISMISS">DISMISS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Success Modal -->
+    <!-- Plain information. Separate from the success modal on purpose:
+         a tick mark claims something finished, and these messages are
+         usually telling you that something still needs doing. -->
+    <div id="infoModal" class="modal hidden" style="z-index: 5100;">
+        <div class="modal-overlay" id="infoModalOverlay"></div>
+        <div class="modal-content account-choice-card info-card">
+            <div class="modal-header">
+                <h2 class="notification-title" id="infoTitle" data-i18n="HEADS_UP">Heads up</h2>
+            </div>
+            <div id="infoMessage" class="info-message"></div>
+            <div class="modal-footer" style="margin-top: 20px;">
+                <button id="closeInfoBtn" class="confirm-btn" data-i18n="GOT_IT">GOT IT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="successModal" class="modal hidden" style="z-index: 5100;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content account-choice-card"
+            style="max-width: 450px; padding: 40px; border-top: 4px solid #00ff88;">
+            <div class="modal-header" style="text-align: center;">
+                <div class="success-icon">
+                    <svg viewBox="0 0 24 24" width="60" height="60" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h2 class="notification-title" data-i18n="SUCCESS">SUCCESS</h2>
+            </div>
+            <div id="successMessage"
+                style="color: rgba(255,255,255,0.6); text-align: center; padding: 20px 0; line-height: 1.6; font-size: 0.95rem;">
+                <span data-i18n="SUCCESS_GENERIC">Done.</span>
+            </div>
+            <div class="modal-footer" style="margin-top: 20px;">
+                <button id="closeSuccessBtn" class="confirm-btn" data-i18n="DISMISS">DISMISS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IGDB Discovery Modal -->
+    <div id="igdbSearchModal" class="modal hidden" style="z-index: 2500;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content igdb-modal-panel">
+            <button id="closeIgdbSearchBtn" class="modal-close-x">&times;</button>
+            <div class="igdb-header">
+                <div class="igdb-badge">
+                    <span class="igdb-badge-dot"></span>
+                    <span data-i18n="LIVE_DISCOVERY">LIVE DISCOVERY</span>
+                </div>
+
+                <div class="igdb-search-bar">
+                    <input type="text" id="igdbSearchInput" placeholder="Search IGDB..." class="premium-input-small"
+                        data-i18n-placeholder="SEARCH_IGDB">
+                    <button id="igdbSearchBtn" class="m-btn primary" data-i18n="SEARCH">SEARCH</button>
+                </div>
+            </div>
+            <div id="igdbResultsGrid" class="igdb-results-grid">
+                <!-- Results injected here -->
+            </div>
+            <div class="igdb-footer">
+                <button id="openIgdbConfigBtn" class="m-btn secondary" style="width: auto;" data-i18n="API_SETTINGS">API
+                    SETTINGS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IGDB Config Modal -->
+    <div id="igdbConfigModal" class="modal hidden" style="z-index: 2600;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content account-choice-card" style="max-width: 500px; padding: 40px;">
+            <div class="modal-header" style="margin-bottom: 30px;">
+                <h2 style="letter-spacing: 5px;" data-i18n="API_SETTINGS">API SETTINGS</h2>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 15px; line-height: 1.6;"
+                    data-i18n="API_DESC">Enter
+                    your IGDB (Twitch) credentials to enable online discovery.</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <label data-i18n="CLIENT_ID">CLIENT ID</label>
+                    <input type="password" id="igdbClientId" class="premium-input-small"
+                        data-i18n-placeholder="PASTE_ID" placeholder="Paste Client ID">
+                </div>
+                <div class="form-row" style="margin-top: 20px;">
+                    <label data-i18n="CLIENT_SECRET">CLIENT SECRET</label>
+                    <input type="password" id="igdbClientSecret" class="premium-input-small"
+                        data-i18n-placeholder="PASTE_SECRET" placeholder="Paste Client Secret">
+                </div>
+            </div>
+            <div class="modal-footer-row" style="margin-top: 40px;">
+                <button id="cancelIgdbConfigBtn" class="m-btn secondary" data-i18n="CANCEL">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Steam Import Modal -->
+    <div id="steamImportModal" class="modal hidden" style="z-index: 2700;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content account-choice-card" style="max-width: 450px; padding: 40px;">
+            <div class="modal-header" style="margin-bottom: 30px;">
+                <h2 style="letter-spacing: 3px;" data-i18n="IMPORT_STEAM">IMPORT STEAM</h2>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 15px; line-height: 1.6;"
+                    data-i18n="STEAM_ID_DESC">Enter your Steam ID (17-digit number) to import your collection.</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <label data-i18n="STEAM_ID_LABEL">STEAM ID OR PROFILE LINK</label>
+                    <input type="text" id="steamIdInput" class="premium-input-small"
+                        data-i18n-placeholder="STEAM_ID_PLACEHOLDER" placeholder="Paste ID or Link...">
+                </div>
+            </div>
+            <div class="modal-footer-row" style="margin-top: 40px;">
+                <button id="cancelSteamImportBtn" class="m-btn secondary" data-i18n="CANCEL">CANCEL</button>
+                <button id="confirmSteamImportBtn" class="m-btn primary" data-i18n="CONFIRM">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+    <!-- Steam Preview Modal -->
+    <div id="steamPreviewModal" class="modal hidden" style="z-index: 2800;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content account-choice-card" style="max-width: 650px; padding: 40px;">
+            <div class="modal-header" style="margin-bottom: 25px;">
+                <h2
+                    style="letter-spacing: 3px; display: flex; align-items: center; gap: 12px; justify-content: center;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    STEAM DISCOVERY
+                </h2>
+                <p data-i18n="SELECT_GAMES"
+                    style="margin-bottom: 20px; text-align: center; opacity: 0.6; font-size: 0.85rem;">Select the games
+                    you wish to add to your collection.</p>
+
+                <div class="steam-discovery-search" style="margin-bottom: 25px;">
+                    <input type="text" id="steamPreviewSearch" class="premium-input-pill"
+                        placeholder="Search steam library..." data-i18n-placeholder="SEARCH_STEAM">
+                </div>
+
+                <div class="steam-discovery-filters"
+                    style="display: flex; justify-content: space-between; align-items: center; padding: 0 10px;">
+                    <div class="filter-group">
+                        <span class="filter-label" data-i18n="STATUS">STATUS</span>
+                        <select class="premium-select-small" style="min-width: 120px;">
+                            <option value="all" data-i18n="ALL_GAMES">All Games</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">SORT BY</span>
+                        <select id="steamPreviewSort" class="premium-select-small" style="min-width: 120px;">
+                            <option value="default" data-i18n="DEFAULT">Default</option>
+                            <option value="name" data-i18n="NAME_AZ">Name (A-Z)</option>
+                            <option value="playtime" data-i18n="PLAY_TIME_MAX">Play Time (Max)</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+            <div id="steamPreviewList"
+                style="margin: 20px 0; max-height: 400px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
+                <!-- Games injected here -->
+            </div>
+            <div class="modal-footer-row"
+                style="margin-top: 30px; display: flex; justify-content: flex-end; gap: 15px;">
+                <button id="cancelSteamPreviewBtn" class="premium-btn" data-i18n="CANCEL"
+                    style="flex: 1; background: #1a1a1a;">CANCEL</button>
+                <button id="confirmSteamPreviewBtn" class="premium-btn" data-i18n="CONFIRM"
+                    style="flex: 1; background: #fff; color: #000;">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+    <div id="mainSettingsModal" class="modal hidden" style="z-index: 3000;">
+        <div class="modal-overlay" id="settingsModalOverlay"></div>
+        <div class="settings-window">
+            <div class="settings-titlebar">
+                <svg class="logo-svg-small" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    style="width: 26px; height: 26px;">
+                    <path d="M50 14L64 22V38L50 46L36 38V22L50 14Z" stroke="#fff" stroke-width="6.5" />
+                    <path d="M36 38L50 46V62L36 70L22 62V46L36 38Z" stroke="#fff" stroke-width="6.5" />
+                    <path d="M64 38L78 46V62L64 70L50 62V46L64 38Z" stroke="#fff" stroke-width="6.5" />
+                </svg>
+                <span class="settings-app-title">Parallax Launcher</span>
+                <button id="closeMainSettingsModalBtn" class="settings-close-x">&times;</button>
+            </div>
+
+            <div class="settings-container-inner">
+                <div class="settings-sidebar">
+                    <div class="settings-tab active" data-tab="about" data-i18n="ABOUT">ABOUT</div>
+
+                    <div class="settings-tab" data-tab="language" data-i18n="LANGUAGE">LANGUAGE</div>
+                    <div class="settings-tab" data-tab="interface" data-i18n="INTERFACE">INTERFACE</div>
+                    <div class="settings-tab" data-tab="system" data-i18n="SYSTEM">SYSTEM</div>
+                </div>
+
+                <div class="settings-content">
+                    <div id="settings-about" class="settings-pane active">
+                        <h2 class="settings-pane-title" data-i18n="ABOUT_COLLECTION">About Collection</h2>
+                        <div class="settings-about-wrapper">
+                            <div id="aboutContent" data-i18n="ABOUT_DESC"
+                                style="font-size: 0.85rem; opacity: 0.8; line-height: 1.6;">
+                                <!-- Detailed content will be injected here via i18n -->
+                            </div>
+
+                            <!-- The licence, in the About screen rather than in a
+                                 file nobody opens. GPLv3 section 7(b) asks that the
+                                 author attribution stay in the notices a program
+                                 displays, and this is where it is displayed. -->
+                            <div id="licenseNotice" data-i18n="LICENSE_NOTICE"
+                                style="font-size: 0.78rem; opacity: 0.65; line-height: 1.6; margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.08);">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="settings-language" class="settings-pane">
+                        <h2 class="settings-pane-title" data-i18n="INTERFACE_LANGUAGE">Interface Language</h2>
+                        <div style="margin-top: 25px;">
+                            <label class="filter-label" style="display: block; margin-bottom: 12px;"
+                                data-i18n="LANGUAGE">LANGUAGE</label>
+                            <select id="appLanguageSelect" class="premium-select">
+                                <option value="en" data-i18n="LANGUAGE_EN">English (Default)</option>
+                                <option value="tr" data-i18n="LANGUAGE_TR">Türkçe</option>
+                                <option value="de" data-i18n="LANGUAGE_DE">Deutsch</option>
+                                <option value="pt" data-i18n="LANGUAGE_PT">Português (Brasil)</option>
+                                <option value="ru" data-i18n="LANGUAGE_RU">Русский</option>
+                                <option value="uk" data-i18n="LANGUAGE_UK">Українська</option>
+                                <option value="zh" data-i18n="LANGUAGE_ZH">简体中文</option>
+                                <option value="ko" data-i18n="LANGUAGE_KO">한국어</option>
+                            </select>
+                        </div>
+                        <p style="font-size: 0.7rem; opacity: 0.5; margin-top: 20px;" data-i18n="RESTART_NOTE">Requires
+                            restart to apply changes
+                            fully.</p>
+                    </div>
+
+                    <div id="settings-interface" class="settings-pane">
+                        <h2 class="settings-pane-title" data-i18n="LIBRARY_SETTINGS">Library Settings</h2>
+
+                        <div class="settings-row-checkbox">
+                            <label data-i18n="SHOW_NOT_INSTALLED_LABEL">Show 'Not Installed' Label</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="settingShowNotInstalled">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="settings-row-checkbox" style="margin-top: 20px;">
+                            <label data-i18n="SHOW_PLAYTIME_ON_CARD">Show Playtime on Card</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="settingShowPlaytime">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="settings-row-checkbox" style="margin-top: 20px;">
+                            <label data-i18n="UI_SOUNDS">Interface sounds</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="settingUiSounds">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <p class="sys-hint" style="margin-top: 8px;" data-i18n="UI_SOUNDS_HINT">A quiet tick when you
+                            press something, and a short sound when a panel opens or a job finishes. Off by default.</p>
+
+                        <div class="sfx-volume-row" id="uiVolumeRow">
+                            <label class="filter-label" data-i18n="UI_VOLUME">VOLUME</label>
+                            <input type="range" id="settingUiVolume" min="0" max="100" step="5" value="100">
+                            <span class="sfx-volume-value" id="uiVolumeValue">100</span>
+                        </div>
+
+                        <div class="settings-theme-group" style="margin-top: 35px;">
+                            <label class="filter-label" style="display: block; margin-bottom: 20px;"
+                                data-i18n="AMBIENT_COLOR">AMBIENT ATMOSPHERE</label>
+                            <div class="theme-palette">
+                                <div class="theme-swatch" data-rgb="60, 110, 180"
+                                    style="background: rgb(60, 110, 180);">
+                                </div>
+                                <div class="theme-swatch" data-rgb="180, 60, 60" style="background: rgb(180, 60, 60);">
+                                </div>
+                                <div class="theme-swatch" data-rgb="60, 180, 110"
+                                    style="background: rgb(60, 180, 110);">
+                                </div>
+                                <div class="theme-swatch" data-rgb="180, 140, 60"
+                                    style="background: rgb(180, 140, 60);">
+                                </div>
+                                <div class="theme-swatch" data-rgb="140, 60, 180"
+                                    style="background: rgb(140, 60, 180);">
+                                </div>
+                                <div class="theme-swatch" data-rgb="140, 140, 140"
+                                    style="background: rgb(140, 140, 140);"></div>
+                            </div>
+                            <button id="resetThemeBtn" class="minimal-text-btn"
+                                style="margin-top: 15px; opacity: 0.6; font-size: 0.6rem; letter-spacing: 2px; background: transparent; border: none; color: #fff; cursor: pointer;"
+                                data-i18n="RESET_THEME">RESET TO DEFAULT</button>
+                        </div>
+
+                    </div>
+
+
+
+                    <div id="settings-system" class="settings-pane">
+                        <h2 class="settings-pane-title" data-i18n="THIS_MACHINE">This Machine</h2>
+
+                        <!-- What the launcher detected. Read-only: it is a
+                             report, not a set of choices. -->
+                        <div class="sys-readout" id="sysReadout"></div>
+
+                        <div class="sys-divider"></div>
+
+                        <h3 class="sys-section-title" data-i18n="COMPAT_DEFAULTS">Compatibility defaults</h3>
+                        <p class="sys-hint" data-i18n="COMPAT_DEFAULTS_HINT">Used for every game that has not been given its own settings.</p>
+
+                        <div class="sys-row">
+                            <label class="filter-label" data-i18n="DEFAULT_PROTON">DEFAULT PROTON</label>
+                            <select id="defaultProtonSelect" class="premium-select-small"></select>
+                        </div>
+
+                        <div class="settings-row-checkbox">
+                            <label data-i18n="DIRECT_LAUNCH">Start games without opening Steam</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="directLaunchToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <p class="sys-hint" data-i18n="DIRECT_LAUNCH_HINT">Runs the game's own file instead of asking Steam to, so Steam's window never comes to the front — and playtime gets counted here. Steam still has to be running in the background. If a game will not start this way, set it back to Automatic in that game's Properties.</p>
+
+                        <div class="settings-row-checkbox">
+                            <label data-i18n="USE_GAMEMODE">Run games through GameMode</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="globalGameModeToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="settings-row-checkbox">
+                            <label data-i18n="USE_MANGOHUD">Show the MangoHud overlay</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="globalMangoHudToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="sys-row sys-row-stack">
+                            <label class="filter-label" data-i18n="DEFAULT_ENV">DEFAULT ENVIRONMENT VARIABLES</label>
+                            <textarea id="defaultEnvInput" class="settings-input sys-textarea" spellcheck="false"
+                                placeholder="DXVK_HUD=fps&#10;MESA_LOADER_DRIVER_OVERRIDE=iris"></textarea>
+                        </div>
+
+                        <div class="sys-divider"></div>
+
+                        <h3 class="sys-section-title" data-i18n="LIBRARY_SYNC">Library sync</h3>
+                        <p class="sys-hint" data-i18n="LIBRARY_SYNC_HINT">Reads Steam's own install records to find which games are really installed, and links each one to its Steam ID so it can be started.</p>
+                        <button id="rescanInstalledBtn" class="premium-btn" data-i18n="RESCAN">RESCAN INSTALLED GAMES</button>
+                        <div id="rescanResult" class="sys-hint" style="margin-top: 12px;"></div>
+
+                        <div class="sys-divider"></div>
+
+                        <h3 class="sys-section-title" data-i18n="API_KEYS">Your API keys</h3>
+                        <p class="sys-hint" data-i18n="API_KEYS_HINT">Both are optional, and nothing is bundled with the app. Without them the launcher still finds your installed games and still fills every cover from Steam's public artwork.</p>
+
+                        <div class="key-row">
+                            <div class="key-label">
+                                <span class="filter-label" data-i18n="STEAM_WEB_API">STEAM WEB API</span>
+                                <span class="key-status" id="steamKeyStatus"></span>
+                            </div>
+                            <p class="sys-hint" data-i18n="STEAM_KEY_HINT">Lets the launcher import your whole Steam library, including games you have not installed. One-time — after the import it is never needed again. Get one at steamcommunity.com/dev/apikey</p>
+                            <div class="props-row">
+                                <input type="password" id="steamKeyInput" class="settings-input" spellcheck="false"
+                                    autocomplete="off" placeholder="Not set" data-i18n-placeholder="KEY_NONE">
+                                <button id="steamKeySave" class="premium-btn secondary-btn" data-i18n="SAVE">SAVE</button>
+                            </div>
+                        </div>
+
+                        <div class="key-row">
+                            <div class="key-label">
+                                <span class="filter-label">STEAMGRIDDB</span>
+                                <span class="key-status" id="sgdbKeyStatus"></span>
+                            </div>
+                            <p class="sys-hint" data-i18n="SGDB_KEY_HINT">Unlocks community artwork — often hundreds of alternatives per game, instead of Steam's single official cover. Get one at steamgriddb.com/profile/api</p>
+                            <div class="props-row">
+                                <input type="password" id="sgdbKeyInput" class="settings-input" spellcheck="false"
+                                    autocomplete="off" placeholder="Not set" data-i18n-placeholder="KEY_NONE">
+                                <button id="sgdbKeySave" class="premium-btn secondary-btn" data-i18n="SAVE">SAVE</button>
+                            </div>
+                        </div>
+
+                        <div class="sys-divider"></div>
+
+                        <h3 class="sys-section-title" data-i18n="ARTWORK">Artwork</h3>
+                        <p class="sys-hint" data-i18n="ARTWORK_HINT">Downloads the official cover and banner for every Steam game that has none. Free, no API key, no quota. To swap one for something more interesting, open that game and use Change Artwork.</p>
+                        <button id="fillArtworkBtn" class="premium-btn" data-i18n="FILL_ARTWORK">FILL MISSING ARTWORK</button>
+                        <div id="artworkResult" class="sys-hint" style="margin-top: 12px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- New Game Search Modal -->
+    <div id="addGameModal" class="modal hidden" style="z-index: 2500;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content account-choice-card" style="max-width: 450px; padding: 40px;">
+            <div class="modal-header">
+                <h2 data-i18n="ADD_TO_COLLECTION">ADD TO COLLECTION</h2>
+                <p data-i18n="ADD_TO_COLLECTION_DESC">Search for a game to add it to your library.</p>
+            </div>
+            <div class="creation-input-container"
+                style="position: relative; display: flex; align-items: center; gap: 10px;">
+                <input type="text" id="gameSearchInput" placeholder="Enter the game's original name..." data-i18n-placeholder="GAME_SEARCH_PLACEHOLDER" class="premium-input"
+                    style="flex: 1;">
+                <button id="triggerSearchBtn" class="search-icon-btn" title="Search online" data-i18n-title="SEARCH_ONLINE">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+                <div id="gameSuggestions" class="autocomplete-suggestions hidden">
+                    <!-- Suggestions will be injected here -->
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; flex-direction: column; gap: 10px;">
+                <button id="cancelAddGameBtn" class="minimal-cancel-btn" data-i18n="CANCEL"
+                    style="width: 100%;">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout/Delete Confirmation Modal -->
+    <div id="logoutChoiceModal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content auth-portal-panel" style="width: 450px; text-align: center;">
+            <h2 class="auth-title" style="font-size: 1.1rem; margin-bottom: 20px;" data-i18n="ACCOUNT_LOGOUT">ACCOUNT
+                LOGOUT</h2>
+            <p style="opacity: 0.6; font-size: 0.85rem; line-height: 1.6; margin-bottom: 30px;" data-i18n="LOGOUT_DESC">
+                Choose how you
+                want to handle your local Parallax Library before logging out.</p>
+
+            <div class="auth-button-stack" style="gap: 12px;">
+                <button id="logoutExportBtn" class="premium-btn" style="width: 100%;" data-i18n="LOGOUT_EXPORT">
+                    LOGOUT & EXPORT LIBRARY
+                    <small style="display: block; font-size: 0.6rem; opacity: 0.5; margin-top: 4px;"
+                        data-i18n="LOGOUT_EXPORT_SUB">Protects
+                        your local files and settings.</small>
+                </button>
+                <button id="logoutOnlyBtn" class="premium-btn secondary-btn" style="width: 100%;"
+                    data-i18n="LOGOUT_ONLY">
+                    JUST LOGOUT
+                    <small style="display: block; font-size: 0.6rem; opacity: 0.5; margin-top: 4px;"
+                        data-i18n="LOGOUT_ONLY_SUB">Session ends,
+                        library stays on device.</small>
+                </button>
+                <button id="logoutDeleteBtn" class="premium-btn"
+                    style="width: 100%; background: rgba(255,0,85,0.1); color: #ff0055; border-color: rgba(255,0,85,0.2);"
+                    data-i18n="PERMANENTLY_DELETE">
+                    PERMANENTLY DELETE
+                    <small style="display: block; font-size: 0.6rem; opacity: 0.5; margin-top: 4px;"
+                        data-i18n="PERMANENTLY_DELETE_SUB">Wipes
+                        library data from this machine and database.</small>
+                </button>
+                <button id="cancelLogoutBtn" class="minimal-text-btn" style="margin-top: 10px;"
+                    data-i18n="CANCEL">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="importChoiceModal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content auth-portal-panel" style="width: 420px; text-align: center;">
+            <h2 class="auth-title" style="font-size: 1.1rem; margin-bottom: 20px;" data-i18n="IMPORT_LIBRARY">IMPORT
+                LIBRARY</h2>
+            <p style="opacity: 0.6; font-size: 0.85rem; margin-bottom: 30px;" data-i18n="SELECT_LEGACY_SOURCE">Select
+                your legacy source.</p>
+            <div class="auth-button-stack" style="gap: 12px;">
+                <button id="importParallaxBtn" class="premium-btn" style="width: 100%;"
+                    data-i18n="IMPORT_PARALLAX_VAULT">IMPORT PARALLAX
+                    VAULT</button>
+                <button id="importSteamLibraryBtn" class="premium-btn" style="width: 100%;"
+                    data-i18n="IMPORT_STEAM_LIBRARY">IMPORT STEAM
+                    LIBRARY</button>
+                <button id="closeImportModalBtn" class="minimal-text-btn" style="margin-top: 10px;"
+                    data-i18n="CANCEL">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Per-game compatibility. The same ground Steam's Properties and
+         Heroic's settings cover, plus a preview of the command that
+         will actually run, so none of it has to be guessed at. -->
+    <div id="gamePropsModal" class="modal hidden" style="z-index: 3200;">
+        <div class="modal-overlay" id="gamePropsOverlay"></div>
+        <div class="modal-content props-panel">
+            <div class="props-header">
+                <div>
+                    <span class="props-eyebrow" data-i18n="PROPERTIES">PROPERTIES</span>
+                    <h2 id="propsGameName">Game</h2>
+                </div>
+                <button id="propsCloseBtn" class="modal-close-x">&times;</button>
+            </div>
+
+            <div class="props-body">
+                <div class="props-field">
+                    <label class="filter-label" data-i18n="RUNS_WITH">RUNS WITH</label>
+                    <select id="propsCompatTool" class="premium-select-small"></select>
+                    <p class="props-hint" id="propsCompatHint"></p>
+                </div>
+
+                <div class="props-field">
+                    <label class="filter-label" data-i18n="LAUNCH_OPTIONS">LAUNCH OPTIONS</label>
+                    <input type="text" id="propsLaunchOptions" class="settings-input" spellcheck="false"
+                        placeholder="e.g.  mangohud %command%">
+                    <p class="props-hint" data-i18n="LAUNCH_OPTIONS_HINT">Put <code>%command%</code> where the game goes to wrap it in something else.</p>
+                </div>
+
+                <div class="props-field props-linux-only" id="propsPrefixField">
+                    <label class="filter-label" data-i18n="WINE_PREFIX">WINDOWS PREFIX</label>
+                    <div class="props-row">
+                        <input type="text" id="propsWinePrefix" class="settings-input" spellcheck="false"
+                            placeholder="Created automatically" data-i18n-placeholder="PREFIX_AUTO">
+                        <button id="propsBrowsePrefix" class="premium-btn secondary-btn" data-i18n="BROWSE">BROWSE</button>
+                    </div>
+                </div>
+
+                <div class="props-field props-linux-only">
+                    <label class="filter-label" data-i18n="ENVIRONMENT">ENVIRONMENT VARIABLES</label>
+                    <textarea id="propsEnvVars" class="settings-input sys-textarea" spellcheck="false"
+                        placeholder="DXVK_HUD=fps"></textarea>
+                </div>
+
+                <div class="props-field props-linux-only">
+                    <label class="filter-label" data-i18n="PERFORMANCE">PERFORMANCE</label>
+                    <div class="props-row props-tri">
+                        <span data-i18n="GAMEMODE">GameMode</span>
+                        <select id="propsGameMode" class="premium-select-small">
+                            <option value="inherit" data-i18n="INHERIT">Use default</option>
+                            <option value="on" data-i18n="ON">On</option>
+                            <option value="off" data-i18n="OFF">Off</option>
+                        </select>
+                    </div>
+                    <div class="props-row props-tri">
+                        <span data-i18n="MANGOHUD">MangoHud</span>
+                        <select id="propsMangoHud" class="premium-select-small">
+                            <option value="inherit" data-i18n="INHERIT">Use default</option>
+                            <option value="on" data-i18n="ON">On</option>
+                            <option value="off" data-i18n="OFF">Off</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- The point of the whole screen: what will actually run. -->
+            <div class="props-preview">
+                <label class="filter-label" data-i18n="WILL_RUN">WHAT WILL RUN</label>
+                <code id="propsPreview">—</code>
+            </div>
+
+            <div class="props-footer">
+                <button id="propsCancelBtn" class="m-btn secondary" data-i18n="CANCEL">CANCEL</button>
+                <button id="propsSaveBtn" class="m-btn primary" data-i18n="SAVE">SAVE</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="translations.js"></script>
+    <script src="sfx.js"></script>
+    <script src="select.js"></script>
+    <script src="parallax.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Parallax Launcher
+GenericName=Game Library
+Comment=Open your game library
+Exec="/home/arda/Projects/Parallax Launcher/launch_app.sh"
+Icon=/home/arda/Projects/Parallax Launcher/App_Core/Assets_Default/AppIcon.png
+Terminal=false
+Categories=Game;
+StartupNotify=true
+StartupWMClass=parallax-launcher

@@ -1,0 +1,46 @@
+{
+  "name": "parallax-launcher",
+  "version": "3.0.0",
+  "main": "main.js",
+  "author": "Arda Yalın Özkan",
+  "license": "ISC",
+  "description": "Premium Game Library Manager",
+  "scripts": {
+    "start": "electron . --no-sandbox",
+    "build:linux": "electron-builder --linux",
+    "build:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^43.4.1",
+    "electron-builder": "^25.1.8",
+    "electron-squirrel-startup": "^1.0.1"
+  },
+  "build": {
+    "appId": "com.ardayalin.parallaxlauncher",
+    "productName": "Parallax Launcher",
+    "directories": {
+      "output": "..",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "LibraryManager.js",
+      "renderer/**/*",
+      "Assets_Default/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "Assets_Default/AppLogo.ico",
+      "category": "Game"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "Assets_Default/AppLogo.ico"
+    }
+  }
+}

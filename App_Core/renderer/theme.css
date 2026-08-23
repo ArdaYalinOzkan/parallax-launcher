@@ -1,0 +1,2725 @@
+/* ==============================================================
+   PARALLAX — "OBSERVATORY" THEME LAYER
+   ==============================================================
+   Loaded AFTER styles.css. This file owns the look of the app:
+   the colour ramp, the type system, and the shape of every
+   surface. styles.css keeps owning layout and behaviour.
+
+   The idea: parallax is how you measure distance to a star — the
+   same object seen from two viewpoints. So the interface is built
+   like an instrument that looks at something far away. Everything
+   grey is biased cold. Nothing is pure black or pure white.
+   Colour is spent only where it means something.
+
+   Two typefaces, two jobs:
+     Inter        — names and prose. The things you wrote.
+     JetBrains Mono — readings, labels, the wordmark. The instrument.
+   ============================================================== */
+
+
+/* --------------------------------------------------------------
+   1. TOKENS
+   The old styles.css variables are remapped here, so all 3300
+   lines below inherit the new palette without being touched.
+   -------------------------------------------------------------- */
+
+:root {
+    /* Ink — near-blacks with a deliberate blue-violet cast.
+       Neutral greys are what made the old build feel generic. */
+    --ink-void: #05060A;
+    --ink-base: #090B10;
+    --ink-raise: #0F1218;
+    --ink-lift: #161A22;
+    --ink-edge: #212734;
+
+    /* Starlight — the text ramp, cool rather than neutral */
+    --star-hi: #EEF1F6;
+    --star: #C4CCD9;
+    --star-dim: #8A94A5;
+    --star-faint: #59626F;
+
+    /* Hairlines */
+    --line-faint: rgba(198, 214, 255, 0.06);
+    --line: rgba(198, 214, 255, 0.10);
+    --line-strong: rgba(198, 214, 255, 0.18);
+
+    /* Two accents, deliberately kept apart.
+
+       AMBIENT is the mood of the room — the aurora behind everything.
+       It is the colour the Settings swatch picks, and it stays
+       coloured because a room needs a temperature.
+
+       UI is what you touch: buttons, focus rings, the active nav,
+       every glow. That is white. On a screen this dark, white reads
+       as light rather than as paint, so a control that lights up
+       looks lit instead of tinted — and it never fights the cover
+       art, which is the only thing here that should carry colour. */
+    --ambient-rgb: 60, 110, 180;
+    --ambient-intensity: 0.30;
+    --ambient-color: rgba(var(--ambient-rgb), var(--ambient-intensity));
+
+    --accent-pure: #FFFFFF;
+    --accent-veil: rgba(255, 255, 255, 0.05);
+    --accent-soft: rgba(255, 255, 255, 0.10);
+    --accent-line: rgba(255, 255, 255, 0.28);
+    --accent-glow: rgba(255, 255, 255, 0.20);
+
+    /* Signal colours. Reserved. Red means destructive — nothing
+       else. That is why "not installed" is no longer red. */
+    --signal-ok: #4FBF8B;
+    --signal-warn: #E0A247;
+    --signal-danger: #E2554E;
+
+    /* Type */
+    /* Inter carries no CJK, so the tail of each stack names the face
+       to fall through to. It is named rather than left to `sans-serif`
+       because the generic picks whichever CJK font the system happens
+       to prefer, and the Simplified Chinese, Traditional Chinese,
+       Japanese and Korean faces draw a number of shared characters in
+       noticeably different shapes. `:lang()` below swaps the order. */
+    --cjk: 'Noto Sans CJK SC', 'Noto Sans SC', 'Source Han Sans SC';
+    --font-ui: 'Inter', -apple-system, 'Segoe UI', var(--cjk), sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, var(--cjk), monospace;
+    --font-main: var(--font-ui);
+
+    /* Shape */
+    --r-xs: 4px;
+    --r-sm: 7px;
+    --r-md: 11px;
+    --r-lg: 16px;
+    --r-xl: 22px;
+
+    /* Elevation. A ring plus a shadow — never a shadow alone,
+       or panels dissolve into the background at this darkness. */
+    --lift-1: 0 1px 2px rgba(0, 0, 0, .5), inset 0 0 0 1px var(--line-faint);
+    --lift-2: 0 8px 24px -8px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--line);
+    --lift-3: 0 24px 60px -16px rgba(0, 0, 0, .85), inset 0 0 0 1px var(--line);
+
+    /* Motion */
+    --t-fast: 0.16s cubic-bezier(0.3, 0, 0.2, 1);
+    --t-main: 0.26s cubic-bezier(0.3, 0, 0.2, 1);
+    --t-slow: 0.55s cubic-bezier(0.16, 0.84, 0.44, 1);
+
+    /* --- legacy names, remapped --- */
+    --bg-dark-rgb: 9, 11, 16;
+    --bg-dark: var(--ink-base);
+    --bg-panel: var(--ink-raise);
+    --bg-modal: var(--ink-raise);
+    --text-primary: var(--star-hi);
+    --text-secondary: var(--star-dim);
+    --text-dimmed: var(--star-faint);
+    --accent: var(--accent-pure);
+}
+
+
+/* --------------------------------------------------------------
+   2. ATMOSPHERE
+   Three stacked layers, injected by parallax.js, that drift by
+   different amounts under the cursor. That displacement is the
+   thing the app is named after, so it is the one effect allowed
+   to be showy — and it is still only ~14px at full travel.
+   -------------------------------------------------------------- */
+
+body {
+    background: var(--ink-base);
+    color: var(--star);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+}
+
+.sky {
+    position: fixed;
+    inset: -80px;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* No transform transition here — parallax.js eases the movement
+   itself, frame by frame. A CSS transition on top of that would
+   fight it and feel like lag. */
+.sky__layer {
+    position: absolute;
+    inset: 0;
+    will-change: transform;
+}
+
+/* Far stars: small, dense, barely there. Moves least. */
+.sky__far {
+    opacity: 0.55;
+}
+
+/* Near stars: fewer, larger, brighter. Moves most. */
+.sky__near {
+    opacity: 0.85;
+}
+
+/* The aurora the accent colour lives in. */
+/* One light, centred above the window. There used to be a second
+   glow off to the right which read as a smudge rather than a light
+   source — with only one, the whole screen has a single direction
+   it is lit from. */
+.sky__haze {
+    background: radial-gradient(62% 48% at 50% -10%,
+            var(--ambient-color) 0%, transparent 74%);
+    transition: background 1.2s ease;
+}
+
+/* Grain. Flat dark gradients band badly on 8-bit panels; this
+   is the fix, not a texture for its own sake. */
+.sky__grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+}
+
+/* Vignette, to sit the grid inside the frame */
+.sky::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 90% at 50% 40%, transparent 40%, rgba(0, 0, 0, .55) 100%);
+}
+
+/* #app has to sit above the sky, which means it needs a stacking
+   context — and the moment it gets one it also becomes the
+   containing block for every `.screen` inside it. Those screens
+   are absolutely positioned at 100% × 100%, so #app must be given
+   the viewport's size explicitly or they collapse to nothing. */
+#app {
+    position: relative;
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* Screens no longer paint their own gradient — the sky does it,
+   once, for the whole window. */
+#gateway {
+    background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .sky__layer,
+    .sky__haze {
+        transition: none;
+        transform: none !important;
+    }
+}
+
+
+/* --------------------------------------------------------------
+   3. TYPE
+   -------------------------------------------------------------- */
+
+/* Every reading the instrument gives you is set in mono:
+   playtime, platform, status, filter labels, counts. */
+.filter-label,
+.card-category,
+.card-playtime,
+.playtime-label,
+.platform-label,
+.status-label,
+.game-playtime,
+.game-platform,
+.game-status-text,
+.card-status-badge,
+.asset-col-label,
+.asset-label,
+.settings-tab,
+.gateway-logo-small,
+.logo-text-header,
+.settings-app-title,
+.social-code-text,
+.friend-code,
+.dev-badge,
+.profile-badge,
+.location-path-overlay {
+    font-family: var(--font-mono);
+    font-feature-settings: "zero" 1;
+}
+
+/* Micro-caps: the label style used throughout */
+.filter-label,
+.playtime-label,
+.platform-label,
+.status-label,
+.asset-col-label,
+.asset-label,
+.social-label,
+.auth-label {
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+}
+
+/* The wordmark, engraved on the instrument */
+.logo-text-header {
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--star-dim);
+    white-space: nowrap;
+}
+
+.gateway-logo-large {
+    font-family: var(--font-mono);
+    font-size: 1.9rem;
+    font-weight: 300;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    background: none;
+    -webkit-text-fill-color: var(--star-hi);
+    color: var(--star-hi);
+    text-indent: 0.42em;
+}
+
+.gateway-logo-small {
+    font-size: 0.58rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+}
+
+
+/* --------------------------------------------------------------
+   4. SIDE NAV
+   The active item gets a rail on the edge rather than a box —
+   position along an axis, which is what the nav actually encodes.
+   -------------------------------------------------------------- */
+
+.side-nav {
+    width: 64px;
+    background: linear-gradient(to bottom, rgba(15, 18, 24, .92), rgba(9, 11, 16, .92));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid var(--line-faint);
+}
+
+.side-nav-brand {
+    width: 64px;
+    height: 72px;
+    color: var(--star-faint);
+    transition: color var(--t-main);
+}
+
+.logo-svg-sidebar {
+    height: 26px;
+    filter: none;
+    transition: color var(--t-main), transform var(--t-main);
+}
+
+.side-nav-brand:hover {
+    color: var(--accent-pure);
+}
+
+.side-nav-brand:hover .logo-svg-sidebar {
+    color: var(--accent-pure);
+    filter: none;
+    transform: none;
+}
+
+.side-nav-divider {
+    width: 22px;
+    background: var(--line-faint);
+    margin: 0 auto 18px auto;
+}
+
+.side-nav-bottom .side-nav-divider {
+    background: var(--line-faint);
+    width: 22px;
+}
+
+.side-nav-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-sm);
+    border: none;
+    color: var(--star-faint);
+    transition: color var(--t-main), background var(--t-main);
+}
+
+.side-nav-btn svg {
+    width: 19px;
+    height: 19px;
+}
+
+/* the rail */
+.side-nav-btn::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    width: 2px;
+    height: 0;
+    border-radius: 1px;
+    background: var(--accent-pure);
+    box-shadow: 0 0 10px var(--accent-glow);
+    transform: translateY(-50%);
+    transition: height var(--t-main);
+}
+
+.side-nav-btn:hover {
+    color: var(--star);
+    background: rgba(255, 255, 255, .04);
+    border: none;
+    transform: none;
+    box-shadow: none;
+    filter: none;
+}
+
+.side-nav-btn.active {
+    color: var(--star-hi);
+    background: var(--accent-veil);
+    border: none;
+    box-shadow: none;
+    filter: none;
+}
+
+.side-nav-btn.active::before {
+    height: 20px;
+}
+
+.side-nav-btn.logout-btn:hover {
+    color: var(--signal-danger);
+    background: rgba(226, 85, 78, .08);
+}
+
+
+/* --------------------------------------------------------------
+   5. HEADER
+   -------------------------------------------------------------- */
+
+.app-header {
+    height: 72px;
+    padding: 0 32px 0 24px;
+    background: linear-gradient(to bottom, rgba(9, 11, 16, .82), rgba(9, 11, 16, .55));
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border-bottom: 1px solid var(--line-faint);
+}
+
+.library-content {
+    padding-top: 72px;
+}
+
+.header-left-group {
+    gap: 22px;
+}
+
+/* Primary action. Accent-tinted glass, not a white slab — a white
+   block is the loudest thing you can put on a dark screen and it
+   was out-shouting the artwork. */
+.add-game-header-btn {
+    background: var(--accent-soft);
+    color: var(--star-hi);
+    border: 1px solid var(--accent-line);
+    padding: 9px 18px;
+    border-radius: var(--r-sm);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    box-shadow: none;
+}
+
+.add-game-header-btn:hover {
+    background: rgba(255, 255, 255, .18);
+    border-color: rgba(255, 255, 255, .55);
+    box-shadow: 0 0 24px -4px var(--accent-glow);
+    transform: none;
+}
+
+.search-container {
+    max-width: 460px;
+    margin: 0 28px;
+    position: relative;
+}
+
+#searchInput {
+    width: 100%;
+    background: rgba(255, 255, 255, .035);
+    border: 1px solid var(--line-faint);
+    border-radius: var(--r-xl);
+    padding: 10px 18px 10px 40px;
+    color: var(--star-hi);
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    letter-spacing: 0;
+    outline: none;
+    transition: background var(--t-main), border-color var(--t-main), box-shadow var(--t-main);
+}
+
+#searchInput::placeholder {
+    color: var(--star-faint);
+    letter-spacing: 0;
+}
+
+#searchInput:focus {
+    background: rgba(255, 255, 255, .06);
+    border-color: var(--accent-line);
+    box-shadow: 0 0 0 3px var(--accent-veil);
+}
+
+.header-profile {
+    gap: 12px;
+    padding: 5px 6px 5px 14px;
+    border-radius: var(--r-xl);
+    border: 1px solid transparent;
+}
+
+.header-profile:hover {
+    background: rgba(255, 255, 255, .04);
+    border-color: var(--line-faint);
+}
+
+.header-user-name {
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--star);
+}
+
+.header-avatar-container {
+    width: 34px;
+    height: 34px;
+    background: var(--ink-lift);
+    box-shadow: inset 0 0 0 1px var(--line);
+}
+
+
+/* --------------------------------------------------------------
+   6. FILTER BAR
+   -------------------------------------------------------------- */
+
+.filter-bar {
+    padding: 14px 32px 14px 24px;
+    /* Almost no margin here on purpose — the gap below the filter bar
+       now lives inside the grid's own padding instead. It has to, or a
+       card lifting on hover is clipped by the scroll container's edge
+       before it has finished moving. */
+    margin-bottom: 2px;
+    background: transparent;
+    backdrop-filter: none;
+    border-bottom: 1px solid var(--line-faint);
+}
+
+/* What you filter by sits together on the left; how it is ordered is
+   a different question, so it sits alone on the right. Spreading all
+   three edge to edge made them look unrelated. */
+.filter-row {
+    justify-content: flex-start;
+    gap: 26px;
+}
+
+.filter-group {
+    gap: 10px;
+}
+
+.filter-group.sort-group {
+    margin-left: auto;
+}
+
+.filter-select,
+.premium-select-small {
+    background: rgba(255, 255, 255, .03);
+    border: 1px solid var(--line-faint);
+    border-radius: var(--r-sm);
+    color: var(--star);
+    font-family: var(--font-ui);
+    font-size: 0.76rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    padding: 7px 30px 7px 12px;
+    text-transform: none;
+    appearance: none;
+    -webkit-appearance: none;
+    /* chevron */
+    background-image: linear-gradient(45deg, transparent 50%, var(--star-faint) 50%),
+        linear-gradient(135deg, var(--star-faint) 50%, transparent 50%);
+    background-position: calc(100% - 15px) center, calc(100% - 10px) center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    transition: border-color var(--t-main), background-color var(--t-main), color var(--t-main);
+}
+
+.filter-select:hover,
+.premium-select-small:hover {
+    border-color: var(--line-strong);
+    color: var(--star-hi);
+    background-color: rgba(255, 255, 255, .055);
+}
+
+.filter-select:focus-visible {
+    outline: none;
+    border-color: var(--accent-line);
+    box-shadow: 0 0 0 3px var(--accent-veil);
+}
+
+.filter-select option,
+.premium-select option,
+.premium-select-small option {
+    background: var(--ink-lift);
+    color: var(--star);
+}
+
+
+/* --------------------------------------------------------------
+   7. THE GRID — the part you actually look at
+   -------------------------------------------------------------- */
+
+.grid-container {
+    gap: 26px 22px;
+    /* Top padding is the room a hovered card needs to rise into. */
+    padding: 26px 32px 48px 24px;
+    /* The depth the tilt is seen through. Lower numbers exaggerate it;
+       1400 keeps the movement believable at this card size. */
+    perspective: 1400px;
+}
+
+.grid-container::-webkit-scrollbar {
+    width: 10px;
+}
+
+.grid-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.grid-container::-webkit-scrollbar-thumb {
+    background: var(--ink-edge);
+    border-radius: 99px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+
+.grid-container::-webkit-scrollbar-thumb:hover {
+    background: var(--star-faint);
+    background-clip: content-box;
+}
+
+/* --mx / --my are the pointer's position inside the card, 0 to 1,
+   written by parallax.js. They default to dead centre so a card
+   that has never been hovered still computes cleanly. */
+.game-card,
+.account-card,
+.igdb-result-card {
+    --mx: 0.5;
+    --my: 0.5;
+    --rx: 0deg;
+    --ry: 0deg;
+}
+
+/* The card tilts toward the cursor instead of the artwork zooming.
+   It suits the name better than a zoom did: parallax is the same
+   object seen from a shifted viewpoint, and a tilt is exactly that —
+   you are looking at the cover from slightly to one side. The picture
+   itself never moves or scales, so it stays sharp and uncropped. */
+.game-card {
+    transform-style: preserve-3d;
+    transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
+}
+
+.game-card:hover {
+    transform:
+        translateY(-4px)
+        rotateX(var(--rx, 0deg))
+        rotateY(var(--ry, 0deg));
+    /* Snappier while tracking the pointer; the slower curve above
+       still handles settling back when the pointer leaves. */
+    transition: transform 0.09s ease-out;
+}
+
+.card-image-container {
+    border-radius: var(--r-md);
+    background: var(--ink-raise);
+    box-shadow: inset 0 0 0 1px var(--line-faint);
+    transition: box-shadow var(--t-main);
+
+    /* A rounded box clipping a transformed child leaks at the corners
+       unless the clip and the child are rasterised together. Giving the
+       container its own compositing layer is what forces that, and
+       `overflow: clip` refuses the scroll fallback that `hidden` allows. */
+    overflow: clip;
+    isolation: isolate;
+    transform: translateZ(0);
+}
+
+/* Belt and braces: even if a corner did escape the clip, the image
+   carries the same radius itself. */
+/* `display: block` is the fix for the dark strip along the bottom of
+   every cover: an <img> is inline by default, so it sits on a text
+   baseline and leaves a few pixels of the container showing beneath
+   it. Nothing to do with the rounding — it was there the whole time. */
+.card-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    backface-visibility: hidden;
+}
+
+/* No drop shadow on hover. A cast shadow under a raised card is the
+   obvious move and it was the wrong one here: the grid sits on a dark
+   ground, so the shadow read as smudge rather than height.
+   
+   The light comes from above instead — a hairline along the top edge,
+   as if the card tilted forward and caught it. One pixel, no blur over
+   the artwork, and it says "raised" more precisely than any shadow. */
+/* Nothing is painted onto a hovered cover — no shadow, no edge light,
+   no scrim. The lift and the drift inside the frame carry it; the
+   artwork stays exactly the colour the artist made it. */
+.game-card:hover .card-image-container {
+    box-shadow: inset 0 0 0 1px var(--line);
+}
+
+/* The cover sits deeper than its frame and drifts inside it against
+   the pointer — the same parallax idea as the sky, one object
+   closer. Scaling up first is what gives it room to move without
+   exposing an edge. */
+/* Resting transform is a plain layer promotion, not a scale. The old
+   `scale(1.001)` existed only to force a compositing layer, and that
+   0.1% left the image edges landing on fractions of a pixel — which is
+   exactly the soft, slightly cropped edge that showed up when zoomed
+   in. `translateZ(0)` promotes without touching the geometry. */
+.card-image {
+    transition: transform var(--t-slow), opacity var(--t-main), filter var(--t-main);
+    transform: translateZ(0);
+}
+
+/* The artwork holds perfectly still now — no scale, no drift. The
+   card moves around it. */
+
+/* Kapağın üzerinde imleci takip eden ışık kaldırıldı: kapak zaten
+   sanatçının işi, üstüne parlama koymak onu boyamak oluyor. Derinlik
+   hissini kapağın çerçevesi içinde kayması veriyor, ışık değil. */
+
+/* The scrim that darkened the bottom of a hovered cover is gone. It
+   existed to hold text that is not there — the title lives under the
+   card, not on it — so all it did was dim the artwork at the moment
+   you were looking hardest at it. */
+.card-overlay,
+.game-card:hover .card-overlay {
+    background: none;
+    opacity: 0;
+}
+
+/* Not installed: the artwork already tells you, quietly. */
+.game-card.uninstalled .card-image {
+    opacity: 0.42;
+    filter: grayscale(0.85) contrast(0.95);
+}
+
+.game-card.uninstalled:hover .card-image {
+    opacity: 0.7;
+    filter: grayscale(0.4);
+}
+
+/* Nearly every cover in a big library carries this, so it has to be
+   readable without competing with the artwork. The greyed-out cover
+   is doing most of the telling; the pill just confirms it. */
+.card-status-badge {
+    top: 9px;
+    left: 9px;
+    right: auto;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(5, 6, 10, .6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 0 0 1px var(--line-faint);
+    color: var(--star-faint);
+    font-size: 0.5rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 99px;
+    transition: color var(--t-main), background var(--t-main);
+}
+
+.game-card:hover .card-status-badge {
+    color: var(--star-dim);
+    background: rgba(5, 6, 10, .8);
+}
+
+.card-status-badge::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--star-faint);
+    flex: none;
+}
+
+.card-info {
+    margin-top: 11px;
+}
+
+.card-title {
+    font-size: 0.84rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    color: var(--star);
+    transition: color var(--t-fast);
+}
+
+.game-card:hover .card-title {
+    color: var(--star-hi);
+}
+
+.card-footer-row {
+    margin-top: 5px;
+}
+
+.card-category {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+}
+
+.card-playtime {
+    font-size: 0.62rem;
+    color: var(--star-faint);
+    opacity: 1;
+    letter-spacing: 0.03em;
+}
+
+
+/* --------------------------------------------------------------
+   8. GATEWAY
+   -------------------------------------------------------------- */
+
+.gateway-bg-decoration {
+    display: none;
+}
+
+.selection-title {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+}
+
+.account-card {
+    border-radius: var(--r-md);
+    transition: transform var(--t-main);
+}
+
+.account-avatar-container {
+    border: none;
+    box-shadow: 0 8px 24px -10px rgba(0, 0, 0, .9);
+    transition: box-shadow var(--t-main);
+}
+
+/* The card itself carries no outline either, hovered or not. */
+.account-card {
+    background: rgba(255, 255, 255, .022);
+    border: 1px solid transparent;
+}
+
+.account-card:hover {
+    background: rgba(255, 255, 255, .05);
+    border-color: transparent;
+    box-shadow: 0 26px 54px -22px rgba(0, 0, 0, .8);
+}
+
+.igdb-result-card,
+.igdb-result-card:hover {
+    border-color: transparent;
+}
+
+.account-name {
+    font-size: 0.86rem;
+    font-weight: 500;
+    color: var(--star);
+    letter-spacing: 0;
+}
+
+.add-account-card:hover .plus-icon {
+    border-color: var(--accent-line);
+    color: var(--accent-pure);
+}
+
+.parallax-logo path,
+.logo-svg-small path {
+    stroke-width: 2.8;
+}
+
+
+/* --------------------------------------------------------------
+   9. PANELS, MODALS, FORMS
+   -------------------------------------------------------------- */
+
+.modal-overlay {
+    background: rgba(5, 6, 10, .74);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+}
+
+.account-choice-card,
+.igdb-modal-panel,
+.settings-window,
+.auth-portal-panel {
+    background: var(--ink-raise);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: var(--lift-3);
+}
+
+.modal-header h2,
+.igdb-title-group h2,
+.settings-pane-title {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    color: var(--star-hi);
+    letter-spacing: -0.01em;
+}
+
+.modal-header p {
+    color: var(--star-dim);
+}
+
+.premium-input,
+.premium-input-small,
+.settings-input,
+.social-input,
+.form-row input {
+    background: rgba(0, 0, 0, .3);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    color: var(--star-hi);
+    font-family: var(--font-ui);
+    transition: border-color var(--t-main), box-shadow var(--t-main), background var(--t-main);
+}
+
+.premium-input:focus,
+.premium-input-small:focus,
+.settings-input:focus,
+.social-input:focus,
+.form-row input:focus {
+    outline: none;
+    border-color: var(--accent-line);
+    background: rgba(0, 0, 0, .45);
+    box-shadow: 0 0 0 3px var(--accent-veil);
+}
+
+/* Buttons */
+.m-btn,
+.premium-btn,
+.confirm-btn,
+.settings-save-btn,
+.browse-btn-premium,
+.social-add-btn {
+    border-radius: var(--r-sm);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: background var(--t-main), border-color var(--t-main), color var(--t-main), box-shadow var(--t-main);
+}
+
+.m-btn.primary,
+.confirm-btn,
+.settings-save-btn {
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    color: var(--star-hi);
+}
+
+.m-btn.primary:hover,
+.confirm-btn:hover,
+.settings-save-btn:hover {
+    background: rgba(255, 255, 255, .18);
+    border-color: rgba(255, 255, 255, .55);
+    box-shadow: 0 0 24px -6px var(--accent-glow);
+    transform: none;
+}
+
+.m-btn.secondary,
+.premium-btn.secondary-btn,
+.minimal-cancel-btn {
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid var(--line);
+    color: var(--star-dim);
+}
+
+.m-btn.secondary:hover,
+.premium-btn.secondary-btn:hover,
+.minimal-cancel-btn:hover {
+    background: rgba(255, 255, 255, .08);
+    border-color: var(--line-strong);
+    color: var(--star-hi);
+    transform: none;
+}
+
+.premium-btn {
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid var(--line);
+    color: var(--star);
+}
+
+.premium-btn:hover {
+    background: rgba(255, 255, 255, .07);
+    border-color: var(--accent-line);
+    color: var(--star-hi);
+    box-shadow: none;
+    transform: none;
+}
+
+.premium-choice-btn {
+    border-radius: var(--r-md);
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, .025);
+    transition: background var(--t-main), border-color var(--t-main);
+}
+
+.premium-choice-btn:hover {
+    background: var(--accent-veil);
+    border-color: var(--accent-line);
+    transform: none;
+}
+
+.modal-close-x,
+.settings-close-x {
+    border-radius: var(--r-sm);
+    color: var(--star-faint);
+    transition: color var(--t-fast), background var(--t-fast);
+}
+
+.modal-close-x:hover,
+.settings-close-x:hover {
+    color: var(--star-hi);
+    background: rgba(255, 255, 255, .07);
+}
+
+/* Settings */
+.settings-titlebar {
+    background: var(--ink-lift);
+    border-bottom: 1px solid var(--line-faint);
+
+    /* Three columns rather than space-between. The mark now starts on
+       the same 25px line as the tab labels below it, so the left edge
+       reads as one column instead of two; and because the outer
+       columns are equal fractions, the title sits at the true centre
+       of the bar rather than wherever the mark and the close button
+       happen to leave it. */
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+}
+
+.settings-titlebar > .logo-svg-small {
+    justify-self: start;
+}
+
+.settings-titlebar > .settings-app-title {
+    justify-self: center;
+}
+
+.settings-titlebar > .settings-close-x {
+    justify-self: end;
+}
+
+.settings-app-title {
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--star-dim);
+}
+
+.settings-sidebar {
+    background: rgba(0, 0, 0, .22);
+    border-right: 1px solid var(--line-faint);
+}
+
+.settings-tab {
+    position: relative;
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    color: var(--star-faint);
+    border-radius: 0;
+    transition: color var(--t-main), background var(--t-main);
+}
+
+.settings-tab:hover {
+    color: var(--star);
+    background: rgba(255, 255, 255, .03);
+}
+
+.settings-tab.active {
+    color: var(--star-hi);
+    background: var(--accent-veil);
+    box-shadow: inset 2px 0 0 var(--accent-pure);
+}
+
+/* Toggles. The original was a 2px-radius block whose knob turned the
+   same colour as its track when switched on, so "on" and "off" looked
+   nearly identical. Rebuilt as a pill: position reads as state even
+   before colour does. */
+.toggle-switch {
+    width: 44px;
+    height: 22px;
+}
+
+.toggle-slider {
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    transition: background var(--t-main), border-color var(--t-main);
+}
+
+.toggle-slider:before {
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    border-radius: 50%;
+    background-color: var(--star-faint);
+    box-shadow: none;
+    transition: transform var(--t-main), background-color var(--t-main), box-shadow var(--t-main);
+}
+
+.toggle-switch input:checked+.toggle-slider {
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
+}
+
+.toggle-switch input:checked+.toggle-slider:before {
+    transform: translateX(22px);
+    background-color: var(--accent-pure);
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.toggle-slider:hover:before {
+    background-color: var(--star-dim);
+}
+
+/* Theme swatches */
+.theme-swatch {
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
+    transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+
+.theme-swatch:hover {
+    transform: scale(1.12);
+}
+
+.theme-swatch.active {
+    box-shadow: 0 0 0 2px var(--ink-raise), 0 0 0 4px var(--star-hi);
+    transform: scale(1.06);
+}
+
+/* IGDB results */
+.igdb-result-card {
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line-faint);
+    transition: border-color var(--t-main), transform var(--t-main);
+}
+
+.igdb-result-card:hover {
+    border-color: var(--accent-line);
+    transform: translateY(-3px);
+}
+
+.igdb-badge {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+}
+
+.autocomplete-suggestions {
+    background: var(--ink-lift);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    box-shadow: var(--lift-2);
+}
+
+.suggestion-item:hover {
+    background: var(--accent-veil);
+}
+
+
+/* --------------------------------------------------------------
+   10. GAME DETAILS
+   -------------------------------------------------------------- */
+
+#gameDetails,
+#profileDetails {
+    background-color: var(--ink-base) !important;
+}
+
+.details-container {
+}
+
+.details-container::-webkit-scrollbar-thumb {
+    background: var(--ink-edge);
+    border-radius: 99px;
+}
+
+.top-nav {
+    background: linear-gradient(to bottom, rgba(9, 11, 16, .9), transparent);
+}
+
+.back-btn,
+.edit-btn {
+    border-radius: var(--r-sm);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    border: 1px solid var(--line-faint);
+    background: rgba(5, 6, 10, .55);
+    backdrop-filter: blur(12px);
+    color: var(--star-dim);
+    transition: color var(--t-main), border-color var(--t-main), background var(--t-main);
+}
+
+.back-btn:hover,
+.edit-btn:hover {
+    color: var(--star-hi);
+    border-color: var(--line-strong);
+    background: rgba(255, 255, 255, .06);
+}
+
+.edit-btn.active {
+    color: var(--star-hi);
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
+}
+
+.mini-title {
+    font-family: var(--font-ui);
+    color: var(--star);
+    letter-spacing: 0;
+}
+
+/* A deeper scrim so titles hold against bright key art */
+.banner-overlay {
+    background: linear-gradient(to top,
+            var(--ink-base) 0%,
+            rgba(9, 11, 16, .88) 22%,
+            rgba(9, 11, 16, .35) 55%,
+            rgba(9, 11, 16, .1) 100%);
+}
+
+.game-title,
+.profile-display-name {
+    font-family: var(--font-ui);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--star-hi);
+    text-transform: none;
+}
+
+.play-btn {
+    background: var(--accent-pure);
+    color: #05060A;
+    border: 1px solid var(--accent-pure);
+    border-radius: var(--r-sm);
+    padding: 14px 56px;
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-indent: 0.3em;
+    text-transform: uppercase;
+    backdrop-filter: none;
+    /* No glow. A solid white button on a near-black screen is
+       already the brightest thing in the frame; haloing it just
+       smears the edge. The lift alone is enough of an answer. */
+    box-shadow: none;
+    transition: transform var(--t-fast), background var(--t-fast);
+}
+
+.play-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: none;
+}
+
+/* Running: the inverse of Play. Play is a solid white slab because
+   starting is the thing you want; stopping is not, so it reads as an
+   outline over the dark — same size and position, opposite weight, so
+   the state is unmistakable without a second glance. */
+.play-btn.running {
+    background: rgba(5, 6, 10, .55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, .38);
+    color: var(--star-hi);
+    box-shadow: none;
+}
+
+.play-btn.running:hover {
+    background: rgba(5, 6, 10, .75);
+    border-color: rgba(255, 255, 255, .7);
+    color: #fff;
+}
+
+.game-playtime,
+.game-platform,
+.game-status-text {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--star);
+    letter-spacing: 0;
+}
+
+.game-status-text.uninstalled {
+    color: var(--star-faint);
+}
+
+.section-title {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+}
+
+.game-notes {
+    color: var(--star-dim);
+    line-height: 1.75;
+}
+
+.profile-accent-line {
+    background: var(--accent-pure);
+    box-shadow: 0 0 14px var(--accent-glow);
+}
+
+/* Destructive is the only place red appears */
+.delete-game-btn,
+.danger-zone .premium-btn {
+    border-radius: var(--r-sm);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+    color: rgba(226, 85, 78, .8);
+    border: 1px solid rgba(226, 85, 78, .22);
+    background: rgba(226, 85, 78, .05);
+    transition: all var(--t-main);
+}
+
+.delete-game-btn:hover,
+.danger-zone .premium-btn:hover {
+    color: #fff;
+    background: rgba(226, 85, 78, .18);
+    border-color: rgba(226, 85, 78, .55);
+    box-shadow: none;
+}
+
+.asset-box {
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line-faint);
+    transition: border-color var(--t-main);
+}
+
+.asset-box:hover {
+    border-color: var(--accent-line);
+    transform: none;
+}
+
+
+/* --------------------------------------------------------------
+   11. TOUCH
+   Everything under the cursor should answer. The rule is that a
+   control lights up rather than changes colour: white bloom, a
+   brighter hairline, and a small move. Nothing here moves more
+   than 6px, so the grid never feels like it is squirming.
+   -------------------------------------------------------------- */
+
+.add-game-header-btn:hover {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .5);
+    transform: translateY(-1px);
+}
+
+.add-game-header-btn:active {
+    transform: translateY(0);
+}
+
+/* The rail grows on hover as well as when active, so the nav
+   previews where you are about to land. */
+.side-nav-btn:hover::before {
+    height: 12px;
+    background: var(--star-dim);
+    box-shadow: none;
+}
+
+.side-nav-btn.active:hover::before,
+.side-nav-btn.active::before {
+    height: 20px;
+    background: #fff;
+    box-shadow: none;
+}
+
+.side-nav-btn:hover svg {
+    filter: none;
+}
+
+.side-nav-btn:active {
+    transform: scale(0.94);
+}
+
+/* Gateway account cards get the same close-range light as the
+   game covers — it is the first thing you touch in the app. */
+.account-card {
+    position: relative;
+    transition: transform var(--t-main);
+}
+
+.account-card:hover {
+    transform: translateY(-5px);
+}
+
+
+
+.account-card:hover .account-avatar-container {
+    box-shadow: 0 16px 34px -14px rgba(0, 0, 0, .85);
+}
+
+.account-card:hover .account-name {
+    color: var(--star-hi);
+}
+
+.add-account-card:hover .plus-icon {
+    border-color: rgba(255, 255, 255, .45);
+    color: #fff;
+    box-shadow: none;
+}
+
+/* Rows and list items */
+.suggestion-item,
+.settings-tab,
+.theme-swatch,
+.filter-select,
+.premium-select-small,
+#searchInput {
+    transition: all var(--t-main);
+}
+
+.igdb-result-card:hover {
+    box-shadow: 0 14px 32px -12px rgba(0, 0, 0, .9);
+}
+
+/* Pressed states. Without these a click feels like nothing
+   happened until the screen changes. */
+.m-btn:active,
+.premium-btn:active,
+.confirm-btn:active,
+.settings-save-btn:active,
+.browse-btn-premium:active,
+.back-btn:active,
+.edit-btn:active {
+    transform: scale(0.98);
+}
+
+.play-btn:active {
+    transform: translateY(0) scale(0.985);
+}
+
+
+/* --------------------------------------------------------------
+   12. QUALITY FLOOR
+   -------------------------------------------------------------- */
+
+:focus-visible {
+    outline: 2px solid var(--accent-pure);
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+
+::selection {
+    background: var(--accent-soft);
+    color: var(--star-hi);
+}
+
+.sync-spinner {
+    border-top-color: var(--accent-pure);
+}
+
+.asset-sync-overlay {
+    background: rgba(5, 6, 10, .8);
+    backdrop-filter: blur(6px);
+}
+
+.sync-text {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.14em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+
+/* --------------------------------------------------------------
+   13. SYSTEM PANE & GAME PROPERTIES
+   The machine report reads as an instrument panel: label on the
+   left, reading on the right, mono throughout, hairline between
+   rows. Nothing here is decorated — every line is a fact.
+   -------------------------------------------------------------- */
+
+.sys-readout {
+    margin-top: 22px;
+    border-top: 1px solid var(--line-faint);
+}
+
+.sys-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line-faint);
+}
+
+.sys-key {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+    flex: none;
+}
+
+.sys-val {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--star);
+    text-align: right;
+    word-break: break-all;
+}
+
+.sys-divider {
+    height: 1px;
+    background: var(--line-faint);
+    margin: 30px 0 22px;
+}
+
+.sys-section-title {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--star-hi);
+    letter-spacing: -0.01em;
+}
+
+.sys-hint {
+    font-size: 0.72rem;
+    line-height: 1.6;
+    color: var(--star-faint);
+    margin-top: 6px;
+    max-width: 52ch;
+}
+
+.sys-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 14px 0;
+}
+
+.sys-row-stack {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.sys-textarea {
+    min-height: 84px;
+    resize: vertical;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    line-height: 1.7;
+    padding: 12px 14px;
+    width: 100%;
+}
+
+#rescanInstalledBtn {
+    margin-top: 16px;
+}
+
+/* --- properties panel --- */
+
+.props-panel {
+    width: min(620px, 92vw);
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--ink-raise);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: var(--lift-3);
+    overflow: hidden;
+}
+
+.props-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 24px 26px 18px;
+    border-bottom: 1px solid var(--line-faint);
+}
+
+.props-eyebrow {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+    margin-bottom: 6px;
+}
+
+.props-header h2 {
+    font-family: var(--font-ui);
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--star-hi);
+}
+
+.props-body {
+    padding: 8px 26px 20px;
+    /* A flex child will not shrink below its content without this,
+       so the body overflowed the panel instead of scrolling. */
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+}
+
+.props-body::-webkit-scrollbar {
+    width: 10px;
+}
+
+.props-body::-webkit-scrollbar-thumb {
+    background: var(--ink-edge);
+    border-radius: 99px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+
+.props-field {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line-faint);
+}
+
+.props-field:last-of-type {
+    border-bottom: none;
+}
+
+.props-field>.filter-label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.props-field .settings-input,
+.props-field .premium-select-small {
+    width: 100%;
+}
+
+.props-hint {
+    font-size: 0.7rem;
+    line-height: 1.6;
+    color: var(--star-faint);
+    margin-top: 9px;
+    max-width: 56ch;
+}
+
+.props-hint code {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--star-dim);
+    background: rgba(255, 255, 255, .05);
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+.props-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.props-row .settings-input {
+    flex: 1;
+}
+
+.props-row .premium-btn {
+    flex: none;
+    white-space: nowrap;
+}
+
+.props-tri {
+    justify-content: space-between;
+    padding: 7px 0;
+}
+
+.props-tri span {
+    font-size: 0.8rem;
+    color: var(--star);
+}
+
+.props-tri .premium-select-small {
+    width: 160px;
+    flex: none;
+}
+
+/* The payoff: the exact command, before you commit to it. */
+/* Sits outside the scrolling body on purpose: it is the answer the
+   screen exists to give, so it must stay visible while the settings
+   above it are being changed. */
+.props-preview {
+    flex: none;
+    margin: 0 26px 4px;
+    padding: 14px 16px;
+    background: rgba(0, 0, 0, .35);
+    border: 1px solid var(--line-faint);
+    border-radius: var(--r-sm);
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+.props-preview code {
+    display: block;
+    margin-top: 9px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    line-height: 1.7;
+    color: var(--star);
+    word-break: break-all;
+    white-space: pre-wrap;
+}
+
+.props-preview-bad {
+    color: var(--signal-warn) !important;
+}
+
+.props-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 26px;
+    border-top: 1px solid var(--line-faint);
+    background: rgba(0, 0, 0, .2);
+}
+
+.top-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+/* --------------------------------------------------------------
+   14. API KEYS
+   -------------------------------------------------------------- */
+
+.key-row {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line-faint);
+}
+
+.key-row:last-of-type {
+    border-bottom: none;
+}
+
+.key-label {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.key-status {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, .05);
+}
+
+.key-status.is-set {
+    color: var(--signal-ok);
+    background: rgba(79, 191, 139, .12);
+}
+
+.key-row .sys-hint {
+    margin: 8px 0 12px;
+}
+
+.key-row .settings-input {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+}
+
+
+/* --------------------------------------------------------------
+   15. INSTALL
+   When a game is not installed, Install takes Play's place and
+   carries the same solid weight.
+   -------------------------------------------------------------- */
+
+.install-btn {
+    /* inherits .play-btn: solid, primary */
+    letter-spacing: 0.24em;
+    text-indent: 0.24em;
+}
+
+
+
+.action-container .install-btn.hidden {
+    display: none !important;
+}
+
+
+/* --------------------------------------------------------------
+   16. INSTALL PROGRESS
+   Steam downloads, we display. It sits exactly where Play sits,
+   because it answers the same question: what is happening with
+   this game right now.
+   -------------------------------------------------------------- */
+
+.install-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 280px;
+}
+
+.install-progress.hidden {
+    display: none !important;
+}
+
+.install-progress-bar {
+    height: 4px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, .12);
+    overflow: hidden;
+}
+
+.install-progress-bar span {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: 99px;
+    background: var(--star-hi);
+    transition: width 0.5s ease;
+}
+
+.install-progress-text {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--star-dim);
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* --------------------------------------------------------------
+   17. INFORMATION MODAL
+   Left-aligned and iconless, unlike the success and error modals.
+   Those announce an outcome; this one is a short instruction, and
+   instructions read better as prose than as an announcement.
+   -------------------------------------------------------------- */
+
+.info-card {
+    max-width: 460px;
+    padding: 30px 32px 26px;
+    border-top: 2px solid var(--accent-line);
+}
+
+.info-card .modal-header {
+    text-align: left;
+}
+
+.info-card .notification-title {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+    margin: 0;
+}
+
+.info-message {
+    color: var(--star);
+    text-align: left;
+    padding: 14px 0 4px;
+    line-height: 1.7;
+    font-size: 0.92rem;
+}
+
+.info-message strong {
+    color: var(--star-hi);
+    font-weight: 600;
+}
+
+.info-card .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* The shared confirm button stretches to full width, which suits a
+   decision modal but makes an acknowledgement look like a commitment. */
+.info-card .confirm-btn {
+    width: auto;
+    min-width: 120px;
+    padding: 11px 26px;
+}
+
+
+/* --------------------------------------------------------------
+   18. WHERE THE STARS BELONG
+   The gateway is nearly empty, so a starfield gives it depth. The
+   library is two hundred pieces of cover art, and the same stars
+   there read as dirt on the screen. The ambient wash stays in both
+   — it is a light, not an object.
+   -------------------------------------------------------------- */
+
+body[data-screen="library"] .sky__far,
+body[data-screen="library"] .sky__near,
+body[data-screen="gameDetails"] .sky__far,
+body[data-screen="gameDetails"] .sky__near,
+body[data-screen="profileDetails"] .sky__far,
+body[data-screen="profileDetails"] .sky__near {
+    opacity: 0;
+}
+
+.sky__far,
+.sky__near {
+    transition: opacity 0.6s ease;
+}
+
+
+/* ==============================================================
+   19. FIXES — 2026-08-23
+   ============================================================== */
+
+/* --- Dropdowns, rebuilt ---------------------------------------
+   The old ones were a browser <select> with a colour change: two
+   stacked gradients faked the arrow, the hit area was whatever the
+   text happened to be, and nothing lined up with the pill shapes
+   used everywhere else. Same element, drawn properly. */
+
+.filter-select,
+.premium-select-small,
+.premium-select {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 38px;
+    min-width: 150px;
+    padding: 0 38px 0 14px;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    background-color: rgba(255, 255, 255, .04);
+    color: var(--star);
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 36px;
+    cursor: pointer;
+
+    /* A real chevron, drawn once, centred on the right. */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' fill='none' stroke='%238A94A5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 11px 7px;
+    transition: border-color var(--t-fast), background-color var(--t-fast), color var(--t-fast);
+}
+
+.filter-select:hover,
+.premium-select-small:hover,
+.premium-select:hover {
+    border-color: var(--line-strong);
+    background-color: rgba(255, 255, 255, .07);
+    color: var(--star-hi);
+}
+
+.filter-select:focus-visible,
+.premium-select-small:focus-visible,
+.premium-select:focus-visible {
+    outline: none;
+    border-color: rgba(255, 255, 255, .45);
+    background-color: rgba(255, 255, 255, .08);
+}
+
+/* The popup list is drawn by the OS, so the most we can do is stop
+   it arriving as white-on-white. */
+.filter-select option,
+.premium-select-small option,
+.premium-select option {
+    background: #161A22;
+    color: #EEF1F6;
+}
+
+.filter-label {
+    flex: none;
+    white-space: nowrap;
+}
+
+
+/* --- Names are not shouted ------------------------------------- */
+
+.account-name {
+    text-transform: none;
+    letter-spacing: 0.02em;
+    font-size: 0.92rem;
+    font-weight: 500;
+    opacity: 1;
+}
+
+
+/* --- The grid stops insisting on five --------------------------
+   Five fixed columns meant every card had to squash when the window
+   was halved. Cards now hold a sensible size and the row simply
+   holds fewer of them. */
+
+.grid-container {
+    /* The floor is what keeps card size steady across window widths:
+       too low and a half-width window crams five tiny cards in where
+       four comfortable ones belong. Measured across 700/950/1900px
+       this holds every card between 178 and 203 wide. */
+    grid-template-columns: repeat(auto-fill, minmax(clamp(150px, 13vw, 200px), 1fr));
+}
+
+
+/* --- Header that survives a narrow window ---------------------- */
+
+.app-header {
+    gap: 16px;
+    padding: 0 20px 0 18px;
+}
+
+.header-left-group {
+    gap: 16px;
+    min-width: 0;
+    flex: 0 1 auto;
+}
+
+.logo-text-header {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* It was wrapping onto three lines and growing the header with it. */
+.add-game-header-btn {
+    flex: none;
+    height: 38px;
+    padding: 0 18px;
+    white-space: nowrap;
+    align-items: center;
+}
+
+.search-container {
+    flex: 1 1 220px;
+    min-width: 0;
+    margin: 0;
+}
+
+/* Same height as the button and the avatar beside it — they were
+   three different heights sitting on one line. */
+#searchInput {
+    height: 38px;
+    padding: 0 16px 0 40px;
+}
+
+.header-profile {
+    flex: none;
+    height: 38px;
+    gap: 10px;
+    padding: 0 4px 0 14px;
+    align-items: center;
+}
+
+.header-avatar-container {
+    width: 30px;
+    height: 30px;
+    flex: none;
+}
+
+/* Below this the name is the first thing worth dropping — the
+   avatar still identifies the account. */
+@media (max-width: 900px) {
+    .header-user-name { display: none; }
+    .header-profile { padding: 0 4px; }
+    .logo-text-header { display: none; }
+}
+
+/* Narrower still: the search field collapses to its icon and the
+   filter row scrolls sideways rather than crushing its controls. */
+@media (max-width: 720px) {
+    .filter-row {
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-group.sort-group { margin-left: 20px; }
+}
+
+
+/* --- Scrollbar ------------------------------------------------- */
+
+.grid-container::-webkit-scrollbar,
+.details-container::-webkit-scrollbar,
+.settings-content::-webkit-scrollbar,
+.props-body::-webkit-scrollbar,
+.igdb-results-grid::-webkit-scrollbar {
+    width: 12px;
+}
+
+.grid-container::-webkit-scrollbar-track,
+.details-container::-webkit-scrollbar-track,
+.settings-content::-webkit-scrollbar-track,
+.props-body::-webkit-scrollbar-track,
+.igdb-results-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.grid-container::-webkit-scrollbar-thumb,
+.details-container::-webkit-scrollbar-thumb,
+.settings-content::-webkit-scrollbar-thumb,
+.props-body::-webkit-scrollbar-thumb,
+.igdb-results-grid::-webkit-scrollbar-thumb {
+    background: rgba(198, 214, 255, .14);
+    border: 4px solid transparent;
+    background-clip: content-box;
+    border-radius: 99px;
+    transition: background-color var(--t-fast);
+}
+
+.grid-container::-webkit-scrollbar-thumb:hover,
+.details-container::-webkit-scrollbar-thumb:hover,
+.settings-content::-webkit-scrollbar-thumb:hover,
+.props-body::-webkit-scrollbar-thumb:hover,
+.igdb-results-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(198, 214, 255, .30);
+    background-clip: content-box;
+}
+
+
+/* --- Scroll edge ------------------------------------------------
+   Content clipped by a scroll boundary reads as broken when it is
+   cut mid-glyph. Fading the last few pixels says "there is more"
+   instead of "something went wrong". */
+
+.props-body {
+    -webkit-mask-image: linear-gradient(to bottom,
+            #000 0, #000 calc(100% - 18px), transparent 100%);
+    mask-image: linear-gradient(to bottom,
+            #000 0, #000 calc(100% - 18px), transparent 100%);
+}
+
+
+/* ==============================================================
+   20. SELECT
+   The native element is still there, still holding the value and
+   still firing change — it is only made invisible. What you see
+   is drawn here, which is the whole point: the operating system's
+   dropdown could never be styled, so the app now draws its own.
+   ============================================================== */
+
+.sel {
+    position: relative;
+    display: inline-flex;
+}
+
+.sel-native {
+    /* Present and functional, just not painted. Not display:none —
+       that would take it out of the form and out of the a11y tree. */
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    appearance: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.sel-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    height: 38px;
+    min-width: 150px;
+    padding: 0 14px;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, .04);
+    background-image: none;
+    color: var(--star);
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--t-fast), background-color var(--t-fast), color var(--t-fast);
+}
+
+.sel-trigger:hover {
+    border-color: var(--line-strong);
+    background: rgba(255, 255, 255, .07);
+    color: var(--star-hi);
+}
+
+.sel-trigger:focus-visible {
+    outline: none;
+    border-color: rgba(255, 255, 255, .5);
+    background: rgba(255, 255, 255, .08);
+}
+
+.sel-trigger.is-open {
+    border-color: rgba(255, 255, 255, .38);
+    background: rgba(255, 255, 255, .08);
+    color: var(--star-hi);
+}
+
+.sel-trigger:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.sel-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sel-chevron {
+    flex: none;
+    width: 11px;
+    height: 7px;
+    color: var(--star-faint);
+    transition: transform var(--t-fast), color var(--t-fast);
+}
+
+.sel-trigger:hover .sel-chevron,
+.sel-trigger.is-open .sel-chevron {
+    color: var(--star);
+}
+
+.sel-trigger.is-open .sel-chevron {
+    transform: rotate(180deg);
+}
+
+/* --- the list --- */
+
+.sel-menu {
+    position: fixed;
+    z-index: 9999;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 6px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--line);
+    background: rgba(16, 20, 27, .96);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: 0 20px 50px -20px rgba(0, 0, 0, .9);
+    animation: selIn 0.13s cubic-bezier(0.3, 0, 0.2, 1);
+    transform-origin: top center;
+}
+
+.sel-menu.is-above {
+    transform-origin: bottom center;
+}
+
+@keyframes selIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.sel-option {
+    padding: 9px 12px;
+    border-radius: var(--r-sm);
+    color: var(--star);
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    line-height: 1.3;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+}
+
+/* Hover and keyboard share one highlight — the list should not be
+   able to show two "current" rows at once. */
+.sel-option.is-active {
+    background: rgba(255, 255, 255, .09);
+    color: var(--star-hi);
+}
+
+/* The chosen value keeps a mark of its own so it stays findable
+   while the highlight moves around it. */
+.sel-option.is-selected {
+    color: var(--star-hi);
+    font-weight: 600;
+}
+
+.sel-option.is-selected::after {
+    content: '';
+    float: right;
+    width: 5px;
+    height: 5px;
+    margin: 6px 0 0 12px;
+    border-radius: 50%;
+    background: var(--star-hi);
+}
+
+.sel-option.is-disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+.sel-menu::-webkit-scrollbar { width: 10px; }
+.sel-menu::-webkit-scrollbar-track { background: transparent; }
+.sel-menu::-webkit-scrollbar-thumb {
+    background: rgba(198, 214, 255, .16);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 99px;
+}
+
+/* The filter row sizes its own controls. */
+.filter-group .sel-trigger { min-width: 150px; }
+.props-field .sel,
+.props-field .sel-trigger { width: 100%; }
+.props-tri .sel-trigger { width: 160px; min-width: 0; }
+.sys-row .sel-trigger { min-width: 200px; }
+
+
+/* ==============================================================
+   21. SEARCH
+   Rebuilt around real elements. The icon used to be two CSS
+   pseudo-elements that drifted apart whenever the field resized,
+   and at narrow widths the field tore itself out of the header
+   with absolute positioning the moment it took focus.
+   ============================================================== */
+
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1 1 240px;
+    min-width: 0;
+    max-width: 460px;
+    margin: 0;
+    height: 38px;
+    border-radius: 99px;
+    border: 1px solid var(--line-faint);
+    background: rgba(255, 255, 255, .035);
+    transition: border-color var(--t-fast), background var(--t-fast);
+}
+
+.search-container:hover {
+    border-color: var(--line);
+    background: rgba(255, 255, 255, .055);
+}
+
+.search-container:focus-within {
+    border-color: rgba(255, 255, 255, .34);
+    background: rgba(255, 255, 255, .07);
+}
+
+.search-icon {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    margin-left: 13px;
+    color: var(--star-faint);
+    pointer-events: none;
+    transition: color var(--t-fast);
+}
+
+.search-container:focus-within .search-icon {
+    color: var(--star);
+}
+
+/* The field carries no border of its own — the pill around it is
+   the control, so a focus ring on both would double up. */
+#searchInput {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0 6px 0 9px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--star-hi);
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    outline: none;
+}
+
+#searchInput:focus {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+#searchInput::placeholder {
+    color: var(--star-faint);
+    letter-spacing: 0;
+}
+
+.search-clear {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 7px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .08);
+    color: var(--star-dim);
+    cursor: pointer;
+    transition: background var(--t-fast), color var(--t-fast);
+}
+
+.search-clear svg { width: 11px; height: 11px; }
+
+.search-clear:hover {
+    background: rgba(255, 255, 255, .16);
+    color: var(--star-hi);
+}
+
+.search-clear.hidden { display: none !important; }
+
+/* Narrow: the pill simply gets smaller. It keeps its shape, keeps
+   its place in the row, and never repositions itself — which is
+   what made the old collapsing version feel broken. */
+@media (max-width: 780px) {
+    .search-container { flex: 1 1 120px; }
+    .search-icon { margin-left: 11px; }
+    #searchInput { padding-left: 7px; font-size: 0.78rem; }
+}
+
+
+/* ==============================================================
+   22. SCROLLING
+   Two separate things were asked for and only one was delivered
+   last time: the bar was restyled, the scrolling itself was not.
+   ============================================================== */
+
+/* Wheel and keyboard scrolling glides instead of jumping. Kept off
+   the whole document so modals and menus still snap to position. */
+.grid-container,
+.details-container,
+.settings-content,
+.props-body,
+.igdb-results-grid,
+#steamPreviewList {
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .grid-container,
+    .details-container,
+    .settings-content,
+    .props-body,
+    .igdb-results-grid,
+    #steamPreviewList {
+        scroll-behavior: auto;
+    }
+}
+
+/* A thin bar that stays out of the way and thickens under the
+   pointer, rather than a permanent grey slab beside the artwork. */
+.grid-container::-webkit-scrollbar,
+.details-container::-webkit-scrollbar,
+.settings-content::-webkit-scrollbar,
+.props-body::-webkit-scrollbar,
+.igdb-results-grid::-webkit-scrollbar,
+#steamPreviewList::-webkit-scrollbar {
+    width: 14px;
+}
+
+.grid-container::-webkit-scrollbar-thumb,
+.details-container::-webkit-scrollbar-thumb,
+.settings-content::-webkit-scrollbar-thumb,
+.props-body::-webkit-scrollbar-thumb,
+.igdb-results-grid::-webkit-scrollbar-thumb,
+#steamPreviewList::-webkit-scrollbar-thumb {
+    background: rgba(198, 214, 255, .10);
+    border: 5px solid transparent;
+    background-clip: content-box;
+    border-radius: 99px;
+    min-height: 44px;
+}
+
+.grid-container:hover::-webkit-scrollbar-thumb,
+.details-container:hover::-webkit-scrollbar-thumb,
+.settings-content:hover::-webkit-scrollbar-thumb,
+.props-body:hover::-webkit-scrollbar-thumb,
+.igdb-results-grid:hover::-webkit-scrollbar-thumb,
+#steamPreviewList:hover::-webkit-scrollbar-thumb {
+    background: rgba(198, 214, 255, .22);
+    border-width: 4px;
+    background-clip: content-box;
+}
+
+.grid-container::-webkit-scrollbar-thumb:active,
+.details-container::-webkit-scrollbar-thumb:active,
+.settings-content::-webkit-scrollbar-thumb:active,
+.props-body::-webkit-scrollbar-thumb:active,
+.igdb-results-grid::-webkit-scrollbar-thumb:active,
+#steamPreviewList::-webkit-scrollbar-thumb:active {
+    background: rgba(198, 214, 255, .38);
+    background-clip: content-box;
+}
+
+/* Deliberately no `scrollbar-width` / `scrollbar-color` anywhere.
+   Chromium supports those standard properties now, and the moment
+   either one is set it takes over and ignores every
+   ::-webkit-scrollbar rule below — which is exactly why the bar was
+   still coming out square with none of the shaping applied. */
+
+
+/* ==============================================================
+   23. EDIT
+   One toolbar treatment everywhere. The profile's buttons used to
+   carry inline sizing that no other screen had, so the same action
+   looked like a different control depending on where you met it.
+   ============================================================== */
+
+.top-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    pointer-events: auto;
+}
+
+/* Every toolbar button is the same height and shape; only the
+   contents differ. */
+.back-btn,
+.edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 18px;
+    min-width: 0;
+    font-size: 0.66rem;
+}
+
+/* Icon-only variants are square, so a gear and a word never end up
+   at different weights beside each other. */
+.edit-btn-icon {
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+}
+
+.edit-btn-icon svg {
+    width: 17px;
+    height: 17px;
+}
+
+.edit-btn.active {
+    background: rgba(255, 255, 255, .12);
+    border-color: rgba(255, 255, 255, .34);
+    color: var(--star-hi);
+}
+
+
+/* --- The edit panel arrives instead of appearing ---------------
+   It was toggled straight from display:none, so it materialised
+   fully formed in one frame — the "teleport" that made it hard to
+   look at. It now comes in from the right, which also matches the
+   direction it sits in.
+
+   Animation rather than transition, because an element coming back
+   from display:none has no previous state to transition from. */
+
+@keyframes editSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(26px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.asset-edit-section:not(.hidden):not(.is-leaving),
+.browse-container:not(.hidden):not(.is-leaving) {
+    animation: editSlideIn 0.34s cubic-bezier(0.16, 0.84, 0.44, 1) both;
+}
+
+/* The pieces inside follow just behind the panel, so it reads as
+   one movement arriving rather than several things switching on. */
+.asset-edit-section:not(.hidden):not(.is-leaving) .asset-box {
+    animation: editSlideIn 0.4s cubic-bezier(0.16, 0.84, 0.44, 1) both;
+}
+
+.asset-edit-section:not(.hidden):not(.is-leaving) .asset-box:nth-child(2) { animation-delay: 0.05s; }
+.asset-edit-section:not(.hidden):not(.is-leaving) .asset-edit-column:nth-child(2) .asset-box { animation-delay: 0.05s; }
+
+/* Edit mode also reveals the danger zone; let it settle in the same
+   way rather than snapping into the layout. */
+.danger-zone:not(.hidden):not(.is-leaving) {
+    animation: editSlideIn 0.36s cubic-bezier(0.16, 0.84, 0.44, 1) 0.08s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .asset-edit-section:not(.hidden),
+    .asset-edit-section:not(.hidden) .asset-box,
+    .browse-container:not(.hidden),
+    .danger-zone:not(.hidden) {
+        animation: none;
+    }
+}
+
+
+/* The way out is the way in, reversed and a little quicker —
+   leaving should not ask for as much attention as arriving. */
+@keyframes editSlideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(26px);
+    }
+}
+
+.asset-edit-section.is-leaving,
+.browse-container.is-leaving,
+.danger-zone.is-leaving {
+    animation: editSlideOut 0.24s cubic-bezier(0.4, 0, 0.9, 1) both;
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .asset-edit-section.is-leaving,
+    .browse-container.is-leaving,
+    .danger-zone.is-leaving {
+        animation: none;
+    }
+}
+
+
+/* --- CJK --------------------------------------------------------
+   Korean prefers its own face: it shares Han characters with Chinese
+   but draws some of them differently, and hangul spacing is tuned in
+   the KR face. Set on :root so every rule reading --font-ui or
+   --font-mono picks it up without being restated.
+   ---------------------------------------------------------------- */
+:root:lang(ko) {
+    --cjk: 'Noto Sans CJK KR', 'Noto Sans KR', 'Source Han Sans KR';
+}
+
+
+/* --- Interface sound volume ------------------------------------
+   Sits under its own switch and dims when the switch is off, so it
+   reads as belonging to the setting above it rather than as a
+   separate control that happens to be nearby.
+   ---------------------------------------------------------------- */
+.sfx-volume-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+    transition: opacity var(--t-fast);
+}
+
+.sfx-volume-row.is-off {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+.sfx-volume-row > .filter-label {
+    flex: 0 0 auto;
+}
+
+#settingUiVolume {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, .12);
+    cursor: pointer;
+}
+
+#settingUiVolume::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--star-hi);
+    cursor: pointer;
+    transition: transform var(--t-fast);
+}
+
+#settingUiVolume:hover::-webkit-slider-thumb {
+    transform: scale(1.15);
+}
+
+.sfx-volume-value {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--star-dim);
+    /* Fixed width and lining figures, so the row does not twitch
+       sideways as the number goes from 100 to 95 to 5. */
+    font-variant-numeric: tabular-nums;
+    min-width: 2.4em;
+    text-align: right;
+}
+
+
+/* --- BETA marker ------------------------------------------------
+   Small enough to be an aside rather than a warning: it says the
+   feature is here and unfinished, not that something is wrong.
+   ---------------------------------------------------------------- */
+.tag-beta {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 6px;
+    border: 1px solid var(--line-faint);
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--star-faint);
+    /* Lifted off the baseline so it centres against the label rather
+       than sitting on the line with it. */
+    vertical-align: 2px;
+    white-space: nowrap;
+}

@@ -1,0 +1,91 @@
+# ---------------------------------------------------------------
+# Dependencies
+# ---------------------------------------------------------------
+node_modules/
+
+
+# ---------------------------------------------------------------
+# Build output
+#
+# linux-unpacked/ is not merely large — an older build of it has the
+# developer's own Steam and SteamGridDB keys compiled into
+# resources/app.asar in plain text. Nothing produced by a build
+# belongs in version control, and this one least of all.
+# ---------------------------------------------------------------
+linux-unpacked/
+win-unpacked/
+mac/
+dist/
+out/
+build/
+*.AppImage
+*.deb
+*.rpm
+*.snap
+*.exe
+*.dmg
+*.zip
+*.asar
+*.blockmap
+latest*.yml
+builder-debug.yml
+builder-effective-config.yaml
+
+
+# ---------------------------------------------------------------
+# Secrets
+#
+# Keys live in the user's own config directory and are typed in by
+# whoever runs the app — none ship with it. These patterns are here
+# so that a copy left in the working tree can never be committed by
+# accident.
+# ---------------------------------------------------------------
+api_keys.json
+igdb_config.json
+.env
+.env.*
+*.pem
+*.key
+
+
+# ---------------------------------------------------------------
+# Personal data
+#
+# A library is somebody's own collection: game names, notes, cover
+# art, profile photos. It is written beside the app during
+# development and must never leave the machine.
+# ---------------------------------------------------------------
+Vault/
+Vault_Assets/
+.deleted_vault/
+Library.txt
+
+
+# ---------------------------------------------------------------
+# One-off tooling
+#
+# Migration scripts kept from an earlier pass over the code. They
+# served their purpose and describe a codebase that no longer
+# exists; keeping them would only invite someone to run one.
+# ---------------------------------------------------------------
+_gemini_scripts_archive/
+
+
+# ---------------------------------------------------------------
+# Editors and desktops
+# ---------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*~
+*.bak
+.DS_Store
+Thumbs.db
+
+
+# ---------------------------------------------------------------
+# An empty file with the product's name misspelled, left over from
+# an early build. The icon actually used is
+# App_Core/Assets_Default/AppLogo.ico.
+# ---------------------------------------------------------------
+ParalaxLogo.ico
