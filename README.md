@@ -111,7 +111,7 @@ visible in any version, and a modified version must be marked as different
 from the original. Neither restricts what you may do with the program; they
 keep the record of where it came from intact.
 
-See [LICENSE](LICENSE) for the full text.
+The full licence text is in [LICENSE](LICENSE); the additional terms are in [NOTICE](NOTICE).
 
 ---
 

@@ -1,3 +1,13 @@
+/*
+ * Parallax Launcher
+ * Copyright (C) 2024-2026 Arda Yalın Özkan
+ *
+ * Free software under the GNU General Public License version 3, with
+ * additional terms under section 7 requiring that the author attribution
+ * be preserved and that modified versions be marked as different from
+ * the original. See LICENSE and NOTICE in the project root.
+ */
+
 const { app, BrowserWindow, ipcMain, dialog, clipboard } = require('electron');
 const path = require('path');
 const fs = require('fs');
