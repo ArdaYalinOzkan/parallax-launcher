@@ -10,6 +10,16 @@
 // ================================================================
 let currentLanguage = 'en';
 
+/* The application's version, read from package.json by way of the main
+ * process. It is written down in exactly one place — package.json —
+ * and every text that mentions it carries a {version} placeholder that
+ * is filled in when the text is drawn. Releasing a new version is then
+ * a single edit rather than nine, and no language can be left behind.
+ *
+ * Empty until start-up has asked for it; translateApp() is called
+ * again right afterwards, so nothing is ever drawn without it. */
+let appVersion = '';
+
 let appSettings = {
     language: 'en',
     showNotInstalledLabel: true,
@@ -66,10 +76,17 @@ function translateApp() {
             w => `<span style="color:#fff; border-bottom:2px solid #ff2828;">${w}</span>`]
     };
 
+    /* Placeholders are filled at the moment a string is drawn rather
+     * than by rewriting the dictionary, so the dictionary stays exactly
+     * as it was written and a value arriving late simply appears the
+     * next time anything is translated. */
+    const fill = (text) => String(text).replace(/\{version\}/g, appVersion);
+
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        const value = lang[key];
-        if (value === undefined) return;
+        const raw = lang[key];
+        if (raw === undefined) return;
+        const value = fill(raw);
 
         if (EMPHASISE[key]) {
             const [word, wrap] = EMPHASISE[key];
@@ -1785,9 +1802,7 @@ async function initApp() {
         // Load initially
         await loadAccounts();
 
-        const appVersion = await window.api.getAppVersion();
-        translations.en.ABOUT_DESC = translations.en.ABOUT_DESC.replace(/Version \d+\.\d+\.\d+/, `Version ${appVersion} `);
-        translations.tr.ABOUT_DESC = translations.tr.ABOUT_DESC.replace(/Versiyon \d+\.\d+\.\d+/, `Versiyon ${appVersion} `);
+        appVersion = await window.api.getAppVersion();
 
         translateApp();
     } catch (error) {
