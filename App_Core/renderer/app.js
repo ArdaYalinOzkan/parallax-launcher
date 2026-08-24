@@ -22,7 +22,7 @@ let appVersion = '';
 
 let appSettings = {
     language: 'en',
-    showNotInstalledLabel: true,
+    showNotInstalledLabel: false,
     showPlaytimeOnCard: true,
     ambientRgb: '60, 110, 180',
     // How the shelf is ordered. Unlike the two filters beside it, this
@@ -938,14 +938,21 @@ function applyProfileToUI() {
     currentLibrary.forEach(g => {
         totalMinutes += parseFloat(g.PlayTime || "0") * 60;
     });
-    const totalHours = (totalMinutes / 60).toFixed(1);
+    const totalHours = totalMinutes / 60;
 
     const gamesEl = document.getElementById('profileTotalGames');
     const timeEl = document.getElementById('profileTotalPlayTime');
-    const hoursLabel = translations[currentLanguage].HOURS;
+    const words = translations[currentLanguage];
+
+    // Past a day, hours stop meaning anything — 1,463.5 is a number nobody
+    // reads. Only this total switches to days; a single game's playtime is
+    // always in hours, because that is the figure people compare.
+    const journey = totalHours < 24
+        ? totalHours.toFixed(1) + " " + words.HOURS
+        : (totalHours / 24).toFixed(1) + " " + words.DAYS;
 
     if (gamesEl) gamesEl.textContent = totalGames;
-    if (timeEl) timeEl.textContent = totalHours + " " + hoursLabel;
+    if (timeEl) timeEl.textContent = journey;
 }
 
 
