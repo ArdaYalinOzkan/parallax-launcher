@@ -1113,38 +1113,47 @@
          they have to go looking in Settings to find out about. -->
     <div id="updateModal" class="modal hidden" style="z-index: 4000;">
         <div class="modal-overlay"></div>
-        <div class="modal-content update-card">
-            <button id="updateModalClose" class="modal-close-x" aria-label="Close">&times;</button>
-
-            <span class="label update-card__eyebrow" data-i18n="UPDATE_AVAILABLE_TITLE">A NEWER VERSION</span>
-
-            <div class="version-step">
-                <div class="version-step__from">
-                    <span class="version-step__tag" data-i18n="UPDATE_YOURS">Yours</span>
-                    <span class="version-step__num" id="updateFromVersion">—</span>
-                </div>
-                <svg class="version-step__arrow" viewBox="0 0 40 16" fill="none" aria-hidden="true">
-                    <path d="M0 8h34M28 2l6 6-6 6" stroke="currentColor" stroke-width="1.6"
-                        stroke-linecap="round" stroke-linejoin="round" />
+        <div class="settings-window update-window">
+            <div class="settings-titlebar">
+                <svg class="logo-svg-small" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    style="width: 26px; height: 26px;">
+                    <path d="M50 14L64 22V38L50 46L36 38V22L50 14Z" stroke="#fff" stroke-width="6.5" />
+                    <path d="M36 38L50 46V62L36 70L22 62V46L36 38Z" stroke="#fff" stroke-width="6.5" />
+                    <path d="M64 38L78 46V62L64 70L50 62V46L64 38Z" stroke="#fff" stroke-width="6.5" />
                 </svg>
-                <div class="version-step__to">
-                    <span class="version-step__tag" data-i18n="UPDATE_NEW">New</span>
-                    <span class="version-step__num" id="updateToVersion">—</span>
-                </div>
-                <span class="version-step__size" id="updateSize"></span>
+                <span class="settings-app-title" data-i18n="UPDATE_AVAILABLE_TITLE">A NEWER VERSION</span>
+                <button id="updateModalClose" class="settings-close-x" aria-label="Close">&times;</button>
             </div>
 
-            <div class="update-card__notes" id="updateModalNotes"></div>
+            <div class="update-window__body">
+                <div class="version-step">
+                    <div class="version-step__from">
+                        <span class="version-step__tag" data-i18n="UPDATE_YOURS">Yours</span>
+                        <span class="version-step__num" id="updateFromVersion">—</span>
+                    </div>
+                    <svg class="version-step__arrow" viewBox="0 0 40 16" fill="none" aria-hidden="true">
+                        <path d="M0 8h34M28 2l6 6-6 6" stroke="currentColor" stroke-width="1.6"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <div class="version-step__to">
+                        <span class="version-step__tag" data-i18n="UPDATE_NEW">New</span>
+                        <span class="version-step__num" id="updateToVersion">—</span>
+                    </div>
+                    <span class="version-step__size" id="updateSize"></span>
+                </div>
 
-            <div class="update-card__actions">
+                <div class="update-card__notes" id="updateModalNotes"></div>
+
+                <div class="update-card__bar hidden" id="updateModalBar">
+                    <span class="update-bar-fill" id="updateModalBarFill"></span>
+                </div>
+                <p class="sys-hint hidden" id="updateModalStatus" style="margin-top: 10px;"></p>
+            </div>
+
+            <div class="update-window__footer">
                 <button id="updateLaterBtn" class="minimal-cancel-btn" data-i18n="UPDATE_LATER">Not now</button>
                 <button id="updateNowBtn" class="premium-btn" data-i18n="DOWNLOAD_UPDATE">DOWNLOAD AND INSTALL</button>
             </div>
-
-            <div class="update-card__bar hidden" id="updateModalBar">
-                <span class="update-bar-fill" id="updateModalBarFill"></span>
-            </div>
-            <p class="sys-hint hidden" id="updateModalStatus" style="margin-top: 10px;"></p>
         </div>
     </div>
 

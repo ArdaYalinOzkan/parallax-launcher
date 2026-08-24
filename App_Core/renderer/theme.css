@@ -2853,20 +2853,44 @@ body[data-screen="profileDetails"] .sky__near {
 
 
 /* --- The update dialog ------------------------------------------
-   Shown once on entering the library. The whole point is the step
-   from one version to another, so that is the largest thing on it —
+   Built on the settings window rather than as its own kind of panel.
+   It had been floating: no body, no titlebar, text sitting straight
+   on the blurred library behind it. The app has one window chrome
+   already and a second dialog does not need a second one.
+
+   The step from one version to the next is the largest thing on it —
    two numbers and an arrow, readable without reading.
    ---------------------------------------------------------------- */
-.update-card {
-    position: relative;
-    max-width: 520px;
-    width: 100%;
-    padding: 34px 34px 30px;
-    text-align: left;
+.update-window {
+    /* Shorter and narrower than Settings: this holds one thing. */
+    width: 560px;
+    max-width: calc(100vw - 40px);
+    height: auto;
+    max-height: calc(100vh - 80px);
 }
 
-.update-card__eyebrow {
-    margin-bottom: 20px;
+.update-window__body {
+    padding: 26px 28px 22px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* A flex child will not shrink below its content without this, so
+       long release notes pushed the footer off the bottom. */
+    min-height: 0;
+}
+
+.update-window__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 14px;
+    padding: 18px 28px 22px;
+    border-top: 1px solid var(--line-faint);
+}
+
+/* Declining sits on the left and stays quiet — always available,
+   never the thing being pushed. */
+.update-window__footer .minimal-cancel-btn {
+    margin-right: auto;
 }
 
 .version-step {
@@ -2899,8 +2923,8 @@ body[data-screen="profileDetails"] .sky__near {
     font-family: var(--font-mono);
     font-size: 1.5rem;
     line-height: 1;
-    /* The two numbers differ by a digit or two; lining figures keep
-       them the same width so the eye lands on what changed. */
+    /* The two differ by a digit or two; lining figures keep them the
+       same width so the eye lands on what changed. */
     font-variant-numeric: tabular-nums;
     color: var(--star-dim);
 }
@@ -2928,7 +2952,7 @@ body[data-screen="profileDetails"] .sky__near {
 .update-card__notes {
     margin-top: 20px;
     padding: 16px 18px;
-    max-height: 220px;
+    max-height: 260px;
     overflow-y: auto;
     overscroll-behavior: contain;
     border-radius: var(--r-sm);
@@ -2942,37 +2966,12 @@ body[data-screen="profileDetails"] .sky__near {
 
 .update-card__notes:empty { display: none; }
 
-.update-card__actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 14px;
-    margin-top: 24px;
-}
-
-/* Declining sits on the left and stays quiet — it is always
-   available, and never the thing being encouraged. */
-.update-card__actions .minimal-cancel-btn {
-    margin-right: auto;
-}
-
 .update-card__bar {
     margin-top: 18px;
     height: 4px;
     border-radius: 2px;
     background: rgba(255, 255, 255, .1);
     overflow: hidden;
-}
-
-.update-card .modal-close-x {
-    position: absolute;
-    top: 16px;
-    right: 18px;
-    background: transparent;
-    border: 0;
-    font-size: 1.5rem;
-    line-height: 1;
-    cursor: pointer;
 }
 
 @media (max-width: 520px) {
