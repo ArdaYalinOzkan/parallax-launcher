@@ -18,9 +18,9 @@
 
   <g transform="translate(200 262) scale(1.35) translate(-50 -42)"
      fill="none" stroke="#8A94A5" stroke-opacity="0.28" stroke-width="3.2">
-    <path d="M50 14L64 22V38L50 46L36 38V22L50 14Z"/>
-    <path d="M36 38L50 46V62L36 70L22 62V46L36 38Z"/>
-    <path d="M64 38L78 46V62L64 70L50 62V46L64 38Z"/>
+    <path d="M50.00 15.00 L32.68 25.00 L32.68 45.00 L50.00 55.00 L67.32 45.00 L67.32 25.00 Z"/>
+    <path d="M32.68 45.00 L15.36 55.00 L15.36 75.00 L32.68 85.00 L50.00 75.00 L50.00 55.00 Z"/>
+    <path d="M67.32 45.00 L50.00 55.00 L50.00 75.00 L67.32 85.00 L84.64 75.00 L84.64 55.00 Z"/>
   </g>
 
   <text x="200" y="392" text-anchor="middle"
