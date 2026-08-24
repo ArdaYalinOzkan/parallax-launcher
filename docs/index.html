@@ -14,7 +14,11 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://parallaxlauncher.com/">
 
-    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <!-- Renamed rather than replaced: browsers cache a favicon by URL and
+         ignore the usual headers, so the old one would have stayed on
+         screen for anyone who had already visited. -->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="alternate icon" href="favicon.ico" sizes="any">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
