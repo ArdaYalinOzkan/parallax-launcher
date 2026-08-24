@@ -1115,6 +1115,13 @@ function updateKind() {
     try {
         const marker = path.join(process.resourcesPath, 'package-type');
         if (fs.existsSync(marker) && fs.readFileSync(marker, 'utf8').trim() === 'deb') {
+            // A .deb can install its own replacement — but not if apt is
+            // already watching this package. Whoever added the repository
+            // asked their system to keep it current, and two updaters
+            // chasing the same package means the same version offered
+            // twice and a password prompt nobody expected. Where the
+            // repository is configured, apt wins and the app says so.
+            if (fs.existsSync('/etc/apt/sources.list.d/parallax.list')) return 'managed';
             return 'deb';
         }
     } catch (_) { /* unreadable resources: treat as managed */ }

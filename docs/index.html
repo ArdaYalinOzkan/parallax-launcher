@@ -162,12 +162,12 @@
                     </div>
 
                     <div class="file">
-                        <div class="file__name">.deb <span class="chip">Updates with your system</span></div>
+                        <div class="file__name">.deb <span class="chip">Updates itself</span></div>
                         <div class="file__for">Debian · Ubuntu · Mint</div>
                         <p>Installs the way your other software does and shows up in your menu with
-                            everything else. Add the repository below and it joins your normal
-                            updates — one button in the software centre brings it up to date along
-                            with the rest.</p>
+                            everything else. It updates itself too, through <code>dpkg</code> — which
+                            means it asks for your password the way any install does. Add the
+                            repository below and your system takes that over instead.</p>
                         <a class="btn btn--ghost" id="dlDeb"
                             href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
                             Download .deb <span class="btn__meta" id="sizeDeb"></span>
@@ -181,12 +181,14 @@
                      they should be able to read before running. -->
                 <div class="repo">
                     <div class="repo__head">
-                        <span class="label" style="margin: 0;">Debian and Ubuntu — updates without downloading again</span>
+                        <span class="label" style="margin: 0;">Or let your system do it</span>
                         <button class="copy" id="copyRepo" type="button">Copy</button>
                     </div>
                     <p style="font-size: .84rem; color: var(--star-dim); margin-bottom: 16px;">
-                        Run this once. Afterwards Parallax appears in your system's updates like any
-                        other package, and <code>apt upgrade</code> keeps it current.
+                        Run this once and Parallax joins your normal updates — one button in the
+                        software centre brings it up to date along with everything else, and the app
+                        stops asking. Worth it if you would rather one thing kept track of your
+                        software than have each program do it for itself.
                     </p>
 <pre id="repoCmd"><code>sudo install -d -m 0755 /etc/apt/keyrings
 curl -fsSL https://ardayalinozkan.github.io/parallax-apt/key.gpg \
