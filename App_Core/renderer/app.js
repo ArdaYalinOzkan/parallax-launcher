@@ -1415,6 +1415,9 @@ function renderGames(games) {
         // Dimming is now automatically tied to the Label setting
         const shouldDim = isUninstalled && appSettings.showNotInstalledLabel;
         card.className = `game-card ${shouldDim ? 'uninstalled' : ''}`;
+        // So a cover arriving later can find its own card without the
+        // whole shelf being rebuilt around it.
+        card.dataset.id = game.Id;
 
         let imagePath = resolvePath(game.Cover) || PLACEHOLDER_COVER;
 
@@ -2992,6 +2995,13 @@ if (confirmSteamPreviewBtn) {
             if (steamPreviewModal) steamPreviewModal.classList.add('hidden');
             await loadLibrary();
             showSuccess(translations[currentLanguage].STEAM_IMPORT_SUCCESS || "Import successful!");
+
+            // A library that lands as two hundred grey placeholders does
+            // not look like the import worked. Unless it was turned off,
+            // the covers are fetched straight away — and each one goes
+            // onto its card as it arrives, so the shelf visibly fills.
+            const wantArt = document.getElementById('importFillArtwork');
+            if (!wantArt || wantArt.checked) fillArtworkForLibrary();
         } catch (e) {
             console.error(e);
             showError(translations[currentLanguage].STEAM_CONNECTION_ERROR);
@@ -3390,12 +3400,54 @@ const fillArtworkBtn = document.getElementById('fillArtworkBtn');
 const artworkResult = document.getElementById('artworkResult');
 
 if (window.api.onArtworkProgress) {
-    window.api.onArtworkProgress(({ done, total, name }) => {
-        if (!artworkResult) return;
-        const t = translations[currentLanguage];
-        artworkResult.textContent =
-            `${done} / ${total} — ${name}`;
+    window.api.onArtworkProgress(({ done, total, name, id, cover, banner }) => {
+        if (artworkResult) artworkResult.textContent = `${done} / ${total} — ${name}`;
+
+        /* Each cover goes onto its card the moment it lands, rather
+         * than the whole library changing at the end. Filling two
+         * hundred of them takes minutes, and for all of that time the
+         * shelf looked exactly as it had — no way to tell it was
+         * working, or how far along it was. */
+        if (!id) return;
+
+        const game = currentLibrary.find(g => g.Id === id);
+        if (game) {
+            if (cover) game.Cover = cover;
+            if (banner) game.Banner = banner;
+        }
+
+        const card = gameGrid && gameGrid.querySelector(`.game-card[data-id="${CSS.escape(id)}"]`);
+        if (!card || !cover) return;
+
+        const img = card.querySelector('.card-image');
+        if (img) {
+            img.src = resolvePath(cover);
+            card.classList.add('art-arrived');
+        }
+        pendingAssetFetches.delete(id);
+        const sync = card.querySelector('.asset-sync-overlay');
+        if (sync) sync.remove();
     });
+}
+
+/**
+ * Fetches whatever artwork is missing across the library.
+ *
+ * Called from the button in Settings, and on its own after an import or
+ * after a game is added by hand — the two moments when a shelf is most
+ * obviously bare. Never runs twice at once; the second caller is simply
+ * ignored, because the first is already fetching everything missing.
+ */
+let artworkRunning = false;
+
+async function fillArtworkForLibrary() {
+    if (artworkRunning) return { success: false, error: 'ALREADY_RUNNING' };
+    artworkRunning = true;
+    try {
+        return await window.api.backfillArtwork({ accountId: currentAccountId });
+    } finally {
+        artworkRunning = false;
+    }
 }
 
 if (fillArtworkBtn) {
@@ -3404,7 +3456,7 @@ if (fillArtworkBtn) {
         fillArtworkBtn.disabled = true;
         if (artworkResult) artworkResult.textContent = t.ARTWORK_STARTING || 'Asking Steam what it has…';
 
-        const res = await window.api.backfillArtwork({ accountId: currentAccountId });
+        const res = await fillArtworkForLibrary();
         fillArtworkBtn.disabled = false;
 
         if (!res.success) {

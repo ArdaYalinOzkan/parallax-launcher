@@ -2977,3 +2977,15 @@ body[data-screen="profileDetails"] .sky__near {
 @media (max-width: 520px) {
     .version-step__size { margin-left: 0; width: 100%; }
 }
+
+
+/* A cover that has just arrived. Brief, and only the once — the point
+   is to catch the eye as the shelf fills, not to decorate it. */
+@keyframes art-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.game-card.art-arrived .card-image {
+    animation: art-in .45s ease-out both;
+}

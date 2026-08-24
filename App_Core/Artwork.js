@@ -228,7 +228,14 @@ async function fillFromSteam({ games, vaultDir, steamKey, steamId, sgdbKey, onPr
         }
 
         done++;
-        if (onProgress) onProgress({ done, total: targets.length, name: game.Name });
+        // The paths go back with the count, not just the count. Without
+        // them the library only changed once everything had finished and
+        // two hundred covers appeared at the same instant — no sign of
+        // progress, and no way to tell a slow run from a stuck one.
+        if (onProgress) onProgress({
+            done, total: targets.length, name: game.Name,
+            id: game.Id, cover: game.Cover || '', banner: game.Banner || ''
+        });
     });
 
     return { stats };

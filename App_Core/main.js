@@ -820,12 +820,21 @@ ipcMain.handle('preview-launch', (event, game) => {
  */
 /** The user's SteamGridDB key, or '' if they have not set one. */
 /**
- * The user's own SteamGridDB key, or '' if they have not set one.
+ * The author's own SteamGridDB key, shipped for the same reason as the
+ * Steam one.
  *
- * Unlike the Steam key, none ships. Community artwork is the one thing
- * here that costs somebody else money to serve, and handing every copy
- * of the app the same key would spend one person's quota on everybody.
+ * Steam's own search only knows about games Steam sells. Everything else
+ * — anything from GOG, itch, a disc, a launcher of its own — is found
+ * through SteamGridDB, and without a key those results simply were not
+ * there. Somebody trying to add a non-Steam game searched, got nothing
+ * back, and had no way to know a key was the reason.
+ *
+ * It is public and shared by everyone who has not set their own.
+ * SteamGridDB counts requests per key, so anyone leaning on it should
+ * paste in their own under Settings -> API, which is read first.
  */
+const BUNDLED_SGDB_KEY = '65473d7d01f85bc7931a3e43346c1383';
+
 function readSgdbKey() {
     try {
         if (fs.existsSync(apiKeysPath)) {
@@ -841,7 +850,7 @@ function readSgdbKey() {
             if (cfg.clientId) return String(cfg.clientId).trim();
         }
     } catch (e) { /* no key set */ }
-    return '';
+    return BUNDLED_SGDB_KEY;
 }
 
 /**
@@ -885,11 +894,23 @@ ipcMain.handle('backfill-artwork', async (event, opts) => {
     try {
         const { profile, games } = libraryManager.readLibrary();
 
+        // Written as it goes, not only at the end. Filling two hundred
+        // covers takes minutes, and everything found in that time was
+        // held in memory alone — close the app, or lose power, and it
+        // had all to be fetched again. Every fifteenth one is cheap
+        // insurance against that.
+        let sinceSave = 0;
+
         const result = await Artwork.fillFromSteam({
             games, vaultDir, steamKey: readSteamKey(), steamId,
             sgdbKey: readSgdbKey(),
             onProgress: (p) => {
                 if (!event.sender.isDestroyed()) event.sender.send('artwork-progress', p);
+                if (++sinceSave >= 15) {
+                    sinceSave = 0;
+                    try { libraryManager.updateLibrary(profile, games); }
+                    catch (e) { console.warn('[Artwork] interim save skipped:', e.message); }
+                }
             }
         });
 

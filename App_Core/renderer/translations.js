@@ -281,9 +281,9 @@ const translations = {
 
         // --- API keys ---
         API_KEYS: "Your API keys",
-        API_KEYS_HINT: "A Steam key is already built in, so importing your library and searching for games work straight away. It is shared by everyone, and Steam counts requests per key, so set your own below if you use it often. The SteamGridDB key is not included — without one, searches still find anything sold on Steam.",
+        API_KEYS_HINT: "Both keys are already built in, so importing, searching and artwork all work straight away. They are shared by everyone using the app and each service counts requests per key — set your own below if you lean on either.",
         STEAM_KEY_HINT: "Imports your whole Steam library, including games you have not installed. The built-in key already does this; set your own to use your own quota instead of the shared one. Free, takes a minute: steamcommunity.com/dev/apikey",
-        SGDB_KEY_HINT: "Community artwork — often hundreds of alternatives per game, instead of Steam's single official cover. It also widens search to games Steam does not sell. None ships with the app. Free, takes a minute: steamgriddb.com/profile/api",
+        SGDB_KEY_HINT: "Finds games Steam does not sell, and community artwork — often hundreds of covers per game instead of Steam's single official one. The built-in key already does this; set your own to use your own quota. Free: steamgriddb.com/profile/api",
         KEY_SET: "set",
         KEY_NOT_SET: "not set",
         KEY_STORED: "•••••••• stored — type a new one to replace",
@@ -393,7 +393,9 @@ const translations = {
         UPDATE_AVAILABLE_TITLE: "A NEWER VERSION",
         UPDATE_YOURS: "Yours",
         UPDATE_NEW: "New",
-        UPDATE_LATER: "Not now"
+        UPDATE_LATER: "Not now",
+        FETCH_ARTWORK_AFTER: "Fetch artwork afterwards",
+        FETCH_ARTWORK_HINT: "Covers and banners for everything imported, from Steam's public images. Free, and it fills the shelf as it goes."
     },
     tr: {
         WELCOME_TO: "Hoş geldiniz",
@@ -659,9 +661,9 @@ const translations = {
 
         // --- API anahtarları ---
         API_KEYS: "API anahtarlarınız",
-        API_KEYS_HINT: "Bir Steam anahtarı zaten uygulamanın içinde geliyor, yani kütüphane aktarımı ve oyun arama hemen çalışır. O anahtarı herkes paylaşıyor ve Steam istekleri anahtar başına sayıyor; sık kullanıyorsan aşağıya kendi anahtarını gir. SteamGridDB anahtarı pakete dahil değil — o olmadan da arama Steam'de satılan her şeyi bulur.",
+        API_KEYS_HINT: "İki anahtar da uygulamanın içinde geliyor; içe aktarma, arama ve görseller hemen çalışır. İkisini de uygulamayı kullanan herkes paylaşıyor ve her servis istekleri anahtar başına sayıyor — birini çok kullanıyorsan aşağıya kendi anahtarını gir.",
         STEAM_KEY_HINT: "Kurmadığın oyunlar dahil tüm Steam kütüphaneni içe aktarır. Paketle gelen anahtar bunu zaten yapıyor; paylaşılan kota yerine kendi kotanı kullanmak istersen kendi anahtarını gir. Ücretsiz, bir dakika sürer: steamcommunity.com/dev/apikey",
-        SGDB_KEY_HINT: "Topluluk görselleri — Steam'in tek resmi kapağı yerine oyun başına çoğu zaman yüzlerce seçenek. Ayrıca aramayı Steam'de satılmayan oyunlara da açar. Pakete dahil değil. Ücretsiz, bir dakika sürer: steamgriddb.com/profile/api",
+        SGDB_KEY_HINT: "Steam'de satılmayan oyunları ve topluluk görsellerini bulur — Steam'in tek resmi kapağı yerine oyun başına çoğu zaman yüzlerce seçenek. Paketle gelen anahtar bunu zaten yapıyor; kendi kotanı kullanmak istersen kendi anahtarını gir. Ücretsiz: steamgriddb.com/profile/api",
         KEY_SET: "tanımlı",
         KEY_NOT_SET: "tanımsız",
         KEY_STORED: "•••••••• kayıtlı — değiştirmek için yenisini yazın",
@@ -771,7 +773,9 @@ const translations = {
         UPDATE_AVAILABLE_TITLE: "YENİ BİR SÜRÜM",
         UPDATE_YOURS: "Sendeki",
         UPDATE_NEW: "Yeni",
-        UPDATE_LATER: "Şimdi değil"
+        UPDATE_LATER: "Şimdi değil",
+        FETCH_ARTWORK_AFTER: "Sonrasında görselleri getir",
+        FETCH_ARTWORK_HINT: "İçe aktarılan her şey için kapak ve afiş, Steam'in herkese açık görsellerinden. Ücretsiz, ve rafı doldurdukça gösteriyor."
     },
     de: {
         WELCOME_TO: "Willkommen bei",
@@ -1030,9 +1034,9 @@ const translations = {
         ARTWORK_NONE_NO_KEY: "{n} noch leer — für Community-Bilder einen SteamGridDB-Schlüssel eintragen",
         NO_STEAM_ACCOUNT: "Auf diesem Rechner ist kein Steam-Konto angemeldet.",
         API_KEYS: "Ihre API-Schlüssel",
-        API_KEYS_HINT: "Ein Steam-Schlüssel ist bereits eingebaut, Import und Spielsuche funktionieren also sofort. Er wird von allen geteilt und Steam zählt Anfragen pro Schlüssel — tragen Sie unten Ihren eigenen ein, wenn Sie ihn oft nutzen. Der SteamGridDB-Schlüssel liegt nicht bei; ohne ihn findet die Suche weiterhin alles, was es auf Steam gibt.",
+        API_KEYS_HINT: "Beide Schlüssel sind eingebaut, Import, Suche und Bilder funktionieren also sofort. Sie werden von allen geteilt und jeder Dienst zählt Anfragen pro Schlüssel — tragen Sie unten Ihre eigenen ein, wenn Sie viel damit arbeiten.",
         STEAM_KEY_HINT: "Importiert Ihre gesamte Steam-Bibliothek, auch nicht installierte Spiele. Der eingebaute Schlüssel tut das bereits; tragen Sie Ihren eigenen ein, um Ihr eigenes Kontingent statt des geteilten zu nutzen. Kostenlos, dauert eine Minute: steamcommunity.com/dev/apikey",
-        SGDB_KEY_HINT: "Bilder aus der Community — oft Hunderte Alternativen pro Spiel statt des einen offiziellen Steam-Covers. Erweitert die Suche auch auf Spiele, die es nicht auf Steam gibt. Liegt der App nicht bei. Kostenlos, dauert eine Minute: steamgriddb.com/profile/api",
+        SGDB_KEY_HINT: "Findet Spiele, die es nicht auf Steam gibt, und Bilder aus der Community — oft Hunderte Cover pro Spiel statt des einen offiziellen. Der eingebaute Schlüssel tut das bereits; tragen Sie Ihren eigenen ein, um Ihr Kontingent zu nutzen. Kostenlos: steamgriddb.com/profile/api",
         KEY_SET: "gesetzt",
         KEY_NOT_SET: "nicht gesetzt",
         KEY_STORED: "•••••••• gespeichert — zum Ersetzen neuen eingeben",
@@ -1133,7 +1137,9 @@ const translations = {
         UPDATE_AVAILABLE_TITLE: "EINE NEUERE VERSION",
         UPDATE_YOURS: "Ihre",
         UPDATE_NEW: "Neu",
-        UPDATE_LATER: "Jetzt nicht"
+        UPDATE_LATER: "Jetzt nicht",
+        FETCH_ARTWORK_AFTER: "Bilder danach holen",
+        FETCH_ARTWORK_HINT: "Cover und Banner für alles Importierte, aus den öffentlichen Bildern von Steam. Kostenlos, und das Regal füllt sich sichtbar."
     },
     ru: {
         WELCOME_TO: "Добро пожаловать в",
@@ -1392,9 +1398,9 @@ const translations = {
         ARTWORK_NONE_NO_KEY: "осталось пустых: {n} — добавьте ключ SteamGridDB для поиска изображений сообщества",
         NO_STEAM_ACCOUNT: "На этом компьютере не выполнен вход в Steam.",
         API_KEYS: "Ваши ключи API",
-        API_KEYS_HINT: "Ключ Steam уже встроен, поэтому импорт библиотеки и поиск игр работают сразу. Он общий для всех, а Steam считает запросы по ключу — если пользуетесь часто, укажите ниже свой. Ключ SteamGridDB не входит в комплект: без него поиск всё равно находит всё, что продаётся в Steam.",
+        API_KEYS_HINT: "Оба ключа уже встроены, поэтому импорт, поиск и изображения работают сразу. Они общие для всех, а каждый сервис считает запросы по ключу — если пользуетесь много, укажите ниже свои.",
         STEAM_KEY_HINT: "Импортирует всю вашу библиотеку Steam, включая неустановленные игры. Встроенный ключ уже это делает; укажите свой, чтобы расходовать собственную квоту, а не общую. Бесплатно, займёт минуту: steamcommunity.com/dev/apikey",
-        SGDB_KEY_HINT: "Изображения от сообщества — часто сотни вариантов на игру вместо единственной официальной обложки Steam. А ещё расширяет поиск на игры, которых в Steam нет. В комплект не входит. Бесплатно, займёт минуту: steamgriddb.com/profile/api",
+        SGDB_KEY_HINT: "Находит игры, которых нет в Steam, и изображения от сообщества — часто сотни обложек на игру вместо единственной официальной. Встроенный ключ уже это делает; укажите свой, чтобы расходовать собственную квоту. Бесплатно: steamgriddb.com/profile/api",
         KEY_SET: "задан",
         KEY_NOT_SET: "не задан",
         KEY_STORED: "•••••••• сохранён — введите новый, чтобы заменить",
@@ -1495,7 +1501,9 @@ const translations = {
         UPDATE_AVAILABLE_TITLE: "НОВАЯ ВЕРСИЯ",
         UPDATE_YOURS: "У вас",
         UPDATE_NEW: "Новая",
-        UPDATE_LATER: "Не сейчас"
+        UPDATE_LATER: "Не сейчас",
+        FETCH_ARTWORK_AFTER: "Затем загрузить изображения",
+        FETCH_ARTWORK_HINT: "Обложки и баннеры для всего импортированного, из публичных изображений Steam. Бесплатно, и полка заполняется на глазах."
     },
     uk: {
         WELCOME_TO: "Ласкаво просимо до",
@@ -1754,9 +1762,9 @@ const translations = {
         ARTWORK_NONE_NO_KEY: "залишилося порожніх: {n} — додайте ключ SteamGridDB для пошуку зображень спільноти",
         NO_STEAM_ACCOUNT: "На цьому комп'ютері не виконано вхід у Steam.",
         API_KEYS: "Ваші ключі API",
-        API_KEYS_HINT: "Ключ Steam уже вбудовано, тож імпорт бібліотеки та пошук ігор працюють одразу. Він спільний для всіх, а Steam рахує запити за ключем — якщо користуєтеся часто, вкажіть нижче власний. Ключа SteamGridDB у комплекті немає: без нього пошук усе одно знаходить усе, що продається в Steam.",
+        API_KEYS_HINT: "Обидва ключі вже вбудовано, тож імпорт, пошук і зображення працюють одразу. Вони спільні для всіх, а кожен сервіс рахує запити за ключем — якщо користуєтеся багато, вкажіть нижче власні.",
         STEAM_KEY_HINT: "Імпортує всю вашу бібліотеку Steam, зокрема невстановлені ігри. Вбудований ключ це вже робить; укажіть власний, щоб витрачати свою квоту, а не спільну. Безкоштовно, займе хвилину: steamcommunity.com/dev/apikey",
-        SGDB_KEY_HINT: "Зображення від спільноти — часто сотні варіантів на гру замість єдиної офіційної обкладинки Steam. Ще й розширює пошук на ігри, яких у Steam немає. У комплекті немає. Безкоштовно, займе хвилину: steamgriddb.com/profile/api",
+        SGDB_KEY_HINT: "Знаходить ігри, яких немає у Steam, і зображення від спільноти — часто сотні обкладинок на гру замість єдиної офіційної. Вбудований ключ це вже робить; укажіть власний, щоб витрачати свою квоту. Безкоштовно: steamgriddb.com/profile/api",
         KEY_SET: "задано",
         KEY_NOT_SET: "не задано",
         KEY_STORED: "•••••••• збережено — введіть новий, щоб замінити",
@@ -1857,7 +1865,9 @@ const translations = {
         UPDATE_AVAILABLE_TITLE: "НОВІША ВЕРСІЯ",
         UPDATE_YOURS: "У вас",
         UPDATE_NEW: "Нова",
-        UPDATE_LATER: "Не зараз"
+        UPDATE_LATER: "Не зараз",
+        FETCH_ARTWORK_AFTER: "Потім завантажити зображення",
+        FETCH_ARTWORK_HINT: "Обкладинки та банери для всього імпортованого, з публічних зображень Steam. Безкоштовно, і полиця заповнюється на очах."
     },
     pt: {
         WELCOME_TO: "Bem-vindo ao",
@@ -2116,9 +2126,9 @@ const translations = {
         ARTWORK_NONE_NO_KEY: "{n} ainda vazios — informe uma chave do SteamGridDB para buscar imagens da comunidade",
         NO_STEAM_ACCOUNT: "Nenhuma conta da Steam conectada neste computador.",
         API_KEYS: "Suas chaves de API",
-        API_KEYS_HINT: "Uma chave da Steam já vem embutida, então importar a biblioteca e buscar jogos funciona de imediato. Ela é compartilhada por todos e a Steam conta as requisições por chave — informe a sua abaixo se usar bastante. A chave do SteamGridDB não vem incluída; sem ela a busca ainda encontra tudo o que é vendido na Steam.",
+        API_KEYS_HINT: "As duas chaves já vêm embutidas, então importar, buscar e as imagens funcionam de imediato. Elas são compartilhadas por todos e cada serviço conta as requisições por chave — informe as suas abaixo se usar bastante.",
         STEAM_KEY_HINT: "Importa toda a sua biblioteca da Steam, inclusive jogos que você não instalou. A chave embutida já faz isso; informe a sua para usar a sua própria cota em vez da compartilhada. Grátis, leva um minuto: steamcommunity.com/dev/apikey",
-        SGDB_KEY_HINT: "Imagens da comunidade — muitas vezes centenas de alternativas por jogo, em vez da única capa oficial da Steam. Também amplia a busca para jogos que a Steam não vende. Não vem com o programa. Grátis, leva um minuto: steamgriddb.com/profile/api",
+        SGDB_KEY_HINT: "Encontra jogos que a Steam não vende e imagens da comunidade — muitas vezes centenas de capas por jogo em vez da única oficial. A chave embutida já faz isso; informe a sua para usar a sua própria cota. Grátis: steamgriddb.com/profile/api",
         KEY_SET: "definida",
         KEY_NOT_SET: "não definida",
         KEY_STORED: "•••••••• guardada — digite outra para substituir",
@@ -2219,7 +2229,9 @@ const translations = {
         UPDATE_AVAILABLE_TITLE: "UMA VERSÃO MAIS NOVA",
         UPDATE_YOURS: "A sua",
         UPDATE_NEW: "Nova",
-        UPDATE_LATER: "Agora não"
+        UPDATE_LATER: "Agora não",
+        FETCH_ARTWORK_AFTER: "Buscar imagens depois",
+        FETCH_ARTWORK_HINT: "Capas e banners para tudo o que for importado, das imagens públicas da Steam. Grátis, e a estante vai se preenchendo à vista."
     },
     zh: {
         WELCOME_TO: "欢迎使用",
@@ -2478,9 +2490,9 @@ const translations = {
         ARTWORK_NONE_NO_KEY: "{n} 个仍为空——填入 SteamGridDB 密钥即可获取社区图片",
         NO_STEAM_ACCOUNT: "这台电脑上没有已登录的 Steam 账户。",
         API_KEYS: "你的 API 密钥",
-        API_KEYS_HINT: "程序里已内置一个 Steam 密钥，所以导入库和搜索游戏可以直接使用。它由所有人共用，而 Steam 按密钥计算请求次数——如果你经常使用，请在下面填入自己的密钥。SteamGridDB 密钥没有内置；没有它，搜索仍能找到 Steam 上出售的一切。",
+        API_KEYS_HINT: "两个密钥都已内置，所以导入、搜索和图片都能直接使用。它们由所有使用者共用，而每个服务都按密钥计算请求次数——如果你用得多，请在下面填入自己的密钥。",
         STEAM_KEY_HINT: "导入你的整个 Steam 库，包括还没安装的游戏。内置密钥已经能做到这一点；填入自己的密钥就能使用自己的额度，而不是共用的那份。免费，一分钟即可：steamcommunity.com/dev/apikey",
-        SGDB_KEY_HINT: "社区图片——每个游戏往往有上百种选择，而不是 Steam 唯一的官方封面。还能把搜索扩展到 Steam 不出售的游戏。程序不附带此密钥。免费，一分钟即可：steamgriddb.com/profile/api",
+        SGDB_KEY_HINT: "能找到 Steam 不出售的游戏，以及社区图片——每个游戏往往有上百张封面，而不是唯一的官方封面。内置密钥已经能做到；填入自己的密钥就能使用自己的额度。免费：steamgriddb.com/profile/api",
         KEY_SET: "已设置",
         KEY_NOT_SET: "未设置",
         KEY_STORED: "•••••••• 已保存 — 输入新的即可替换",
@@ -2581,7 +2593,9 @@ const translations = {
         UPDATE_AVAILABLE_TITLE: "有新版本",
         UPDATE_YOURS: "你的",
         UPDATE_NEW: "新的",
-        UPDATE_LATER: "暂不"
+        UPDATE_LATER: "暂不",
+        FETCH_ARTWORK_AFTER: "之后获取图片",
+        FETCH_ARTWORK_HINT: "为导入的所有内容获取封面和横幅，来自 Steam 的公开图片。免费，而且会一边下载一边填满书架。"
     },
     ko: {
         WELCOME_TO: "환영합니다",
@@ -2840,9 +2854,9 @@ const translations = {
         ARTWORK_NONE_NO_KEY: "{n}개가 아직 비어 있습니다 — SteamGridDB 키를 넣으면 커뮤니티 이미지를 가져옵니다",
         NO_STEAM_ACCOUNT: "이 컴퓨터에 로그인된 Steam 계정이 없습니다.",
         API_KEYS: "내 API 키",
-        API_KEYS_HINT: "Steam 키가 이미 내장되어 있어서 라이브러리 가져오기와 게임 검색이 바로 됩니다. 모두가 함께 쓰는 키이고 Steam은 키 단위로 요청을 세므로, 자주 쓴다면 아래에 자신의 키를 넣으세요. SteamGridDB 키는 들어 있지 않지만, 없어도 검색은 Steam에서 파는 것은 모두 찾아냅니다.",
+        API_KEYS_HINT: "두 키 모두 내장되어 있어서 가져오기, 검색, 이미지가 모두 바로 됩니다. 앱을 쓰는 모든 사람이 함께 쓰는 키이고 각 서비스는 키 단위로 요청을 세므로, 많이 쓴다면 아래에 자신의 키를 넣으세요.",
         STEAM_KEY_HINT: "설치하지 않은 게임까지 포함해 Steam 라이브러리 전체를 가져옵니다. 내장된 키로도 이미 됩니다. 공용 할당량 대신 자신의 할당량을 쓰려면 자신의 키를 넣으세요. 무료이고 1분이면 됩니다: steamcommunity.com/dev/apikey",
-        SGDB_KEY_HINT: "커뮤니티 이미지 — Steam의 공식 커버 하나 대신, 게임마다 수백 가지 선택지가 있을 때가 많습니다. Steam에서 팔지 않는 게임까지 검색 범위가 넓어집니다. 앱에는 들어 있지 않습니다. 무료이고 1분이면 됩니다: steamgriddb.com/profile/api",
+        SGDB_KEY_HINT: "Steam에서 팔지 않는 게임과 커뮤니티 이미지를 찾아냅니다 — 공식 커버 하나 대신 게임마다 수백 장인 경우가 많습니다. 내장된 키로도 이미 됩니다. 자신의 할당량을 쓰려면 자신의 키를 넣으세요. 무료: steamgriddb.com/profile/api",
         KEY_SET: "설정됨",
         KEY_NOT_SET: "설정 안 됨",
         KEY_STORED: "•••••••• 저장됨 — 바꾸려면 새로 입력하세요",
@@ -2943,6 +2957,8 @@ const translations = {
         UPDATE_AVAILABLE_TITLE: "새 버전",
         UPDATE_YOURS: "현재",
         UPDATE_NEW: "새 버전",
-        UPDATE_LATER: "나중에"
+        UPDATE_LATER: "나중에",
+        FETCH_ARTWORK_AFTER: "이어서 이미지 가져오기",
+        FETCH_ARTWORK_HINT: "가져온 모든 게임의 커버와 배너를 Steam의 공개 이미지에서 받아옵니다. 무료이고, 받는 대로 선반이 채워집니다."
     }
 };
