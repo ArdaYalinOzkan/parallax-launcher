@@ -352,7 +352,88 @@ function createWindow() {
     });
 }
 
+
+/* ----------------------------------------------------------------
+   Showing up in the application menu (AppImage only)
+
+   An AppImage is a single file: nothing installs it, so nothing puts
+   it in the menu either. People download it, run it once, and then
+   have to go back to their Downloads folder every time — while the
+   .deb sitting next to it on the download page appears in the menu
+   like any other program.
+
+   So the app writes the entry itself, every launch rather than once.
+   That is deliberate: an update replaces the file it points at and
+   may carry a new icon, and a rewrite is the only thing that keeps
+   both correct. Cheap enough — two small files.
+
+   Only for AppImage. A .deb already ships an entry, and a run from
+   source is a developer's machine.
+   ---------------------------------------------------------------- */
+function installDesktopEntry() {
+    if (process.platform !== 'linux' || !process.env.APPIMAGE) return;
+
+    const appImage = process.env.APPIMAGE;
+    if (!fs.existsSync(appImage)) return;
+
+    const home = app.getPath('home');
+    const appsDir = path.join(home, '.local', 'share', 'applications');
+    const iconDir = path.join(home, '.local', 'share', 'icons', 'hicolor', '256x256', 'apps');
+
+    // A name of its own, not 'parallax-launcher'. A user file of that
+    // name would shadow the one a .deb installs system-wide, and if the
+    // AppImage were later deleted the menu entry left behind would point
+    // at nothing.
+    const entryPath = path.join(appsDir, 'parallax-launcher-appimage.desktop');
+    const iconPath = path.join(iconDir, 'parallax-launcher.png');
+
+    // Exec is quoted: the file may well sit in a path with a space in it.
+    const entry = [
+        '[Desktop Entry]',
+        'Type=Application',
+        'Name=Parallax Launcher',
+        'GenericName=Game Library',
+        'Comment=One shelf for every game you own, kept on your own machine.',
+        `Exec="${appImage}" %U`,
+        `TryExec=${appImage}`,
+        'Icon=parallax-launcher',
+        'Terminal=false',
+        'Categories=Game;',
+        'StartupNotify=true',
+        'StartupWMClass=parallax-launcher',
+        ''
+    ].join('\n');
+
+    try {
+        fs.mkdirSync(appsDir, { recursive: true });
+        fs.mkdirSync(iconDir, { recursive: true });
+
+        // Only write when something actually differs, so a launch does not
+        // touch the file for nothing — some menus watch it and rebuild.
+        const current = fs.existsSync(entryPath) ? fs.readFileSync(entryPath, 'utf8') : '';
+        if (current !== entry) fs.writeFileSync(entryPath, entry);
+
+        const source = path.join(__dirname, 'Assets_Default', 'AppIcon.png');
+        if (fs.existsSync(source)) {
+            const wanted = fs.readFileSync(source);
+            const have = fs.existsSync(iconPath) ? fs.readFileSync(iconPath) : null;
+            if (!have || !have.equals(wanted)) fs.writeFileSync(iconPath, wanted);
+        }
+
+        // Menus that cache do not notice a new file on their own. If the
+        // tools are missing the entry still works, it just may take until
+        // the next login to appear.
+        const { execFile } = require('child_process');
+        execFile('update-desktop-database', [appsDir], () => { });
+        execFile('gtk-update-icon-cache', ['-f', '-t', path.join(home, '.local', 'share', 'icons', 'hicolor')], () => { });
+    } catch (err) {
+        // Never worth failing a launch over.
+        console.error('Could not write the desktop entry:', err.message);
+    }
+}
+
 app.whenReady().then(() => {
+    installDesktopEntry();
     createWindow();
 
     app.on('activate', () => {

@@ -198,9 +198,18 @@
                     <div class="file">
                         <div class="file__name">.AppImage <span class="chip">Updates itself</span></div>
                         <div class="file__for">Any distribution</div>
-                        <p>One file. Make it executable and run it — nothing is installed and
-                            nothing is left behind. Because it is a single file, the app can
-                            replace it: it watches for new releases and offers to fetch one.</p>
+                        <p>One file. Your browser downloads it without permission to run, so
+                            give it that first — right-click, Properties, tick <em>allow
+                            executing</em>, or <code>chmod +x</code> on the file. Then open it.
+                            It adds itself to your application menu on first run, and because it
+                            is a single file it can replace itself: it watches for new releases
+                            and offers to fetch one.</p>
+                        <p class="file__note">Nothing happens when you open it? An AppImage needs
+                            <code>libfuse2</code>, which Ubuntu has not installed by default since
+                            22.04. Either install it —
+                            <code>sudo apt install libfuse2</code> — or run the file once with
+                            <code>--appimage-extract-and-run</code>, which needs no such thing.
+                            On Debian and Ubuntu the .deb below avoids the question entirely.</p>
                         <a class="btn btn--primary" id="dlAppImage"
                             href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
                             Download AppImage <span class="btn__meta" id="sizeAppImage"></span>
