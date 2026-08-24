@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Parallax Launcher — one shelf for every game you own</title>
+    <meta name="description"
+        content="A game library that lives on your own machine. Finds your installed Steam games, fills in the artwork, and launches them. Free software for Linux.">
+    <meta name="theme-color" content="#05060A">
+
+    <meta property="og:title" content="Parallax Launcher">
+    <meta property="og:description" content="One shelf for every game you own, kept on your own machine.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ardayalinozkan.github.io/parallax-launcher/">
+
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- The sky is built in script so the star positions differ on
+         every visit, the same way they do on every launch of the app. -->
+    <div class="sky" aria-hidden="true">
+        <div class="sky__layer sky__haze"></div>
+        <div class="sky__layer" id="skyFar"></div>
+        <div class="sky__layer" id="skyNear"></div>
+        <div class="sky__grain" id="skyGrain"></div>
+    </div>
+
+    <div class="page">
+        <header class="top">
+            <div class="wrap top__in">
+                <a class="brand" href="#top">
+                    <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                        <path d="M50 14L64 22V38L50 46L36 38V22L50 14Z" stroke="#EEF1F6" stroke-width="5" />
+                        <path d="M36 38L50 46V62L36 70L22 62V46L36 38Z" stroke="#EEF1F6" stroke-width="5" />
+                        <path d="M64 38L78 46V62L64 70L50 62V46L64 38Z" stroke="#EEF1F6" stroke-width="5" />
+                    </svg>
+                    <span>Parallax</span>
+                </a>
+                <nav class="top__links">
+                    <a href="#what" data-optional>What it does</a>
+                    <a href="#get">Download</a>
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher">Source</a>
+                </nav>
+            </div>
+        </header>
+
+        <main id="top">
+            <section class="hero wrap">
+                <svg class="hero__mark rise rise--1" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                    <path d="M50 14L64 22V38L50 46L36 38V22L50 14Z" stroke="#EEF1F6" stroke-width="4" />
+                    <path d="M36 38L50 46V62L36 70L22 62V46L36 38Z" stroke="#EEF1F6" stroke-width="4" />
+                    <path d="M64 38L78 46V62L64 70L50 62V46L64 38Z" stroke="#EEF1F6" stroke-width="4" />
+                </svg>
+
+                <h1 class="rise rise--2">One shelf for every game you own.</h1>
+
+                <p class="lede rise rise--3">
+                    Parallax Launcher finds the games already on your disk, fills in their
+                    artwork, and starts them. Everything it knows stays on your computer —
+                    no account, no telemetry, and a library you can open in a text editor.
+                </p>
+
+                <div class="hero__actions rise rise--4">
+                    <a class="btn btn--primary" id="dlPrimary"
+                        href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
+                        Download for Linux
+                        <span class="btn__meta" id="dlVersion">AppImage</span>
+                    </a>
+                    <a class="btn btn--ghost" href="https://github.com/ArdaYalinOzkan/parallax-launcher">
+                        Read the source
+                    </a>
+                </div>
+
+                <p class="hero__note rise rise--4">
+                    Free software under the GNU GPL v3. No install — make it executable and run it.
+                </p>
+
+                <figure class="shot rise rise--4" style="margin-block-end: 0;">
+                    <div class="shot__bar" aria-hidden="true">
+                        <span class="shot__dot"></span><span class="shot__dot"></span><span class="shot__dot"></span>
+                    </div>
+                    <img data-shot src="shot-library.png" width="1440" height="900" loading="eager"
+                        data-slot="The library — a wall of cover art"
+                        alt="The Parallax Launcher library: a grid of game cover art over a dark starfield.">
+                </figure>
+            </section>
+
+            <section id="what" class="wrap">
+                <span class="label">What it does</span>
+                <h2>It reads what Steam already knows.</h2>
+                <p class="lede">
+                    No scanning folders and hoping. Parallax opens Steam's own installation
+                    records, so what it shows you is what is actually on the disk.
+                </p>
+
+                <div class="grid" style="margin-top: 34px;">
+                    <div class="cell">
+                        <span class="cell__num">Finding</span>
+                        <h3>Your installed games, exactly</h3>
+                        <p>Reads Steam's library folders and install manifests directly — across
+                            every drive, with the real name and app id for each one.</p>
+                    </div>
+                    <div class="cell">
+                        <span class="cell__num">Launching</span>
+                        <h3>Through Steam, or straight past it</h3>
+                        <p>Hand the game to Steam, or run it directly so the Steam window never
+                            jumps to the front. Set per game, and it shows the exact command first.</p>
+                    </div>
+                    <div class="cell">
+                        <span class="cell__num">Artwork</span>
+                        <h3>Covers, without a key</h3>
+                        <p>Pulls official covers and banners from Steam's public images — free,
+                            no sign-up, no rate limit. Add a SteamGridDB key and the community's
+                            work opens up too.</p>
+                    </div>
+                    <div class="cell">
+                        <span class="cell__num">Playtime</span>
+                        <h3>Hours you already earned</h3>
+                        <p>Counts the sessions it starts, and merges in what Steam recorded before
+                            you ever opened this — taking the larger number, never overwriting.</p>
+                    </div>
+                    <div class="cell">
+                        <span class="cell__num">Compatibility</span>
+                        <h3>Proton, Wine, and the rest</h3>
+                        <p>Per-game runtime, launch options with Steam's <code>%command%</code>
+                            syntax, environment variables, GameMode and MangoHud.</p>
+                    </div>
+                    <div class="cell">
+                        <span class="cell__num">Yours</span>
+                        <h3>On your machine, in plain text</h3>
+                        <p>The library is a text file. The images are ordinary images. Nothing is
+                            uploaded anywhere, and there is no account to make.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="get" class="wrap">
+                <span class="label">Download</span>
+                <h2>Two files. Take the first one.</h2>
+                <p class="lede">Both are built from the same source by the same automated run.</p>
+
+                <div class="files">
+                    <div class="file">
+                        <div class="file__name">.AppImage <span class="chip">Updates itself</span></div>
+                        <div class="file__for">Any distribution</div>
+                        <p>One file. Make it executable and run it — nothing is installed and
+                            nothing is left behind. Because it is a single file, the app can
+                            replace it: it watches for new releases and offers to fetch one.</p>
+                        <a class="btn btn--primary" id="dlAppImage"
+                            href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
+                            Download AppImage <span class="btn__meta" id="sizeAppImage"></span>
+                        </a>
+                    </div>
+
+                    <div class="file">
+                        <div class="file__name">.deb</div>
+                        <div class="file__for">Debian · Ubuntu · Mint</div>
+                        <p>Installs the way your other software does, and belongs to your package
+                            manager afterwards — so updates come from there rather than from the
+                            app itself.</p>
+                        <a class="btn btn--ghost" id="dlDeb"
+                            href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
+                            Download .deb <span class="btn__meta" id="sizeDeb"></span>
+                        </a>
+                    </div>
+                </div>
+
+                <p style="margin-top: 26px; font-size: .84rem; color: var(--star-faint);">
+                    Prefer to run it from source? <code>npm install &amp;&amp; npm start</code> in
+                    <code>App_Core/</code>. Windows builds exist in the repository but are not
+                    published yet.
+                </p>
+            </section>
+
+            <section class="wrap">
+                <span class="label">Up close</span>
+                <h2>Everything it will do, before it does it.</h2>
+                <p class="lede">
+                    Compatibility settings the way Steam lays them out — and one line the
+                    others leave out: the exact command that is about to run.
+                </p>
+
+                <div class="pair">
+                    <figure class="shot">
+                        <img data-shot src="shot-game.png" width="1200" height="800" loading="lazy"
+                            data-slot="A game's page — cover, playtime, Play"
+                            alt="A single game's page in Parallax Launcher.">
+                    </figure>
+                    <figure class="shot">
+                        <img data-shot src="shot-settings.png" width="1200" height="800" loading="lazy"
+                            data-slot="Properties — runtime, launch options, what will run"
+                            alt="The per-game compatibility settings in Parallax Launcher.">
+                    </figure>
+                </div>
+            </section>
+
+            <section class="wrap">
+                <span class="label">Languages</span>
+                <h2>Eight, all the way through.</h2>
+                <p class="lede">Every string in the app exists in all of them — not a partial
+                    translation that falls back to English halfway down a screen.</p>
+                <div class="langs" style="margin-top: 24px;">
+                    <span class="lang">English</span>
+                    <span class="lang">Türkçe</span>
+                    <span class="lang">Deutsch</span>
+                    <span class="lang">Português&nbsp;(Brasil)</span>
+                    <span class="lang">Русский</span>
+                    <span class="lang">Українська</span>
+                    <span class="lang">简体中文</span>
+                    <span class="lang">한국어</span>
+                </div>
+            </section>
+        </main>
+
+        <footer class="foot">
+            <div class="wrap foot__in">
+                <div>
+                    Parallax Launcher — created by Arda Yalın Özkan.<br>
+                    Free software under the
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/blob/main/LICENSE">GNU GPL v3</a>.
+                </div>
+                <div>
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher">Source</a> ·
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases">Releases</a> ·
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/issues">Report a problem</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="site.js"></script>
+</body>
+
+</html>

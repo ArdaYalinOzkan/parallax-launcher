@@ -1,0 +1,454 @@
+/* ==============================================================
+   Parallax Launcher — the page
+   ==============================================================
+   The palette, the type and the depth all come from the app's own
+   stylesheet. A landing page that invents its own look teaches the
+   visitor something they then have to unlearn on first launch, so
+   this one is the application's world with the walls taken down.
+   ============================================================== */
+
+:root {
+    /* Ink, from the app's theme.css */
+    --ink-void: #05060A;
+    --ink-base: #090B10;
+    --ink-raise: #0F1218;
+    --ink-lift: #161A22;
+    --ink-edge: #212734;
+
+    /* Starlight, likewise. The neutrals lean cold-blue rather than
+       grey — a real night sky has no grey in it. */
+    --star-hi: #EEF1F6;
+    --star: #C4CCD9;
+    --star-dim: #8A94A5;
+    --star-faint: #59626F;
+
+    --line-faint: rgba(198, 214, 255, 0.06);
+    --line: rgba(198, 214, 255, 0.10);
+    --line-strong: rgba(198, 214, 255, 0.18);
+
+    /* One accent, spent carefully. */
+    --ambient: 60, 110, 180;
+
+    --font-ui: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+
+    --r-sm: 7px;
+    --r-md: 11px;
+    --r-lg: 16px;
+
+    --t-fast: 0.16s cubic-bezier(0.3, 0, 0.2, 1);
+    --t-main: 0.36s cubic-bezier(0.2, 0, 0.1, 1);
+
+    --measure: 62ch;
+    --gutter: clamp(20px, 5vw, 64px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}
+
+body {
+    margin: 0;
+    background: var(--ink-void);
+    color: var(--star);
+    font-family: var(--font-ui);
+    font-size: 16px;
+    line-height: 1.65;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+/* ---- the sky ------------------------------------------------
+   Three layers at three depths. They move against the pointer,
+   the near one further than the far one, which is what parallax
+   looks like from a moving viewpoint — and the reason the program
+   is called what it is.
+   -------------------------------------------------------------- */
+.sky {
+    position: fixed;
+    inset: -10%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.sky__layer {
+    position: absolute;
+    inset: 0;
+    will-change: transform;
+}
+
+.sky__haze {
+    background:
+        radial-gradient(58% 44% at 50% 0%,
+            rgba(var(--ambient), .16) 0%,
+            rgba(var(--ambient), .05) 42%,
+            transparent 72%);
+}
+
+.sky__grain {
+    position: absolute;
+    inset: 0;
+    opacity: .035;
+    mix-blend-mode: overlay;
+}
+
+/* ---- shell ---------------------------------------------------- */
+.page { position: relative; z-index: 1; }
+
+.wrap {
+    width: 100%;
+    max-width: 1100px;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+}
+
+section { padding-block: clamp(64px, 11vh, 128px); }
+
+/* ---- type ----------------------------------------------------- */
+h1, h2, h3 {
+    color: var(--star-hi);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0;
+}
+
+h2 {
+    font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+    margin-bottom: 14px;
+}
+
+h3 {
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+}
+
+p { margin: 0 0 1em; max-width: var(--measure); }
+p:last-child { margin-bottom: 0; }
+
+a { color: var(--star-hi); text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+
+:focus-visible {
+    outline: 2px solid rgba(var(--ambient), .9);
+    outline-offset: 3px;
+    border-radius: 3px;
+}
+
+/* Every label, every measurement, every version number. The two
+   faces never blur roles, which is what makes the mono mean
+   something when it appears. */
+.label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+    margin-bottom: 18px;
+}
+
+.lede {
+    font-size: clamp(1.02rem, 1.9vw, 1.18rem);
+    color: var(--star-dim);
+}
+
+/* ---- header --------------------------------------------------- */
+.top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(14px) saturate(1.3);
+    background: color-mix(in srgb, var(--ink-void) 72%, transparent);
+    border-bottom: 1px solid var(--line-faint);
+}
+
+.top__in {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    height: 62px;
+}
+
+.brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+.brand svg { width: 22px; height: 22px; flex: none; }
+.brand span {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--star);
+}
+
+.top__links { display: flex; align-items: center; gap: 22px; }
+.top__links a {
+    font-size: 0.82rem;
+    color: var(--star-dim);
+    text-decoration: none;
+    transition: color var(--t-fast);
+}
+.top__links a:hover { color: var(--star-hi); }
+@media (max-width: 560px) { .top__links a[data-optional] { display: none; } }
+
+/* ---- hero ----------------------------------------------------- */
+.hero { padding-block: clamp(56px, 12vh, 116px) clamp(40px, 8vh, 80px); }
+
+.hero__mark { width: 54px; height: 54px; margin-bottom: 26px; }
+
+.hero h1 {
+    font-size: clamp(2.1rem, 6.2vw, 3.6rem);
+    line-height: 1.08;
+    max-width: 17ch;
+    margin-bottom: 20px;
+}
+
+.hero .lede { max-width: 54ch; }
+
+.hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 34px;
+}
+
+/* ---- buttons -------------------------------------------------- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 22px;
+    border-radius: var(--r-md);
+    border: 1px solid transparent;
+    font: 500 0.88rem/1 var(--font-ui);
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform var(--t-fast), background var(--t-fast), border-color var(--t-fast);
+}
+
+.btn--primary {
+    background: var(--star-hi);
+    color: var(--ink-void);
+}
+.btn--primary:hover { transform: translateY(-2px); background: #fff; }
+
+.btn--ghost {
+    background: transparent;
+    border-color: var(--line-strong);
+    color: var(--star);
+}
+.btn--ghost:hover { transform: translateY(-2px); border-color: var(--star-dim); color: var(--star-hi); }
+
+.btn__meta {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    opacity: .62;
+    font-variant-numeric: tabular-nums;
+}
+
+.hero__note {
+    margin-top: 16px;
+    font-size: 0.78rem;
+    color: var(--star-faint);
+}
+
+/* ---- the shot ------------------------------------------------- */
+.shot {
+    position: relative;
+    margin-top: clamp(40px, 7vh, 76px);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--line);
+    background: var(--ink-base);
+    overflow: hidden;
+    box-shadow: 0 40px 100px -30px rgba(0, 0, 0, .9);
+}
+
+.shot img { display: block; width: 100%; height: auto; }
+
+.shot__bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line-faint);
+    background: var(--ink-lift);
+}
+.shot__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ink-edge); }
+
+/* A slot waiting for a screenshot. It is drawn rather than left
+   broken, so the page reads as finished either way and the shape of
+   what belongs there is already correct. */
+.shot--empty {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 10;
+    background:
+        repeating-linear-gradient(135deg,
+            transparent 0 11px,
+            rgba(198, 214, 255, .022) 11px 22px),
+        var(--ink-base);
+    color: var(--star-faint);
+    text-align: center;
+    padding: 24px;
+}
+
+.shot--empty span {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: .1em;
+    max-width: 30ch;
+    line-height: 1.7;
+}
+
+.pair {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+    gap: 18px;
+    margin-top: 32px;
+}
+
+.pair .shot { margin-top: 0; }
+
+/* ---- feature grid --------------------------------------------- */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(268px, 100%), 1fr));
+    gap: 1px;
+    background: var(--line-faint);
+    border: 1px solid var(--line-faint);
+    border-radius: var(--r-md);
+    overflow: hidden;
+}
+
+.cell {
+    background: var(--ink-base);
+    padding: 26px 24px;
+}
+
+.cell p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--star-dim);
+}
+
+.cell__num {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: .14em;
+    color: var(--star-faint);
+    display: block;
+    margin-bottom: 12px;
+}
+
+/* ---- two-up table --------------------------------------------- */
+.files {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: 18px;
+    margin-top: 30px;
+}
+
+.file {
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 24px;
+    background: linear-gradient(180deg, var(--ink-raise), var(--ink-base));
+}
+
+.file__name {
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    color: var(--star-hi);
+    margin-bottom: 4px;
+}
+
+.file__for {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+    margin-bottom: 16px;
+}
+
+.file p { font-size: 0.86rem; color: var(--star-dim); }
+
+.file .btn { margin-top: 18px; width: 100%; justify-content: center; }
+
+/* A chip for the one thing that actually distinguishes the two. */
+.chip {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 7px;
+    border: 1px solid rgba(var(--ambient), .5);
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgba(var(--ambient), 1);
+    vertical-align: 2px;
+}
+
+/* ---- languages ------------------------------------------------ */
+.langs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.lang {
+    padding: 7px 13px;
+    border: 1px solid var(--line-faint);
+    border-radius: 100px;
+    background: var(--ink-base);
+    font-size: 0.82rem;
+    color: var(--star-dim);
+}
+
+/* ---- footer --------------------------------------------------- */
+.foot {
+    border-top: 1px solid var(--line-faint);
+    padding-block: 44px;
+    font-size: 0.8rem;
+    color: var(--star-faint);
+}
+
+.foot__in {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px 32px;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.foot a { color: var(--star-dim); text-decoration: none; }
+.foot a:hover { color: var(--star-hi); text-decoration: underline; }
+
+/* ---- entrance -------------------------------------------------
+   One short sequence on load, and nothing after it. Movement that
+   keeps happening while you read is movement you end up fighting.
+   ---------------------------------------------------------------- */
+@keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.rise { animation: rise .7s cubic-bezier(.2, 0, .1, 1) both; }
+.rise--1 { animation-delay: .05s; }
+.rise--2 { animation-delay: .13s; }
+.rise--3 { animation-delay: .21s; }
+.rise--4 { animation-delay: .29s; }
