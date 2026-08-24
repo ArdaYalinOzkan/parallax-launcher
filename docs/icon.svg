@@ -1,9 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <!-- No plate, and blue rather than white. A white mark on a
-       transparent ground disappears on a light taskbar or a light
-       browser tab; this colour holds on both, and it is the accent the
-       application already uses. -->
-  <g stroke="#5B8FD6" stroke-width="6" stroke-linejoin="round">
+  <g stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round">
     <path d="M50.00 15.00 L32.68 25.00 L32.68 45.00 L50.00 55.00 L67.32 45.00 L67.32 25.00 Z"/>
     <path d="M32.68 45.00 L15.36 55.00 L15.36 75.00 L32.68 85.00 L50.00 75.00 L50.00 55.00 Z"/>
     <path d="M67.32 45.00 L50.00 55.00 L50.00 75.00 L67.32 85.00 L84.64 75.00 L84.64 55.00 Z"/>
