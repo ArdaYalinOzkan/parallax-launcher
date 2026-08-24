@@ -221,6 +221,12 @@ jobs:
           cd repo
           # Tells GitHub Pages to serve the tree as-is.
           touch .nojekyll
+          # And which name it answers to. This repository's history is
+          # replaced on every release, so the file has to be written
+          # here — left to the repository it would be wiped by the
+          # first publish and the domain would fall back to github.io
+          # in the middle of somebody's apt update.
+          echo 'apt.parallaxlauncher.com' > CNAME
 
           apt-ftparchive packages pool > dists/stable/main/binary-amd64/Packages
           gzip -9kf dists/stable/main/binary-amd64/Packages
@@ -250,7 +256,7 @@ jobs:
             '# Parallax Launcher — APT repository' '' \
             'A package index, not source code. Rebuilt on every release and' \
             'holding only the current version.' '' \
-            'Install instructions: https://parallax-launcher.duckdns.org' > README.md
+            'Install instructions: https://parallaxlauncher.com' > README.md
 
           echo "--- built ---"
           find . -type f -not -path './.git/*' | sort
