@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Getting past Windows' warnings — Parallax Launcher</title>
+    <meta name="description"
+        content="Parallax Launcher is not code-signed, so Windows warns about it. Here is what each warning looks like and what to do.">
+    <meta name="theme-color" content="#05060A">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="sky" aria-hidden="true">
+        <div class="sky__layer sky__haze"></div>
+        <div class="sky__layer" id="skyFar"></div>
+        <div class="sky__layer" id="skyNear"></div>
+        <div class="sky__grain" id="skyGrain"></div>
+    </div>
+
+    <div class="page">
+        <header class="top">
+            <div class="wrap top__in">
+                <a class="brand" href="./">
+                    <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                        <path d="M50 14L64 22V38L50 46L36 38V22L50 14Z" stroke="#EEF1F6" stroke-width="5" />
+                        <path d="M36 38L50 46V62L36 70L22 62V46L36 38Z" stroke="#EEF1F6" stroke-width="5" />
+                        <path d="M64 38L78 46V62L64 70L50 62V46L64 38Z" stroke="#EEF1F6" stroke-width="5" />
+                    </svg>
+                    <span>Parallax</span>
+                </a>
+                <nav class="top__links">
+                    <a href="./#get">Download</a>
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher">Source</a>
+                </nav>
+            </div>
+        </header>
+
+        <main>
+            <section class="hero wrap" style="padding-block-end: 0;">
+                <span class="label rise rise--1">Windows</span>
+                <h1 class="rise rise--2" style="max-width: 20ch;">Windows will warn you about this.</h1>
+                <p class="lede rise rise--3" style="max-width: 60ch;">
+                    Not because anything is wrong with it, but because nobody has paid to
+                    vouch for it. Here is what you will see and what each one means.
+                </p>
+            </section>
+
+            <section class="wrap">
+                <div class="note">
+                    <h3 style="margin-bottom: 10px;">Why it happens</h3>
+                    <p style="font-size: .9rem; color: var(--star-dim);">
+                        Windows trusts a program when a certificate authority has been paid to
+                        confirm who wrote it. Those certificates cost a few hundred pounds a year
+                        and Parallax Launcher does not have one, so Windows treats it the way it
+                        treats every unknown program: with suspicion.
+                    </p>
+                    <p style="font-size: .9rem; color: var(--star-dim); margin-bottom: 0;">
+                        That suspicion is reasonable, and you should not switch it off on
+                        somebody's say-so. What you can do instead is check the file yourself —
+                        <a href="#verify">there are instructions at the bottom</a>.
+                    </p>
+                </div>
+            </section>
+
+            <section class="wrap" style="padding-block-start: 0;">
+                <span class="label">The usual one</span>
+                <h2>“Windows protected your PC”</h2>
+                <p class="lede">
+                    A blue box, and no obvious way forward — the “Don't run” button is the only
+                    one you can see. The way past it is hidden behind the small link.
+                </p>
+
+                <ol class="steps">
+                    <li class="step">
+                        <div class="step__body">
+                            <span class="step__n">1</span>
+                            <h3>Click <em>More info</em></h3>
+                            <p>It is the small underlined text above the button. Clicking it
+                                expands the box and shows the publisher — which will say
+                                “Unknown publisher”, because there is no certificate.</p>
+                        </div>
+                        <figure class="shot">
+                            <img data-shot src="win-smartscreen-1.png" width="1000" height="700"
+                                data-slot="SmartScreen — the blue box, before clicking More info"
+                                alt="The Windows SmartScreen dialog as it first appears.">
+                        </figure>
+                    </li>
+
+                    <li class="step">
+                        <div class="step__body">
+                            <span class="step__n">2</span>
+                            <h3>Click <em>Run anyway</em></h3>
+                            <p>A second button appears under the publisher line. That is the
+                                whole of it — the installer opens normally from there, and
+                                Windows will not ask again for this file.</p>
+                        </div>
+                        <figure class="shot">
+                            <img data-shot src="win-smartscreen-2.png" width="1000" height="700"
+                                data-slot="SmartScreen — expanded, with the Run anyway button"
+                                alt="The SmartScreen dialog expanded, showing Run anyway.">
+                        </figure>
+                    </li>
+                </ol>
+            </section>
+
+            <section class="wrap">
+                <span class="label">The stricter one</span>
+                <h2>Smart App Control</h2>
+                <p class="lede">
+                    Some Windows 11 machines have this on as well. It has no “run anyway” — it
+                    simply refuses, and the only way past it is to turn the feature off.
+                </p>
+
+                <div class="warn">
+                    <h3 style="margin-bottom: 8px;">Worth knowing before you turn it off</h3>
+                    <p style="font-size: .88rem; margin-bottom: 0;">
+                        Smart App Control is not only blocking this program. It blocks every
+                        unsigned one, and turning it off turns it off for all of them — so this
+                        is a decision about your machine, not about Parallax.
+                    </p>
+                    <p style="font-size: .88rem; margin-bottom: 0; margin-top: 10px;">
+                        If you would rather leave it on, that is a perfectly sensible choice.
+                        Running Parallax from source works without it, and so does the Linux
+                        build. Nothing is lost.
+                    </p>
+                </div>
+
+                <ol class="steps" style="margin-top: 30px;">
+                    <li class="step">
+                        <div class="step__body">
+                            <span class="step__n">1</span>
+                            <h3>What it looks like</h3>
+                            <p>The installer closes on its own, or a message says the app was
+                                blocked. There is no button to continue — that is how you can
+                                tell this apart from the blue SmartScreen box.</p>
+                        </div>
+                        <figure class="shot">
+                            <img data-shot src="win-sac-1.png" width="1000" height="700"
+                                data-slot="Smart App Control — the block message"
+                                alt="The Smart App Control block message.">
+                        </figure>
+                    </li>
+
+                    <li class="step">
+                        <div class="step__body">
+                            <span class="step__n">2</span>
+                            <h3>Find the setting</h3>
+                            <p>Open <strong>Windows Security</strong> → <strong>App &amp; browser
+                                control</strong> → <strong>Smart App Control settings</strong>.
+                                Searching the Start menu for “Smart App Control” goes straight
+                                there.</p>
+                        </div>
+                        <figure class="shot">
+                            <img data-shot src="win-sac-2.png" width="1000" height="700"
+                                data-slot="Windows Security — App & browser control"
+                                alt="The App and browser control page in Windows Security.">
+                        </figure>
+                    </li>
+
+                    <li class="step">
+                        <div class="step__body">
+                            <span class="step__n">3</span>
+                            <h3>Set it to Off</h3>
+                            <p>Windows asks you to confirm. After that the installer runs —
+                                you may still get the blue SmartScreen box above, which is the
+                                easy one.</p>
+                        </div>
+                        <figure class="shot">
+                            <img data-shot src="win-sac-3.png" width="1000" height="700"
+                                data-slot="Smart App Control — the Off option and its warning"
+                                alt="The Smart App Control setting with Off selected.">
+                        </figure>
+                    </li>
+                </ol>
+            </section>
+
+            <section class="wrap" id="verify">
+                <span class="label">If you would rather check first</span>
+                <h2>Verify the file yourself.</h2>
+                <p class="lede">
+                    Every release publishes the exact fingerprint of every file it contains. If
+                    the number your computer calculates matches the one published, the file you
+                    downloaded is byte for byte the one the build produced.
+                </p>
+
+                <div class="repo" style="margin-top: 26px;">
+                    <div class="repo__head">
+                        <span class="label" style="margin: 0;">In PowerShell</span>
+                    </div>
+<pre><code>Get-FileHash .\Parallax-Launcher-Setup-3.0.2.exe -Algorithm SHA512</code></pre>
+                    <p style="font-size: .84rem; color: var(--star-dim); margin: 14px 0 0;">
+                        Compare it with the <code>sha512</code> line in
+                        <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">latest.yml</a>
+                        on the release page. That file is written by the build, which runs in
+                        public on GitHub's machines — the whole log is there to read.
+                    </p>
+                </div>
+
+                <p style="margin-top: 26px;">
+                    <a class="btn btn--primary" href="./#get">Back to the download</a>
+                </p>
+            </section>
+        </main>
+
+        <footer class="foot">
+            <div class="wrap foot__in">
+                <div>
+                    Parallax Launcher — created by Arda Yalın Özkan.<br>
+                    Free software under the
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/blob/main/LICENSE">GNU GPL v3</a>.
+                </div>
+                <div>
+                    <a href="./">Home</a> ·
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher">Source</a> ·
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/issues">Report a problem</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="site.js"></script>
+</body>
+
+</html>

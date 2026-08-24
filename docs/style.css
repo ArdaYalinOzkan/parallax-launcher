@@ -505,3 +505,77 @@ a:hover { text-decoration-color: currentColor; }
 .rise--2 { animation-delay: .13s; }
 .rise--3 { animation-delay: .21s; }
 .rise--4 { animation-delay: .29s; }
+
+
+/* --- Windows help page -----------------------------------------
+   Steps that pair an instruction with the picture of the thing
+   being described. Text left, screenshot right, so the eye can
+   check the screen against the sentence without scrolling between
+   them; stacked below the breakpoint where that stops fitting.
+   ---------------------------------------------------------------- */
+.steps {
+    list-style: none;
+    margin: 32px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 26px;
+}
+
+.step {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.85fr) 1.15fr;
+    gap: 28px;
+    align-items: start;
+    padding-top: 26px;
+    border-top: 1px solid var(--line-faint);
+}
+
+.step:first-child { border-top: 0; padding-top: 0; }
+
+@media (max-width: 720px) {
+    .step { grid-template-columns: 1fr; gap: 18px; }
+}
+
+.step__body p {
+    font-size: 0.88rem;
+    color: var(--star-dim);
+    margin-bottom: 0;
+}
+
+.step__body em {
+    font-style: normal;
+    color: var(--star-hi);
+    font-weight: 500;
+}
+
+/* The number is a position in a sequence, which these genuinely are
+   — do this, then this. It earns the marker. */
+.step__n {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: .14em;
+    color: var(--star-faint);
+    margin-bottom: 10px;
+}
+
+.step .shot { margin-top: 0; }
+
+/* Two asides with different weights: one explains, one is a caution
+   somebody needs to have read before acting. The second earns its
+   colour; the first would be shouting. */
+.note,
+.warn {
+    padding: 22px 24px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--line);
+    background: var(--ink-base);
+}
+
+.warn {
+    border-color: rgba(224, 162, 71, .38);
+    background: linear-gradient(180deg, rgba(224, 162, 71, .05), transparent 60%), var(--ink-base);
+}
+
+.warn h3 { color: #E0A247; }
+.warn p { color: var(--star); }
