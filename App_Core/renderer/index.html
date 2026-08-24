@@ -879,6 +879,48 @@
                             <div id="licenseNotice" data-i18n="LICENSE_NOTICE"
                                 style="font-size: 0.78rem; opacity: 0.65; line-height: 1.6; margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.08);">
                             </div>
+
+                            <!-- Updates. Sits under About because that is where
+                                 somebody goes to ask what version they are on,
+                                 and the next question is always whether it is
+                                 the current one. -->
+                            <div class="update-box" id="updateBox">
+                                <div class="update-head">
+                                    <span class="filter-label" data-i18n="UPDATES">UPDATES</span>
+                                    <span class="update-current" id="updateCurrent"></span>
+                                </div>
+
+                                <p class="sys-hint" id="updateStatus" data-i18n="UPDATE_IDLE">
+                                    Checks GitHub for a newer version.</p>
+
+                                <div class="update-notes hidden" id="updateNotes"></div>
+
+                                <div class="update-bar hidden" id="updateBar">
+                                    <span class="update-bar-fill" id="updateBarFill"></span>
+                                </div>
+
+                                <div class="update-actions">
+                                    <button id="updateCheckBtn" class="premium-btn secondary-btn"
+                                        data-i18n="CHECK_FOR_UPDATES">CHECK FOR UPDATES</button>
+                                    <button id="updateDownloadBtn" class="premium-btn hidden"
+                                        data-i18n="DOWNLOAD_UPDATE">DOWNLOAD AND INSTALL</button>
+                                    <button id="updateRestartBtn" class="premium-btn hidden"
+                                        data-i18n="RESTART_TO_UPDATE">RESTART NOW</button>
+                                    <button id="updateOpenBtn" class="premium-btn secondary-btn hidden"
+                                        data-i18n="OPEN_DOWNLOAD_PAGE">OPEN DOWNLOAD PAGE</button>
+                                </div>
+
+                                <div class="settings-row-checkbox" style="margin-top: 18px;">
+                                    <label data-i18n="AUTO_CHECK_UPDATES">Check automatically</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingAutoUpdateCheck">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <p class="sys-hint" style="margin-top: 6px;" data-i18n="AUTO_CHECK_HINT">
+                                    Asks GitHub once a day whether a newer version exists. Nothing is
+                                    downloaded without you pressing the button.</p>
+                            </div>
                         </div>
                     </div>
 

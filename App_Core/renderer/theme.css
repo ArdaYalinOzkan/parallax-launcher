@@ -2723,3 +2723,78 @@ body[data-screen="profileDetails"] .sky__near {
     vertical-align: 2px;
     white-space: nowrap;
 }
+
+
+/* --- Updates ----------------------------------------------------
+   Sits under the About text, separated by the same hairline the
+   licence uses, so the pane reads as three parts of one page rather
+   than three panels stacked up.
+   ---------------------------------------------------------------- */
+.update-box {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line-faint);
+}
+
+.update-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.update-current {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--star-faint);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Release notes come from GitHub and can be any length, so they get a
+   ceiling and their own scroll rather than pushing the buttons off. */
+.update-notes {
+    margin-top: 12px;
+    padding: 12px 14px;
+    max-height: 150px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: var(--r-sm);
+    background: rgba(255, 255, 255, .03);
+    border: 1px solid var(--line-faint);
+    font-size: 0.75rem;
+    line-height: 1.65;
+    color: var(--star-dim);
+    white-space: pre-wrap;
+}
+
+.update-bar {
+    margin-top: 14px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, .1);
+    overflow: hidden;
+}
+
+.update-bar-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: 2px;
+    background: var(--star-hi);
+    transition: width var(--t-fast) linear;
+}
+
+.update-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* Every button here can be hidden, and an empty row should take no
+   space at all rather than leaving a gap where a button used to be. */
+.update-actions:empty,
+.update-actions > .hidden {
+    display: none;
+}

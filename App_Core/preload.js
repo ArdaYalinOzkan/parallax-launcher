@@ -65,5 +65,21 @@ contextBridge.exposeInMainWorld('api', {
     onlineSteamSearch: (query) => ipcRenderer.invoke('online-steam-search', query),
 
     // Wipe
-    wipeAllData: () => ipcRenderer.invoke('wipe-all-data')
+    wipeAllData: () => ipcRenderer.invoke('wipe-all-data'),
+
+    /* Updates.
+     *
+     * The three calls are request/response like everything else here.
+     * Downloading is the exception: it reports as it goes, so the page
+     * registers a listener instead of waiting for a return value. Only
+     * the payload crosses over — never the event object, which would
+     * carry a handle to the sender with it. */
+    checkForUpdate: () => ipcRenderer.invoke('check-for-update'),
+    downloadUpdate: () => ipcRenderer.invoke('download-update'),
+    installUpdate: () => ipcRenderer.invoke('install-update'),
+    openReleasePage: () => ipcRenderer.invoke('open-release-page'),
+
+    onUpdateProgress: (fn) => ipcRenderer.on('update-progress', (_e, data) => fn(data)),
+    onUpdateReady: (fn) => ipcRenderer.on('update-ready', (_e, data) => fn(data)),
+    onUpdateError: (fn) => ipcRenderer.on('update-error', (_e, data) => fn(data))
 });

@@ -304,6 +304,9 @@ function updateSteamAppList() {
 let libraryManager = null;
 // Parallax Architect: Arda Yalın Özkan
 
+/** The one window, kept so update progress has somewhere to be sent. */
+let mainWindow = null;
+
 function createWindow() {
     const win = new BrowserWindow({
         width: 1200,
@@ -318,6 +321,9 @@ function createWindow() {
         },
         autoHideMenuBar: true,
     });
+
+    mainWindow = win;
+    win.on('closed', () => { mainWindow = null; });
 
     win.loadFile('renderer/index.html');
 
@@ -1060,6 +1066,156 @@ ipcMain.handle('get-user-data-path', () => {
 
 ipcMain.handle('get-app-version', () => {
     return app.getVersion();
+});
+
+
+/* ================================================================
+   UPDATES
+   ================================================================
+   The app watches its own GitHub releases and can replace itself.
+
+   Only one kind of install can do that, and the check below is the
+   whole reason it exists: an AppImage is a single file, so it can be
+   swapped for a newer one. A .deb is owned by the system package
+   manager and a copy running from source has no file to replace —
+   in both cases the app must keep its hands off and say so plainly
+   rather than offering a button that cannot work.
+
+   Nothing is downloaded without being asked for. A hundred and
+   twenty megabytes arriving unannounced on someone's connection is
+   not a courtesy, so `autoDownload` is off and the update is fetched
+   only after somebody presses the button.
+   ================================================================ */
+
+const { autoUpdater } = require('electron-updater');
+
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = false;
+autoUpdater.logger = null;
+
+/**
+ * Whether this copy is one that can replace itself.
+ * `APPIMAGE` is set by the AppImage runtime and holds the path of the
+ * file that is running — which is exactly the file an update writes to.
+ */
+function canSelfUpdate() {
+    return app.isPackaged && !!process.env.APPIMAGE;
+}
+
+/** Why it cannot, in a form the interface can turn into a sentence. */
+function updateKind() {
+    if (!app.isPackaged) return 'source';
+    if (process.env.APPIMAGE) return 'appimage';
+    return 'managed';        // .deb, or anything else installed for us
+}
+
+function sendToWindow(channel, payload) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send(channel, payload);
+    }
+}
+
+autoUpdater.on('download-progress', (p) => {
+    sendToWindow('update-progress', {
+        percent: Math.round(p.percent || 0),
+        transferred: p.transferred,
+        total: p.total
+    });
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+    sendToWindow('update-ready', { version: info.version });
+});
+
+autoUpdater.on('error', (err) => {
+    sendToWindow('update-error', { message: String(err && err.message || err) });
+});
+
+/**
+ * Asks GitHub whether anything newer exists. Never throws at the
+ * caller: a machine that is offline, or a rate limit, is an ordinary
+ * thing to run into and not worth an error dialog.
+ */
+ipcMain.handle('check-for-update', async () => {
+    const kind = updateKind();
+    const current = app.getVersion();
+
+    if (kind !== 'appimage') {
+        // Still worth looking, so somebody on a .deb learns a new
+        // version exists — they just have to fetch it themselves.
+        try {
+            const r = await fetch(
+                'https://api.github.com/repos/ArdaYalinOzkan/parallax-launcher/releases/latest',
+                { headers: { Accept: 'application/vnd.github+json' } });
+            // A 404 from this endpoint means the repository has no
+            // releases yet — which is a real answer, not a failure.
+            // Reporting it as one would tell somebody the network is
+            // broken when in fact there is simply nothing published.
+            if (r.status === 404) return { kind, current, checked: true, available: false };
+            if (!r.ok) return { kind, current, checked: false, error: 'HTTP ' + r.status };
+            const j = await r.json();
+            const latest = String(j.tag_name || '').replace(/^v/, '');
+            return {
+                kind, current, checked: true,
+                available: !!latest && latest !== current,
+                version: latest,
+                notes: j.body || '',
+                url: j.html_url
+            };
+        } catch (e) {
+            return { kind, current, checked: false, error: String(e.message || e) };
+        }
+    }
+
+    try {
+        const res = await autoUpdater.checkForUpdates();
+        const latest = res && res.updateInfo ? res.updateInfo.version : null;
+        return {
+            kind, current, checked: true,
+            available: !!latest && latest !== current,
+            version: latest,
+            notes: (res && res.updateInfo && res.updateInfo.releaseNotes) || '',
+            url: 'https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest'
+        };
+    } catch (e) {
+        return { kind, current, checked: false, error: String(e.message || e) };
+    }
+});
+
+/**
+ * Opens the releases page in the browser.
+ *
+ * It takes no argument on purpose. The page could pass the URL it got
+ * back from GitHub, but then the renderer would decide what the system
+ * browser opens, and a link is not something a page should be trusted
+ * to choose. The destination is fixed here instead.
+ */
+ipcMain.handle('open-release-page', () => {
+    const { shell } = require('electron');
+    shell.openExternal('https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest');
+    return { success: true };
+});
+
+/** Fetches the update. Progress arrives on the `update-progress` channel. */
+ipcMain.handle('download-update', async () => {
+    if (!canSelfUpdate()) return { success: false, error: 'NOT_SELF_UPDATABLE' };
+    try {
+        await autoUpdater.downloadUpdate();
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: String(e.message || e) };
+    }
+});
+
+/**
+ * Closes and comes back as the new version. Called only after the
+ * download has finished, so the worst case is a restart, not a
+ * half-written application.
+ */
+ipcMain.handle('install-update', () => {
+    if (!canSelfUpdate()) return { success: false, error: 'NOT_SELF_UPDATABLE' };
+    setImmediate(() => autoUpdater.quitAndInstall(false, true));
+    return { success: true };
 });
 
 // --- STEAM API HANDLERS ---

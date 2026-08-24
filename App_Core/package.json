@@ -63,5 +63,8 @@
   "homepage": "https://github.com/ArdaYalinOzkan/parallax-launcher",
   "bugs": {
     "url": "https://github.com/ArdaYalinOzkan/parallax-launcher/issues"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }

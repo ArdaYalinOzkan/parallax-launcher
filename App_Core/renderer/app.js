@@ -30,7 +30,9 @@ let appSettings = {
     // library for a moment, so it survives closing the app.
     sortBy: 'none',
     uiSounds: false,
-    uiVolume: 100
+    uiVolume: 100,
+    autoCheckUpdates: true,
+    lastUpdateCheck: 0
 };
 
 // ================================================================
@@ -1779,6 +1781,9 @@ async function initApp() {
         if (document.getElementById('settingUiSounds'))
             document.getElementById('settingUiSounds').checked = !!appSettings.uiSounds;
         if (appSettings.uiVolume === undefined) appSettings.uiVolume = 100;
+        if (appSettings.autoCheckUpdates === undefined) appSettings.autoCheckUpdates = true;
+        if (document.getElementById('settingAutoUpdateCheck'))
+            document.getElementById('settingAutoUpdateCheck').checked = !!appSettings.autoCheckUpdates;
         applyVolumeToUI();
         if (window.SFX) {
             window.SFX.setVolume(appSettings.uiVolume);
@@ -1803,8 +1808,11 @@ async function initApp() {
         await loadAccounts();
 
         appVersion = await window.api.getAppVersion();
+        const cur = document.getElementById('updateCurrent');
+        if (cur) cur.textContent = 'v' + appVersion;
 
         translateApp();
+        scheduleUpdateCheck();
     } catch (error) {
         console.error("App initialization failed:", error);
         if (typeof showError === 'function') {
@@ -3548,3 +3556,191 @@ async function watchInstall(game) {
 document.querySelectorAll('.back-to-library').forEach(b => {
     b.addEventListener('click', stopInstallWatch);
 });
+
+
+/* ================================================================
+   UPDATES
+   ================================================================
+   Three things can be true and the panel says which: this copy can
+   replace itself, or it can only point at the download, or there is
+   nothing newer. Anything else — offline, rate-limited, GitHub having
+   a moment — is reported as itself rather than as "up to date", which
+   would be a lie that keeps somebody on an old version.
+   ================================================================ */
+
+const el = (id) => document.getElementById(id);
+
+let updateState = { checking: false, downloading: false, ready: false, info: null };
+
+function updateT(key) {
+    return (translations[currentLanguage] && translations[currentLanguage][key]) || key;
+}
+
+function setUpdateStatus(key, extra) {
+    const node = el('updateStatus');
+    if (!node) return;
+    // The status line is written by hand here, so it must not also be
+    // rewritten by translateApp on the next language change.
+    node.removeAttribute('data-i18n');
+    node.textContent = extra ? updateT(key).replace('{v}', extra) : updateT(key);
+}
+
+function showUpdateButtons({ check = false, download = false, restart = false, open = false }) {
+    const set = (id, on) => { const b = el(id); if (b) b.classList.toggle('hidden', !on); };
+    set('updateCheckBtn', check);
+    set('updateDownloadBtn', download);
+    set('updateRestartBtn', restart);
+    set('updateOpenBtn', open);
+}
+
+function renderUpdateNotes(text) {
+    const box = el('updateNotes');
+    if (!box) return;
+    const clean = String(text || '').trim();
+    if (!clean) { box.classList.add('hidden'); box.textContent = ''; return; }
+    // Release notes come from GitHub, which is to say from outside the
+    // app — so they go in as text, never as markup.
+    box.textContent = clean.length > 600 ? clean.slice(0, 600) + '…' : clean;
+    box.classList.remove('hidden');
+}
+
+async function runUpdateCheck({ silent = false } = {}) {
+    if (updateState.checking || updateState.downloading) return;
+    if (!window.api || !window.api.checkForUpdate) return;
+
+    updateState.checking = true;
+    if (!silent) {
+        setUpdateStatus('UPDATE_CHECKING');
+        showUpdateButtons({});
+    }
+
+    let r;
+    try {
+        r = await window.api.checkForUpdate();
+    } catch (e) {
+        r = { checked: false, error: String(e && e.message || e) };
+    }
+    updateState.checking = false;
+    updateState.info = r;
+
+    appSettings.lastUpdateCheck = Date.now();
+    saveAppSettings();
+
+    const cur = el('updateCurrent');
+    if (cur && r && r.current) cur.textContent = 'v' + r.current;
+
+    if (!r || !r.checked) {
+        if (silent) return;
+        setUpdateStatus('UPDATE_CHECK_FAILED');
+        renderUpdateNotes('');
+        showUpdateButtons({ check: true });
+        return;
+    }
+
+    if (!r.available) {
+        if (silent) return;
+        setUpdateStatus('UPDATE_NONE');
+        renderUpdateNotes('');
+        showUpdateButtons({ check: true });
+        return;
+    }
+
+    setUpdateStatus('UPDATE_AVAILABLE', r.version);
+    renderUpdateNotes(r.notes);
+
+    if (r.kind === 'appimage') {
+        showUpdateButtons({ download: true });
+    } else {
+        // A .deb belongs to the package manager and a copy running from
+        // source has no file to replace, so the honest offer is a link.
+        setUpdateStatus(r.kind === 'source' ? 'UPDATE_FROM_SOURCE' : 'UPDATE_MANAGED', r.version);
+        showUpdateButtons({ open: true });
+    }
+}
+
+if (el('updateCheckBtn')) {
+    el('updateCheckBtn').onclick = () => runUpdateCheck();
+}
+
+if (el('updateDownloadBtn')) {
+    el('updateDownloadBtn').onclick = async () => {
+        updateState.downloading = true;
+        setUpdateStatus('UPDATE_DOWNLOADING');
+        showUpdateButtons({});
+        const bar = el('updateBar');
+        if (bar) bar.classList.remove('hidden');
+
+        const res = await window.api.downloadUpdate();
+        if (!res || !res.success) {
+            updateState.downloading = false;
+            if (bar) bar.classList.add('hidden');
+            setUpdateStatus('UPDATE_DOWNLOAD_FAILED');
+            showUpdateButtons({ check: true });
+        }
+        // Success is announced by the update-ready event, not here —
+        // downloadUpdate resolves when the transfer starts finishing,
+        // and the file is only usable once the event says so.
+    };
+}
+
+if (el('updateRestartBtn')) {
+    el('updateRestartBtn').onclick = () => window.api.installUpdate();
+}
+
+if (el('updateOpenBtn')) {
+    el('updateOpenBtn').onclick = () => window.api.openReleasePage();
+}
+
+if (window.api && window.api.onUpdateProgress) {
+    window.api.onUpdateProgress((p) => {
+        const fill = el('updateBarFill');
+        if (fill) fill.style.width = (p.percent || 0) + '%';
+        setUpdateStatus('UPDATE_DOWNLOADING_PCT', String(p.percent || 0));
+    });
+
+    window.api.onUpdateReady((info) => {
+        updateState.downloading = false;
+        updateState.ready = true;
+        const bar = el('updateBar');
+        if (bar) bar.classList.add('hidden');
+        setUpdateStatus('UPDATE_READY', info && info.version);
+        showUpdateButtons({ restart: true });
+        if (window.SFX) window.SFX.play('ok');
+    });
+
+    window.api.onUpdateError((e) => {
+        updateState.downloading = false;
+        const bar = el('updateBar');
+        if (bar) bar.classList.add('hidden');
+        setUpdateStatus('UPDATE_CHECK_FAILED');
+        showUpdateButtons({ check: true });
+        console.warn('[Update]', e && e.message);
+    });
+}
+
+const checkAutoUpdate = el('settingAutoUpdateCheck');
+if (checkAutoUpdate) {
+    checkAutoUpdate.onchange = async () => {
+        appSettings.autoCheckUpdates = checkAutoUpdate.checked;
+        await saveAppSettings();
+    };
+}
+
+/**
+ * The quiet check. Once a day at most, a little after start-up so it
+ * never competes with the library loading, and it says nothing unless
+ * there is actually something to say.
+ */
+function scheduleUpdateCheck() {
+    if (!appSettings.autoCheckUpdates) return;
+    const DAY = 24 * 60 * 60 * 1000;
+    if (Date.now() - (appSettings.lastUpdateCheck || 0) < DAY) return;
+    setTimeout(() => runUpdateCheck({ silent: true }).then(() => {
+        const r = updateState.info;
+        if (r && r.checked && r.available) {
+            setUpdateStatus('UPDATE_AVAILABLE', r.version);
+            renderUpdateNotes(r.notes);
+            showUpdateButtons(r.kind === 'appimage' ? { download: true } : { open: true });
+        }
+    }), 8000);
+}
