@@ -55,9 +55,14 @@ jobs:
         working-directory: App_Core
         run: npm ci
 
-      # npm's postinstall does not always fetch Electron's own binary.
-      # It is cheap to check and a build without it fails much later
-      # with a far less obvious message.
+      # npm's postinstall does not reliably fetch Electron's own binary
+      # — on this runner it does not fetch it at all, and a build
+      # without it fails much later with a far less obvious message.
+      #
+      # --no-sandbox is required to run it here: Chromium's SUID sandbox
+      # helper has to be owned by root and mode 4755, which it is not on
+      # a CI runner, and Electron aborts rather than run unsandboxed. It
+      # says nothing about how the built app runs on a real machine.
       - name: Make sure Electron's binary is present
         working-directory: App_Core
         run: |
@@ -65,7 +70,7 @@ jobs:
             echo "Electron binary missing — fetching it"
             node node_modules/electron/install.js
           fi
-          node_modules/electron/dist/electron --version
+          node_modules/electron/dist/electron --no-sandbox --version
 
       - name: Build
         working-directory: App_Core
