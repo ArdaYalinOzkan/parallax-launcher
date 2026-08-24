@@ -150,10 +150,16 @@
             // file: that page starts the download itself and then says
             // what to do with it, which the file on its own does not.
             const onWindows = /Windows/i.test(navigator.userAgent);
-            const label = onWindows ? 'Download for Windows' : 'Download for Linux';
             const kind = onWindows ? 'Installer' : 'AppImage';
 
-            set('dlPrimaryLabel', label);
+            // Written by hand rather than through data-i18n, because which
+            // of the two it says depends on the reader's system. Marked so
+            // a language change can redraw it — see the listener below.
+            const primary = document.getElementById('dlPrimaryLabel');
+            if (primary) primary.dataset.i18n = onWindows ? 'BTN_WIN' : 'BTN_DL_LINUX';
+            set('dlPrimaryLabel', window.parallaxI18n
+                ? window.parallaxI18n.t(onWindows ? 'BTN_WIN' : 'BTN_DL_LINUX')
+                : (onWindows ? 'Download for Windows' : 'Download for Linux'));
             if (version) set('dlVersion', 'v' + version + ' · ' + kind);
         } catch (e) {
             /* Offline, blocked, or GitHub having a moment. The page was
@@ -219,11 +225,12 @@
                 else if (textNode) textNode.textContent = t + ' ';
             };
 
-            write('Starting the download…');
+            const say = k => (window.parallaxI18n ? window.parallaxI18n.t(k) : null);
+            write(say('DL_STARTING') || 'Starting the download…');
             if (meta) meta.style.opacity = '.4';
 
             setTimeout(() => {
-                write('Not started? Click again');
+                write(say('DL_RETRY') || 'Not started? Click again');
                 btn.classList.add('btn--retry');
             }, 4500);
 
@@ -236,3 +243,55 @@
         });
     });
 })();
+
+/* Copying the removal commands.
+
+   Three lines nobody wants to select by hand. The clipboard API needs a
+   secure context, which the site has; where it is refused anyway the
+   button says so rather than pretending it worked, and the text is
+   still there to select. */
+(() => {
+    document.querySelectorAll('[data-copy]').forEach(btn => {
+        const block = btn.closest('.snippet');
+        const code = block && block.querySelector('code');
+        if (!code) return;
+
+        const phrase = k => (window.parallaxI18n ? window.parallaxI18n.t(k) : null);
+        let timer;
+        const say = (text, ok) => {
+            btn.textContent = text;
+            btn.dataset.done = ok ? '1' : '0';
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                btn.textContent = phrase('COPY') || 'Copy';
+                btn.dataset.done = '0';
+            }, 1800);
+        };
+
+        btn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(code.textContent);
+                say(phrase('COPIED') || 'Copied', true);
+            } catch {
+                say(phrase('COPY_FAIL') || 'Select it', false);
+            }
+        });
+    });
+})();
+
+/* When the language changes, the two labels that scripts wrote rather
+   than the table — the big button, and whatever a copy button is
+   currently saying — are drawn again. Everything else the engine has
+   already replaced by the time this fires. */
+document.addEventListener('parallax:lang', (e) => {
+    const t = e.detail.table;
+
+    const primary = document.getElementById('dlPrimaryLabel');
+    if (primary && primary.dataset.i18n && t[primary.dataset.i18n]) {
+        primary.textContent = t[primary.dataset.i18n];
+    }
+
+    document.querySelectorAll('[data-copy]').forEach(btn => {
+        if (btn.dataset.done !== '1') btn.textContent = t.COPY;
+    });
+});

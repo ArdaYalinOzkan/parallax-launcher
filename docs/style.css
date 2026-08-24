@@ -425,9 +425,61 @@ a:hover { text-decoration-color: currentColor; }
     color: var(--star-dim);
 }
 
+/* One drawer per format. */
+.removal__item {
+    border-top: 1px solid var(--line);
+}
+
+.removal__item summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 2px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--star-dim);
+    /* The default triangle is replaced by the caret below. */
+    list-style: none;
+    transition: color .18s ease;
+}
+
+.removal__item summary::-webkit-details-marker { display: none; }
+
+.removal__item summary:hover { color: var(--star-hi); }
+
+/* A caret that turns when the drawer opens. */
+.removal__item summary::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform .18s ease;
+    opacity: .65;
+    flex: none;
+}
+
+.removal__item[open] summary::before { transform: rotate(45deg); }
+
+.removal__body {
+    padding: 2px 0 18px 16px;
+}
+
+.removal__body p:last-child { margin-bottom: 0; }
+
+/* The code block, and the button that sits inside its top right. */
+.snippet {
+    position: relative;
+}
+
 .removal pre {
-    margin: 0 0 14px;
-    padding: 12px 14px;
+    margin: 0;
+    /* Room on the right so the first lines do not start underneath the
+       copy button. Once scrolled they pass behind it, which is fine —
+       it is opaque. */
+    padding: 12px 78px 12px 14px;
     border-radius: var(--r-sm);
     background: var(--ink-raise);
     border: 1px solid var(--line);
@@ -440,6 +492,37 @@ a:hover { text-decoration-color: currentColor; }
     line-height: 1.7;
     white-space: pre;
 }
+
+.snippet__copy {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    padding: 4px 9px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: var(--ink-base);
+    color: var(--star-faint);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color .18s ease, border-color .18s ease;
+    /* Never translucent. The block scrolls sideways underneath it, and
+       anything less than solid lets the code show through the button. */
+    opacity: 1;
+}
+
+.snippet:hover .snippet__copy { color: var(--star-dim); }
+
+.snippet__copy:hover,
+.snippet__copy:focus-visible,
+.snippet__copy[data-done="1"] {
+    color: var(--star-hi);
+    border-color: var(--star-faint);
+}
+
+
 
 /* The rescue note under the AppImage. Set apart and dimmer than the
    description above it: it is for the person whose download did
@@ -705,4 +788,104 @@ a:hover { text-decoration-color: currentColor; }
     width: 15px;
     height: 15px;
     margin-top: 1px;
+}
+
+/* The line about the covers in the screenshots. Below the footer proper
+   and quieter than it: true, necessary, and nobody's reason for being
+   here. */
+.foot__fine {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 0.72rem;
+    line-height: 1.6;
+    color: var(--star-faint);
+    opacity: .8;
+}
+
+/* Scrollbars.
+
+   The default one is drawn by the browser in its own colours — a light
+   grey trough with arrow buttons, which on a page this dark reads as a
+   piece of somebody else's interface that fell in. Firefox takes the two
+   properties; everything else takes the pseudo-elements. */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ink-edge) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--ink-edge);
+    border-radius: 99px;
+    /* Inset from the edge, so the bar reads as a thin rule rather than a
+       block filling its channel. */
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--star-faint);
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* The language picker.
+
+   A real <select>, not a menu built out of divs: the browser already
+   knows how to open one on a phone, how to reach it from the keyboard,
+   and how to read it out. Only its skin is ours. */
+.langpick__slot { display: inline-flex; }
+
+.langpick {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 5px 26px 5px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background-color: transparent;
+    color: var(--star-dim);
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: color var(--t-fast), border-color var(--t-fast);
+
+    /* The caret, drawn rather than fetched. */
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%238A94A5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+    background-size: 10px;
+}
+
+.langpick:hover,
+.langpick:focus-visible {
+    color: var(--star-hi);
+    border-color: var(--line-strong);
+}
+
+/* The dropdown itself is drawn by the system, which does not inherit the
+   page's colours — so the options are given them explicitly. */
+.langpick option {
+    background: var(--ink-lift);
+    color: var(--star);
+}
+
+@media (max-width: 640px) {
+    .langpick {
+        padding: 4px 22px 4px 8px;
+        font-size: 0.76rem;
+        background-position: right 7px center;
+    }
 }

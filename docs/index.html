@@ -49,9 +49,11 @@
                     <span>Parallax</span>
                 </a>
                 <nav class="top__links">
-                    <a href="#get">Download</a>
-                    <a href="https://help.parallaxlauncher.com" data-optional>Help</a>
-                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher">Source</a>
+                    <a href="#get" data-i18n="NAV_DOWNLOAD">Download</a>
+                    <a href="https://help.parallaxlauncher.com" data-optional data-i18n="NAV_HELP">Help</a>
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher" data-i18n="NAV_SOURCE">Source</a>
+                    <!-- The picker is built by i18n.js and dropped in here. -->
+                    <span class="langpick__slot" data-lang-mount></span>
                 </nav>
             </div>
         </header>
@@ -64,9 +66,9 @@
                     <path d="M67.32 45.00 L50.00 55.00 L50.00 75.00 L67.32 85.00 L84.64 75.00 L84.64 55.00 Z" stroke="#EEF1F6" stroke-width="4" />
                 </svg>
 
-                <h1 class="rise rise--2">One shelf for every game you own.</h1>
+                <h1 class="rise rise--2" data-i18n="HERO_H1">One shelf for every game you own.</h1>
 
-                <p class="lede rise rise--3">
+                <p class="lede rise rise--3" data-i18n="HERO_LEDE">
                     Parallax Launcher finds the games already on your disk, fills in their
                     artwork, and starts them. Everything it knows stays on your computer —
                     no account, no telemetry, and a library you can open in a text editor.
@@ -81,12 +83,11 @@
                         <span id="dlPrimaryLabel">Download for Linux</span>
                         <span class="btn__meta" id="dlVersion">AppImage</span>
                     </a>
-                    <a class="btn btn--ghost" href="https://github.com/ArdaYalinOzkan/parallax-launcher">
-                        Read the source
-                    </a>
+                    <a class="btn btn--ghost" href="https://github.com/ArdaYalinOzkan/parallax-launcher"
+                        data-i18n="HERO_SOURCE">Read the source</a>
                 </div>
 
-                <p class="hero__note rise rise--4">
+                <p class="hero__note rise rise--4" data-i18n="HERO_NOTE">
                     Free software under the GNU GPL v3. No install — make it executable and run it.
                 </p>
 
@@ -95,64 +96,64 @@
                         <span class="shot__dot"></span><span class="shot__dot"></span><span class="shot__dot"></span>
                     </div>
                     <img data-shot src="shot-library.jpg" width="1920" height="1080" loading="eager"
-                        data-slot="The library — a wall of cover art"
+                        data-slot="The library — a wall of cover art" data-i18n-attr="data-slot:SHOT_LIBRARY"
                         alt="The Parallax Launcher library: a grid of game cover art over a dark starfield.">
                 </figure>
             </section>
 
             <section id="what" class="wrap">
-                <span class="label">What it does</span>
-                <h2>It reads what Steam already knows.</h2>
-                <p class="lede">
+                <span class="label" data-i18n="LBL_WHAT">What it does</span>
+                <h2 data-i18n="WHAT_H2">It reads what Steam already knows.</h2>
+                <p class="lede" data-i18n="WHAT_LEDE">
                     No scanning folders and hoping. Parallax opens Steam's own installation
                     records, so what it shows you is what is actually on the disk.
                 </p>
 
                 <div class="grid" style="margin-top: 34px;">
                     <div class="cell">
-                        <span class="cell__num">Finding</span>
-                        <h3>Your installed games, exactly</h3>
-                        <p>Reads Steam's library folders and install manifests directly — across
+                        <span class="cell__num" data-i18n="F1_LBL">Finding</span>
+                        <h3 data-i18n="F1_H">Your installed games, exactly</h3>
+                        <p data-i18n="F1_P">Reads Steam's library folders and install manifests directly — across
                             every drive, with the real name and app id for each one.</p>
                     </div>
                     <div class="cell">
-                        <span class="cell__num">Launching</span>
-                        <h3>Through Steam, or straight past it</h3>
-                        <p>Hand the game to Steam, or run it directly so the Steam window never
+                        <span class="cell__num" data-i18n="F2_LBL">Launching</span>
+                        <h3 data-i18n="F2_H">Through Steam, or straight past it</h3>
+                        <p data-i18n="F2_P">Hand the game to Steam, or run it directly so the Steam window never
                             jumps to the front. Set per game, and it shows the exact command first.</p>
                     </div>
                     <div class="cell">
-                        <span class="cell__num">Artwork</span>
-                        <h3>Covers, without a key</h3>
-                        <p>Pulls official covers and banners from Steam's public images — free,
+                        <span class="cell__num" data-i18n="F3_LBL">Artwork</span>
+                        <h3 data-i18n="F3_H">Covers, without a key</h3>
+                        <p data-i18n="F3_P">Pulls official covers and banners from Steam's public images — free,
                             no sign-up, no rate limit. Add a SteamGridDB key and the community's
                             work opens up too.</p>
                     </div>
                     <div class="cell">
-                        <span class="cell__num">Playtime</span>
-                        <h3>Hours you already earned</h3>
-                        <p>Counts the sessions it starts, and merges in what Steam recorded before
+                        <span class="cell__num" data-i18n="F4_LBL">Playtime</span>
+                        <h3 data-i18n="F4_H">Hours you already earned</h3>
+                        <p data-i18n="F4_P">Counts the sessions it starts, and merges in what Steam recorded before
                             you ever opened this — taking the larger number, never overwriting.</p>
                     </div>
                     <div class="cell">
-                        <span class="cell__num">Compatibility</span>
-                        <h3>Proton, Wine, and the rest</h3>
-                        <p>Per-game runtime, launch options with Steam's <code>%command%</code>
+                        <span class="cell__num" data-i18n="F5_LBL">Compatibility</span>
+                        <h3 data-i18n="F5_H">Proton, Wine, and the rest</h3>
+                        <p data-i18n="F5_P_html">Per-game runtime, launch options with Steam's <code>%command%</code>
                             syntax, environment variables, GameMode and MangoHud.</p>
                     </div>
                     <div class="cell">
-                        <span class="cell__num">Yours</span>
-                        <h3>On your machine, in plain text</h3>
-                        <p>The library is a text file. The images are ordinary images. Nothing is
+                        <span class="cell__num" data-i18n="F6_LBL">Yours</span>
+                        <h3 data-i18n="F6_H">On your machine, in plain text</h3>
+                        <p data-i18n="F6_P">The library is a text file. The images are ordinary images. Nothing is
                             uploaded anywhere, and there is no account to make.</p>
                     </div>
                 </div>
             </section>
 
             <section class="wrap">
-                <span class="label">Up close</span>
-                <h2>Everything it will do, before it does it.</h2>
-                <p class="lede">
+                <span class="label" data-i18n="LBL_UPCLOSE">Up close</span>
+                <h2 data-i18n="UPCLOSE_H2">Everything it will do, before it does it.</h2>
+                <p class="lede" data-i18n="UPCLOSE_LEDE">
                     Compatibility settings the way Steam lays them out — and one line the
                     others leave out: the exact command that is about to run.
                 </p>
@@ -160,21 +161,21 @@
                 <div class="pair">
                     <figure class="shot">
                         <img data-shot src="shot-game.jpg" width="1440" height="810" loading="lazy"
-                            data-slot="A game's page — cover, playtime, Play"
+                            data-slot="A game's page — cover, playtime, Play" data-i18n-attr="data-slot:SHOT_GAME"
                             alt="A single game's page in Parallax Launcher.">
                     </figure>
                     <figure class="shot">
                         <img data-shot src="shot-settings.png" width="1440" height="810" loading="lazy"
-                            data-slot="Properties — runtime, launch options, what will run"
+                            data-slot="Properties — runtime, launch options, what will run" data-i18n-attr="data-slot:SHOT_SETTINGS"
                             alt="The per-game compatibility settings in Parallax Launcher.">
                     </figure>
                 </div>
             </section>
 
             <section class="wrap">
-                <span class="label">Languages</span>
-                <h2>Eight, all the way through.</h2>
-                <p class="lede">Every string in the app exists in all of them — not a partial
+                <span class="label" data-i18n="LBL_LANGS">Languages</span>
+                <h2 data-i18n="LANGS_H2">Eight, all the way through.</h2>
+                <p class="lede" data-i18n="LANGS_LEDE">Every string in the app exists in all of them — not a partial
                     translation that falls back to English halfway down a screen.</p>
                 <div class="langs" style="margin-top: 24px;">
                     <span class="lang">English</span>
@@ -189,22 +190,22 @@
             </section>
 
             <section id="get" class="wrap">
-                <span class="label">Download</span>
-                <h2>Take the one for your system.</h2>
-                <p class="lede">All three are built from the same source by the same automated run,
+                <span class="label" data-i18n="LBL_GET">Download</span>
+                <h2 data-i18n="GET_H2">Take the one for your system.</h2>
+                <p class="lede" data-i18n="GET_LEDE">All three are built from the same source by the same automated run,
                     and all three keep themselves up to date.</p>
 
                 <div class="files">
                     <div class="file">
-                        <div class="file__name">.AppImage <span class="chip">Updates itself</span></div>
-                        <div class="file__for">Any distribution</div>
-                        <p>One file. Your browser downloads it without permission to run, so
+                        <div class="file__name">.AppImage <span class="chip" data-i18n="CHIP_UPDATES">Updates itself</span></div>
+                        <div class="file__for" data-i18n="APPIMAGE_FOR">Any distribution</div>
+                        <p data-i18n="APPIMAGE_P_html">One file. Your browser downloads it without permission to run, so
                             give it that first — right-click, Properties, tick <em>allow
                             executing</em>, or <code>chmod +x</code> on the file. Then open it.
                             It adds itself to your application menu on first run, and because it
                             is a single file it can replace itself: it watches for new releases
                             and offers to fetch one.</p>
-                        <p class="file__note">Nothing happens when you open it? An AppImage needs
+                        <p class="file__note" data-i18n="APPIMAGE_NOTE_html">Nothing happens when you open it? An AppImage needs
                             <code>libfuse2</code>, which Ubuntu has not installed by default since
                             22.04. Either install it —
                             <code>sudo apt install libfuse2</code> — or run the file once with
@@ -212,27 +213,27 @@
                             On Debian and Ubuntu the .deb below avoids the question entirely.</p>
                         <a class="btn btn--primary" id="dlAppImage"
                             href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
-                            Download AppImage <span class="btn__meta" id="sizeAppImage"></span>
+                            <span data-i18n="BTN_APPIMAGE">Download AppImage</span> <span class="btn__meta" id="sizeAppImage"></span>
                         </a>
                     </div>
 
                     <div class="file">
-                        <div class="file__name">.deb <span class="chip">Updates itself</span></div>
-                        <div class="file__for">Debian · Ubuntu · Mint</div>
-                        <p>Installs the way your other software does and shows up in your menu with
+                        <div class="file__name">.deb <span class="chip" data-i18n="CHIP_UPDATES">Updates itself</span></div>
+                        <div class="file__for" data-i18n="DEB_FOR">Debian · Ubuntu · Mint</div>
+                        <p data-i18n="DEB_P_html">Installs the way your other software does and shows up in your menu with
                             everything else. It updates itself too, through <code>dpkg</code> — which
                             means it asks for your password the way any install does. Add the
                             repository below and your system takes that over instead.</p>
                         <a class="btn btn--ghost" id="dlDeb"
                             href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
-                            Download .deb <span class="btn__meta" id="sizeDeb"></span>
+                            <span data-i18n="BTN_DEB">Download .deb</span> <span class="btn__meta" id="sizeDeb"></span>
                         </a>
                     </div>
 
                     <div class="file">
-                        <div class="file__name">.exe <span class="chip">Updates itself</span></div>
-                        <div class="file__for">Windows 10 · 11</div>
-                        <p>An ordinary installer — it asks where to put things and makes the
+                        <div class="file__name">.exe <span class="chip" data-i18n="CHIP_UPDATES">Updates itself</span></div>
+                        <div class="file__for" data-i18n="EXE_FOR">Windows 10 · 11</div>
+                        <p data-i18n="EXE_P">An ordinary installer — it asks where to put things and makes the
                             shortcuts. It watches for new versions and replaces itself when you say
                             so.</p>
                         <!-- At the end of the text rather than buried inside it,
@@ -246,12 +247,12 @@
                                 <path d="M12 17h.01" />
                                 <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
                             </svg>
-                            <span>Windows blocks it the first time — here is how to get past it</span>
+                            <span data-i18n="EXE_WARN">Windows blocks it the first time — here is how to get past it</span>
                         </a>
 
                         <a class="btn btn--ghost" id="dlWin"
                             href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
-                            Download for Windows <span class="btn__meta" id="sizeWin"></span>
+                            <span data-i18n="BTN_WIN">Download for Windows</span> <span class="btn__meta" id="sizeWin"></span>
                         </a>
                     </div>
                 </div>
@@ -262,28 +263,56 @@
                      file, but it does put an entry in the menu, so deleting
                      the file alone leaves that behind. -->
                 <div class="removal">
-                    <h3>Removing it</h3>
-                    <p>Your library, your settings and your artwork live in
+                    <h3 data-i18n="REMOVAL_H">Removing it</h3>
+                    <p data-i18n="REMOVAL_DATA_html">Your library, your settings and your artwork live in
                         <code>~/.config/parallax-launcher</code> on Linux and
                         <code>%APPDATA%\parallax-launcher</code> on Windows. None of the steps
                         below touch that folder, so reinstalling picks up where you left off —
                         delete it yourself if you want everything gone.</p>
 
-                    <p><strong>.AppImage</strong> — delete the file. It also left a menu entry
-                        and an icon behind, since it put itself in your menu:</p>
-                    <pre><code>rm ~/.local/share/applications/parallax-launcher-appimage.desktop
+                    <!-- One at a time. Only one of the three applies to any
+                         given reader, and <details> means the closed ones cost
+                         nothing and need no script to open. -->
+                    <details class="removal__item">
+                        <summary>.AppImage</summary>
+                        <div class="removal__body">
+                            <p data-i18n="REMOVAL_APPIMAGE_P">Delete the file. It also left a menu entry and an icon behind,
+                                since it put itself in your menu:</p>
+                            <div class="snippet">
+                                <button class="snippet__copy" type="button" data-copy
+                                    aria-label="Copy these commands" data-i18n="COPY" data-i18n-attr="aria-label:COPY_ARIA">Copy</button>
+                                <pre><code>rm ~/.local/share/applications/parallax-launcher-appimage.desktop
 rm ~/.local/share/icons/hicolor/256x256/apps/parallax-launcher.png
 rm -r ~/.cache/parallax-launcher-updater</code></pre>
+                            </div>
+                        </div>
+                    </details>
 
-                    <p><strong>.deb</strong> — <code>sudo apt remove parallax-launcher</code>.
-                        If you added the repository, drop it too:
-                        <code>sudo rm /etc/apt/sources.list.d/parallax.list</code></p>
+                    <details class="removal__item">
+                        <summary>.deb</summary>
+                        <div class="removal__body">
+                            <p data-i18n="REMOVAL_DEB_P">Remove it the way you would anything else. If you added the
+                                repository, drop that too:</p>
+                            <div class="snippet">
+                                <button class="snippet__copy" type="button" data-copy
+                                    aria-label="Copy these commands" data-i18n="COPY" data-i18n-attr="aria-label:COPY_ARIA">Copy</button>
+                                <pre><code>sudo apt remove parallax-launcher
+sudo rm /etc/apt/sources.list.d/parallax.list</code></pre>
+                            </div>
+                        </div>
+                    </details>
 
-                    <p><strong>Windows</strong> — Settings, Apps, Parallax Launcher, Uninstall.
-                        Same as anything else.</p>
+                    <details class="removal__item">
+                        <summary>Windows</summary>
+                        <div class="removal__body">
+                            <p data-i18n="REMOVAL_WIN_P">Settings, Apps, Parallax Launcher, Uninstall. Same as anything
+                                else.</p>
+                        </div>
+                    </details>
                 </div>
 
-                <p style="margin-top: 26px; font-size: .84rem; color: var(--star-faint);">
+                <p style="margin-top: 26px; font-size: .84rem; color: var(--star-faint);"
+                    data-i18n="REPO_NOTE_html">
                     On Debian or Ubuntu you can add the package repository instead and let your
                     system handle updates —
                     <a href="https://github.com/ArdaYalinOzkan/parallax-apt">the commands are here</a>.
@@ -296,20 +325,28 @@ rm -r ~/.cache/parallax-launcher-updater</code></pre>
 
         <footer class="foot">
             <div class="wrap foot__in">
-                <div>
+                <div data-i18n="FOOT_BY_html">
                     Parallax Launcher — created by Arda Yalın Özkan.<br>
                     Free software under the
                     <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/blob/main/LICENSE">GNU GPL v3</a>.
                 </div>
                 <div>
-                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher">Source</a> ·
-                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases">Releases</a> ·
-                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/issues">Report a problem</a>
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher" data-i18n="FOOT_SOURCE">Source</a> ·
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases" data-i18n="FOOT_RELEASES">Releases</a> ·
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/issues" data-i18n="FOOT_ISSUES">Report a problem</a>
                 </div>
+            </div>
+            <!-- Said once, at the bottom, because the screenshots are of a
+                 real library and the covers in them belong to other people. -->
+            <div class="wrap foot__fine" data-i18n="FOOT_FINE">
+                Games shown in the screenshots are one person's own library. Their names and
+                artwork belong to their publishers, and none of them are sponsors or endorse
+                this project.
             </div>
         </footer>
     </div>
 
+    <script src="i18n.js"></script>
     <script src="site.js"></script>
 </body>
 
