@@ -222,7 +222,10 @@ body {
 .gateway-inner {
     width: 100%;
     max-width: 1300px;
-    padding: 100px 40px;
+    /* Top padding carries the extra space added under the mark, so the
+       mark itself stays where it was: the block is centred vertically,
+       and growing it would otherwise drag the logo upwards. */
+    padding: 118px 40px 100px;
     display: flex;
     flex-direction: column;
     align-items: center;

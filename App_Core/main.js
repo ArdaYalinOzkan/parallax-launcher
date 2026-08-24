@@ -117,6 +117,25 @@ const igdbConfigPath = path.join(userDataPath, 'igdb_config.json');
 const appSettingsPath = path.join(userDataPath, 'app_settings.json');
 const apiKeysPath = path.join(userDataPath, 'api_keys.json');
 const steamAppListPath = path.join(userDataPath, 'steam_apps.json');
+// Deleted accounts wait here for a while in case somebody changes their
+// mind. It has to sit beside the accounts themselves, not next to the
+// code: in a packaged build the code lives inside app.asar, which is a
+// read-only archive, so creating a folder there fails outright.
+const deletedVaultPath = path.join(userDataPath, '.deleted_vault');
+
+/* Anyone who ran from source before the move has deleted accounts sitting
+   in the old place. They are carried over once rather than silently lost —
+   the whole point of the vault is that a deletion can be taken back. */
+(function moveDeletedVault() {
+    const legacy = path.join(__dirname, '.deleted_vault');
+    if (!fs.existsSync(legacy) || fs.existsSync(deletedVaultPath)) return;
+    try {
+        fs.renameSync(legacy, deletedVaultPath);
+        console.log('Moved the deleted-account vault into userData');
+    } catch (err) {
+        console.error('Could not move the deleted-account vault:', err.message);
+    }
+})();
 let cachedSteamApps = [];
 
 function copyFolderSync(from, to) {
@@ -571,7 +590,7 @@ ipcMain.handle('delete-account', async (event, accountId) => {
     if (!fs.existsSync(accountPath)) return { success: false, error: 'Account not found.' };
 
     try {
-        const deletedDir = path.join(__dirname, '.deleted_vault');
+        const deletedDir = deletedVaultPath;
         if (!fs.existsSync(deletedDir)) fs.mkdirSync(deletedDir, { recursive: true });
         const timestamp = Date.now();
         const destPath = path.join(deletedDir, `${accountId}_${timestamp}`);
@@ -595,7 +614,7 @@ ipcMain.handle('delete-account', async (event, accountId) => {
 ipcMain.handle('wipe-all-data', async () => {
     try {
         if (fs.existsSync(accountsPath)) fs.rmSync(accountsPath, { recursive: true, force: true });
-        const deletedDir = path.join(__dirname, '.deleted_vault');
+        const deletedDir = deletedVaultPath;
         if (fs.existsSync(deletedDir)) fs.rmSync(deletedDir, { recursive: true, force: true });
         fs.mkdirSync(accountsPath, { recursive: true });
         libraryManager = null;
@@ -1142,7 +1161,7 @@ ipcMain.handle('cleanup-vault', async (event, { accountId, usedPaths }) => {
 });
 
 ipcMain.handle('get-deleted-accounts', async () => {
-    const deletedDir = path.join(__dirname, '.deleted_vault');
+    const deletedDir = deletedVaultPath;
     if (!fs.existsSync(deletedDir)) return [];
     try {
         const folders = fs.readdirSync(deletedDir, { withFileTypes: true })
@@ -1160,7 +1179,7 @@ ipcMain.handle('get-deleted-accounts', async () => {
 });
 
 ipcMain.handle('restore-account', async (event, folderId) => {
-    const deletedDir = path.join(__dirname, '.deleted_vault');
+    const deletedDir = deletedVaultPath;
     const sourcePath = path.join(deletedDir, folderId);
     const originalName = folderId.split('_')[0];
 
