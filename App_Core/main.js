@@ -351,6 +351,104 @@ app.on('window-all-closed', () => {
 
 const activeProcesses = new Map();
 
+/* ----------------------------------------------------------------
+   Watching a game we did not spawn
+   ----------------------------------------------------------------
+   Holding the child we started is not enough, and fails in the two
+   cases that come up most.
+
+   A Steam game launched through `steam://` gives us no child at all,
+   so the Play button never became Stop. And on Windows a Steam game
+   launched directly very often notices it was not started by Steam
+   and relaunches itself through it — our process is gone within a
+   second while the game is only just loading, and the app decided it
+   had already closed. Both were reported from a real machine.
+
+   So after every launch the executable is watched for by name. It
+   does not matter who started it or how many times it restarted
+   itself: if something with that name is running, the game is up.
+   ---------------------------------------------------------------- */
+
+const watchers = new Map();
+
+/** How long to wait for a game to appear before giving up on it. */
+const APPEAR_TIMEOUT_MS = 3 * 60 * 1000;
+const POLL_MS = 2500;
+
+/**
+ * What to look for in the process list for a given game. The plan's
+ * own executable when we have one, and otherwise whatever the game's
+ * folder resolves to — which is how a `steam://` launch, that never
+ * resolved anything, still gets a name to watch.
+ */
+function executableNames(game, resolved) {
+    const names = new Set();
+    const add = (p) => { if (p) names.add(path.basename(p)); };
+
+    add(resolved);
+    if (!resolved && game && game.Path) {
+        try { add(Platform.resolveExecutable(game.Path, game.Name)); } catch (e) { /* none */ }
+    }
+    return [...names];
+}
+
+function stopWatching(key) {
+    const w = watchers.get(key);
+    if (w) {
+        clearInterval(w.timer);
+        watchers.delete(key);
+    }
+}
+
+/**
+ * @param {string} key      the game's path, as the renderer knows it
+ * @param {string[]} names  executables that mean "this game is running"
+ * @param {Function} send   how to tell the window
+ */
+function watchForExit(key, names, send) {
+    if (!names.length) return;
+    stopWatching(key);
+
+    const started = Date.now();
+    const state = { seen: false, checking: false, pids: [] };
+
+    state.timer = setInterval(async () => {
+        // Polls overlap on a slow machine; one at a time is plenty.
+        if (state.checking) return;
+        state.checking = true;
+        let running = [];
+        try {
+            running = await Platform.findProcesses(names);
+        } catch (e) { /* a failed listing is not an exit */ }
+        state.checking = false;
+
+        if (running.length) {
+            state.seen = true;
+            state.pids = running.map(p => p.pid);
+            return;
+        }
+
+        if (state.seen) {
+            // It was there and now it is not.
+            stopWatching(key);
+            activeProcesses.delete(key);
+            send({ path: key, status: 'exited', code: 0 });
+            return;
+        }
+
+        // Never turned up. Steam may have refused, or the game may
+        // have failed to start; either way the button should not sit
+        // on Stop for ever.
+        if (Date.now() - started > APPEAR_TIMEOUT_MS) {
+            stopWatching(key);
+            activeProcesses.delete(key);
+            send({ path: key, status: 'exited', code: 0 });
+        }
+    }, POLL_MS);
+
+    watchers.set(key, state);
+}
+
 // Helper to ensure unique account folder names
 function getUniqueAccountName(originalName) {
     let name = originalName;
@@ -566,13 +664,25 @@ ipcMain.handle('launch-game', (event, payload) => {
         return { success: false, reason: plan.reason, error: plan.reason };
     }
 
-    // Handed to Steam (or the OS). Steam then deals with Proton,
-    // cloud saves, the overlay and DRM. We get no child process back,
-    // so there is nothing to track and nothing to kill.
+    // Handed to Steam (or the OS). Steam deals with Proton, cloud
+    // saves, the overlay and DRM, and we get no child process back —
+    // but the game still turns up in the process list under its own
+    // name, so it can be watched for and stopped like any other.
     if (plan.kind === 'uri') {
         const { shell } = require('electron');
         shell.openExternal(plan.uri);
         console.log(`[Launch] "${game.Name || key}" -> ${plan.uri}`);
+
+        const names = executableNames(game);
+        if (names.length) {
+            activeProcesses.set(key, null);   // running, but nothing of ours to hold
+            event.sender.send('game-status', { path: key, status: 'running' });
+            watchForExit(key, names, (msg) => event.sender.send('game-status', msg));
+            return { success: true, tracked: true, watched: true, via: plan.uri.split(':')[0] };
+        }
+
+        // No executable to watch for — an uninstalled game, or one
+        // whose folder we have never been told about.
         return { success: true, tracked: false, via: plan.uri.split(':')[0] };
     }
 
@@ -606,6 +716,15 @@ ipcMain.handle('launch-game', (event, payload) => {
         event.sender.send('game-status', { path: key, status: 'running' });
 
         child.on('exit', (code) => {
+            // Our process ending does not mean the game did. A Steam
+            // game started directly will often relaunch itself through
+            // Steam, and this fires a second or two in. So the name is
+            // watched for instead, and only that decides.
+            const names = executableNames(game, plan.executable);
+            if (names.length) {
+                watchForExit(key, names, (msg) => event.sender.send('game-status', msg));
+                return;
+            }
             activeProcesses.delete(key);
             event.sender.send('game-status', { path: key, status: 'exited', code });
         });
@@ -624,34 +743,45 @@ ipcMain.handle('launch-game', (event, payload) => {
     }
 });
 
-ipcMain.handle('kill-game', (event, gamePath) => {
-    const child = activeProcesses.get(gamePath);
-    if (!child) return { success: false, error: 'Game not running' };
-
-    try {
-        if (process.platform === 'win32') {
-            // Games spawn helper processes; /T takes the tree with it.
-            exec(`taskkill /F /T /PID ${child.pid}`, (err) => {
-                if (err) console.error('Taskkill error:', err);
-            });
-        } else {
-            // SIGKILL, not SIGTERM: Stop is meant to end the game
-            // immediately, not to ask it politely and wait for it to
-            // save and shut down. Negative pid signals the whole
-            // process group, which is why the child was spawned
-            // detached — a game's helper processes die with it.
-            try {
-                process.kill(-child.pid, 'SIGKILL');
-            } catch (e) {
-                child.kill('SIGKILL');
-            }
-        }
-    } catch (err) {
-        console.error('[Kill] error:', err);
-        return { success: false, error: err.message };
+ipcMain.handle('kill-game', async (event, gamePath, game) => {
+    if (!activeProcesses.has(gamePath)) {
+        return { success: false, error: 'Game not running' };
     }
 
+    const child = activeProcesses.get(gamePath);
+    let killed = false;
+
+    /* Stop means stop, not "ask nicely and wait" — the user chose it
+       knowing nothing is saved. A game is also a tree: launcher,
+       anti-cheat, crash handler. Killing one of those and leaving the
+       rest can leave the screen held by something invisible. */
+
+    // The process we started, when there was one.
+    if (child && child.pid) {
+        try { await Platform.killTree(child.pid); killed = true; }
+        catch (e) { console.error('[Kill] child:', e.message); }
+    }
+
+    // And whatever is actually running under that name — which for a
+    // Steam launch is the only thing there is, and for a game that
+    // relaunched itself is the copy that outlived ours.
+    try {
+        const names = executableNames(game || {});
+        if (names.length) {
+            const found = await Platform.findProcesses(names);
+            for (const proc of found) {
+                await Platform.killTree(proc.pid);
+                killed = true;
+            }
+        }
+    } catch (e) {
+        console.error('[Kill] by name:', e.message);
+    }
+
+    stopWatching(gamePath);
     activeProcesses.delete(gamePath);
+
+    if (!killed) return { success: false, error: 'Nothing to stop' };
     return { success: true };
 });
 
@@ -1204,10 +1334,20 @@ ipcMain.handle('check-for-update', async () => {
             if (!r.ok) return { kind, current, checked: false, error: 'HTTP ' + r.status };
             const j = await r.json();
             const latest = String(j.tag_name || '').replace(/^v/, '');
+
+            // The size of whichever file suits this install, so the
+            // dialog can say what a download would cost before it
+            // starts. A copy running from source has no file of its
+            // own, and gets none.
+            const want = kind === 'deb' ? '.deb' : (kind === 'installer' ? '.exe' : '.appimage');
+            const asset = (j.assets || []).find(a =>
+                String(a.name || '').toLowerCase().endsWith(want));
+
             return {
                 kind, current, checked: true,
                 available: !!latest && latest !== current,
                 version: latest,
+                size: (asset && asset.size) || 0,
                 notes: j.body || '',
                 url: j.html_url
             };
@@ -1218,12 +1358,20 @@ ipcMain.handle('check-for-update', async () => {
 
     try {
         const res = await autoUpdater.checkForUpdates();
-        const latest = res && res.updateInfo ? res.updateInfo.version : null;
+        const info = res && res.updateInfo;
+        const latest = info ? info.version : null;
+
+        // How large it is, so that can be said before anyone commits to
+        // fetching it. The updater describes the files it would use;
+        // the one meant for this platform is the first of them.
+        const file = info && Array.isArray(info.files) ? info.files[0] : null;
+
         return {
             kind, current, checked: true,
             available: !!latest && latest !== current,
             version: latest,
-            notes: (res && res.updateInfo && res.updateInfo.releaseNotes) || '',
+            size: (file && file.size) || 0,
+            notes: (info && info.releaseNotes) || '',
             url: 'https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest'
         };
     } catch (e) {

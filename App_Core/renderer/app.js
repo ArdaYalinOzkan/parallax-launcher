@@ -1648,7 +1648,9 @@ playBtn.addEventListener('click', async () => {
     if (!launchPath) return;
 
     if (runningGames.has(launchPath)) {
-        const result = await window.api.killGame(launchPath);
+        // The game goes with it: stopping may have to find the process
+        // by name, and only this side knows which game is meant.
+        const result = await window.api.killGame(launchPath, game);
         if (!result.success) showError(translations[currentLanguage].STOP_FAILED || `Could not stop the game: ${result.error}`);
         return;
     }
@@ -2256,6 +2258,7 @@ async function executeAddGame(name, steamApp) {
         pendingAssetFetches.add(newGame.Id);
 
         await loadLibrary();
+        closeGameSuggestions();
         addGameModal.classList.add('hidden');
         gameSearchInput.value = '';
         selectedSteamApp = null;
@@ -2314,9 +2317,48 @@ async function autoFetchAssets(gameId, originalName) {
 
 if (cancelAddGameBtn) {
     cancelAddGameBtn.addEventListener('click', () => {
+        closeGameSuggestions();
         addGameModal.classList.add('hidden');
         gameSearchInput.value = '';
         selectedSteamApp = null;
+    });
+}
+
+/* ----------------------------------------------------------------
+   Dismissing the game suggestions
+   ----------------------------------------------------------------
+   The list is drawn above the panel it belongs to — it has to be, or
+   it would be clipped — and it is long enough to reach past the
+   bottom of that panel and cover Cancel. Nothing closed it, so once
+   it had opened there was no way out of the dialog but to pick
+   something.
+
+   Three ways out now, which are the three a list like this is
+   expected to have: press Escape, click anywhere else, or empty the
+   field it came from.
+   ---------------------------------------------------------------- */
+function closeGameSuggestions() {
+    if (gameSuggestions) gameSuggestions.classList.add('hidden');
+}
+
+if (gameSuggestions) {
+    document.addEventListener('click', (e) => {
+        if (gameSuggestions.classList.contains('hidden')) return;
+        const el = e.target instanceof Element ? e.target : null;
+        // A click inside the list is a choice; on the field or its
+        // button, an attempt to search again. Anything else dismisses.
+        if (el && (el.closest('#gameSuggestions') ||
+                   el.closest('#gameSearchInput') ||
+                   el.closest('#triggerSearchBtn'))) return;
+        closeGameSuggestions();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeGameSuggestions();
+    });
+
+    gameSearchInput.addEventListener('input', () => {
+        if (!gameSearchInput.value.trim()) closeGameSuggestions();
     });
 }
 
@@ -3526,6 +3568,25 @@ function humanBytes(n) {
     return gb >= 1 ? `${gb.toFixed(1)} GB` : `${Math.round(n / 1048576)} MB`;
 }
 
+/* ----------------------------------------------------------------
+   Following an install that Steam is doing
+   ----------------------------------------------------------------
+   Pressing Install hands the job to Steam and nothing else happens
+   here — no bar, no "waiting", no change to the button. Steam may
+   take a while to open, the person may not press Download, or they
+   may decide against it; a progress bar during any of that is a
+   promise the app cannot keep, and the old one sat at "Waiting for
+   Steam…" for ever when they cancelled.
+
+   Instead the manifest is read quietly in the background. The bar
+   appears only once Steam is genuinely fetching bytes, and goes away
+   again if that stops — which is what cancelling looks like from
+   here.
+   ---------------------------------------------------------------- */
+
+/** How long to keep looking before assuming they changed their mind. */
+const INSTALL_WATCH_TIMEOUT_MS = 15 * 60 * 1000;
+
 function stopInstallWatch() {
     if (installWatchTimer) clearInterval(installWatchTimer);
     installWatchTimer = null;
@@ -3533,28 +3594,29 @@ function stopInstallWatch() {
     if (installProgressEl) installProgressEl.classList.add('hidden');
 }
 
+/** Puts the details screen back to "not installed, here is the button". */
+function resetInstallUI() {
+    stopInstallWatch();
+    if (installBtnEl) installBtnEl.classList.remove('hidden');
+}
+
 async function watchInstall(game) {
     const t = translations[currentLanguage];
     stopInstallWatch();
     installWatchId = game.Id;
 
-    if (installBtnEl) installBtnEl.classList.add('hidden');
-    if (installProgressEl) installProgressEl.classList.remove('hidden');
-    if (installFillEl) installFillEl.style.width = '0%';
-    if (installTextEl) installTextEl.textContent = t.INSTALL_WAITING || 'Waiting for Steam…';
+    // Deliberately nothing on screen yet. The button stays as it was.
+    const startedAt = Date.now();
+    let everStarted = false;
 
     const tick = async () => {
-        // Stop if the user has moved on to a different game.
+        // Stop if they have moved on to a different game.
         if (detailsTitle.dataset.gameId !== installWatchId) return stopInstallWatch();
 
         const st = await window.api.installState(game.SteamAppId);
+        const downloading = !!(st && st.found && st.busy && st.bytesToDownload > 0);
 
-        if (!st || !st.found) {
-            if (installTextEl) installTextEl.textContent = t.INSTALL_WAITING || 'Waiting for Steam…';
-            return;
-        }
-
-        if (st.installed) {
+        if (st && st.found && st.installed) {
             stopInstallWatch();
             showSuccess((t.INSTALL_DONE || '{name} is installed.').replace('{name}', game.Name));
             await window.api.scanInstalled();
@@ -3564,13 +3626,32 @@ async function watchInstall(game) {
             return;
         }
 
-        const pct = st.percent || 0;
-        if (installFillEl) installFillEl.style.width = `${pct.toFixed(1)}%`;
-        if (installTextEl) {
-            installTextEl.textContent = st.bytesToDownload > 0
-                ? `${pct.toFixed(0)}%  ·  ${humanBytes(st.bytesDownloaded)} / ${humanBytes(st.bytesToDownload)}`
-                : (t.INSTALL_PREPARING || 'Preparing…');
+        if (downloading) {
+            // First sign of real progress: now the bar has something
+            // true to show.
+            if (!everStarted) {
+                everStarted = true;
+                if (installBtnEl) installBtnEl.classList.add('hidden');
+                if (installProgressEl) installProgressEl.classList.remove('hidden');
+            }
+            const pct = st.percent || 0;
+            if (installFillEl) installFillEl.style.width = `${pct.toFixed(1)}%`;
+            if (installTextEl) {
+                installTextEl.textContent =
+                    `${pct.toFixed(0)}%  ·  ${humanBytes(st.bytesDownloaded)} / ${humanBytes(st.bytesToDownload)}`;
+            }
+            return;
         }
+
+        // It was downloading and now it is not, and it did not finish.
+        // Cancelled, or paused — either way there is nothing to show.
+        if (everStarted) {
+            resetInstallUI();
+            return;
+        }
+
+        // Never started. Give up quietly rather than watching for ever.
+        if (Date.now() - startedAt > INSTALL_WATCH_TIMEOUT_MS) stopInstallWatch();
     };
 
     await tick();
@@ -3765,21 +3846,87 @@ if (checkAutoUpdate) {
     };
 }
 
+/* ----------------------------------------------------------------
+   Telling somebody a new version exists
+   ----------------------------------------------------------------
+   Settings is the wrong place to learn this: nobody opens Settings to
+   check. So the check runs on every launch, and when there is
+   something newer it is shown once, on the way into the library — the
+   step from one version to the next, how large it is, and what
+   changed.
+
+   Once per launch. Dismissing means dismissed until next time, and
+   the switch in Settings stops it asking at all.
+   ---------------------------------------------------------------- */
+
+let updateModalShown = false;
+
+function openUpdateModal(info) {
+    const modal = el('updateModal');
+    if (!modal || updateModalShown) return;
+    updateModalShown = true;
+
+    const put = (id, text) => { const n = el(id); if (n) n.textContent = text; };
+    put('updateFromVersion', info.current || appVersion || '—');
+    put('updateToVersion', info.version || '—');
+
+    // Worth saying before somebody starts a download on a connection
+    // they are paying for by the megabyte.
+    put('updateSize', info.size ? Math.round(info.size / 1048576) + ' MB' : '');
+
+    const notes = el('updateModalNotes');
+    if (notes) {
+        // Release notes are written elsewhere; they go in as text.
+        const clean = String(info.notes || '').trim();
+        notes.textContent = clean.length > 1500 ? clean.slice(0, 1500) + '…' : clean;
+    }
+
+    const go = el('updateNowBtn');
+    if (go) {
+        const canInstall = canInstallItself(info.kind);
+        go.textContent = updateT(canInstall ? 'DOWNLOAD_UPDATE' : 'OPEN_DOWNLOAD_PAGE');
+        go.onclick = () => {
+            if (!canInstall) { window.api.openReleasePage(); return; }
+            // The panel already knows how to do this, including its
+            // progress bar and its failure handling — so the dialog
+            // hands over to it rather than growing a second copy.
+            closeUpdateModal();
+            // Settings opens on About, which is where that panel lives,
+            // so the progress the download reports is on screen.
+            openMainSettings();
+            const btn = el('updateDownloadBtn');
+            if (btn) btn.onclick();
+        };
+    }
+
+    modal.classList.remove('hidden');
+    if (window.SFX) window.SFX.play('open');
+}
+
+function closeUpdateModal() {
+    const modal = el('updateModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+if (el('updateModalClose')) el('updateModalClose').onclick = closeUpdateModal;
+if (el('updateLaterBtn')) el('updateLaterBtn').onclick = closeUpdateModal;
+
 /**
- * The quiet check. Once a day at most, a little after start-up so it
- * never competes with the library loading, and it says nothing unless
- * there is actually something to say.
+ * The check that runs on launch. Silent when there is nothing to
+ * report, and held back a few seconds so it never competes with the
+ * library loading.
  */
 function scheduleUpdateCheck() {
     if (!appSettings.autoCheckUpdates) return;
-    const DAY = 24 * 60 * 60 * 1000;
-    if (Date.now() - (appSettings.lastUpdateCheck || 0) < DAY) return;
     setTimeout(() => runUpdateCheck({ silent: true }).then(() => {
         const r = updateState.info;
-        if (r && r.checked && r.available) {
-            setUpdateStatus(r.kind === 'deb' ? 'UPDATE_AVAILABLE_DEB' : 'UPDATE_AVAILABLE', r.version);
-            renderUpdateNotes(r.notes);
-            showUpdateButtons(canInstallItself(r.kind) ? { download: true } : { open: true });
-        }
-    }), 8000);
+        if (!r || !r.checked || !r.available) return;
+
+        // Keep the panel in step for whoever opens it later.
+        setUpdateStatus(r.kind === 'deb' ? 'UPDATE_AVAILABLE_DEB' : 'UPDATE_AVAILABLE', r.version);
+        renderUpdateNotes(r.notes);
+        showUpdateButtons(canInstallItself(r.kind) ? { download: true } : { open: true });
+
+        openUpdateModal(r);
+    }), 6000);
 }

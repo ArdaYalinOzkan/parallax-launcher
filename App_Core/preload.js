@@ -20,7 +20,9 @@ contextBridge.exposeInMainWorld('api', {
     setApiKeys: (keys) => ipcRenderer.invoke('set-api-keys', keys),
     getSteamAccounts: () => ipcRenderer.invoke('get-steam-accounts'),
     onArtworkProgress: (cb) => ipcRenderer.on('artwork-progress', (e, d) => cb(d)),
-    killGame: (gamePath) => ipcRenderer.invoke('kill-game', gamePath),
+    // The game object goes with it: stopping may have to find the
+    // process by name, and only the caller knows which game this is.
+    killGame: (gamePath, game) => ipcRenderer.invoke('kill-game', gamePath, game),
     selectExe: () => ipcRenderer.invoke('select-exe'),
     selectImage: () => ipcRenderer.invoke('select-image'),
     onGameStatus: (callback) => ipcRenderer.on('game-status', (event, data) => callback(data)),

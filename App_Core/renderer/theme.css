@@ -2850,3 +2850,131 @@ body[data-screen="profileDetails"] .sky__near {
     border-radius: 4px;
     color: var(--star-faint);
 }
+
+
+/* --- The update dialog ------------------------------------------
+   Shown once on entering the library. The whole point is the step
+   from one version to another, so that is the largest thing on it —
+   two numbers and an arrow, readable without reading.
+   ---------------------------------------------------------------- */
+.update-card {
+    position: relative;
+    max-width: 520px;
+    width: 100%;
+    padding: 34px 34px 30px;
+    text-align: left;
+}
+
+.update-card__eyebrow {
+    margin-bottom: 20px;
+}
+
+.version-step {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding: 20px 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: rgba(255, 255, 255, .022);
+}
+
+.version-step__from,
+.version-step__to {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.version-step__tag {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+}
+
+.version-step__num {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    line-height: 1;
+    /* The two numbers differ by a digit or two; lining figures keep
+       them the same width so the eye lands on what changed. */
+    font-variant-numeric: tabular-nums;
+    color: var(--star-dim);
+}
+
+.version-step__to .version-step__num {
+    color: var(--star-hi);
+}
+
+.version-step__arrow {
+    width: 40px;
+    height: 16px;
+    flex: none;
+    color: var(--star-faint);
+}
+
+/* Pushed to the far end: it matters, but it is not the news. */
+.version-step__size {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--star-faint);
+    font-variant-numeric: tabular-nums;
+}
+
+.update-card__notes {
+    margin-top: 20px;
+    padding: 16px 18px;
+    max-height: 220px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: var(--r-sm);
+    background: rgba(0, 0, 0, .25);
+    border: 1px solid var(--line-faint);
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: var(--star-dim);
+    white-space: pre-wrap;
+}
+
+.update-card__notes:empty { display: none; }
+
+.update-card__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 14px;
+    margin-top: 24px;
+}
+
+/* Declining sits on the left and stays quiet — it is always
+   available, and never the thing being encouraged. */
+.update-card__actions .minimal-cancel-btn {
+    margin-right: auto;
+}
+
+.update-card__bar {
+    margin-top: 18px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, .1);
+    overflow: hidden;
+}
+
+.update-card .modal-close-x {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    background: transparent;
+    border: 0;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+@media (max-width: 520px) {
+    .version-step__size { margin-left: 0; width: 100%; }
+}

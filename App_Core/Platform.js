@@ -13,6 +13,10 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+// execFile rather than exec: the process listings below take fixed
+// arguments and never a shell, so nothing a game is called can be
+// read as one.
+const { execFile } = require('child_process');
 
 const IS_WINDOWS = process.platform === 'win32';
 const IS_LINUX = process.platform === 'linux';
@@ -722,7 +726,120 @@ function describe() {
     };
 }
 
+/* ================================================================
+   WATCHING A GAME THAT IS ALREADY RUNNING
+   ================================================================
+   Holding the child process we spawned is the obvious way to know
+   whether a game is still up, and it fails in the two cases that
+   matter most.
+
+   A Steam game started through `steam://` gives us no child at all —
+   Steam launches it, so there is nothing of ours to watch, and the
+   Stop button never appeared. And on Windows a Steam game started
+   directly will very often notice it was not launched by Steam and
+   relaunch itself through it: our process exits within a second or
+   two while the game is only just starting, so the app decided the
+   game had already closed.
+
+   Looking for the process by name sidesteps both. It does not matter
+   who started it or how many times it restarted itself — if something
+   with that name is running, the game is up.
+   ================================================================ */
+
+/**
+ * Every running process whose executable name matches one of `names`.
+ * Names are compared without their extension and case-insensitively,
+ * because Windows reports `Game.exe` where the file on disk is
+ * `game.exe`.
+ *
+ * @param {string[]} names  executable base names, e.g. ['hl2.exe']
+ * @returns {Promise<Array<{pid:number, name:string}>>}
+ */
+function findProcesses(names) {
+    const want = new Set(
+        (names || [])
+            .filter(Boolean)
+            .map(n => path.basename(String(n)).replace(/\.(exe|bat|cmd|sh)$/i, '').toLowerCase())
+    );
+    if (!want.size) return Promise.resolve([]);
+
+    // Matches a wanted name where it sits in a command line: at the
+    // start, or after a path separator, with or without an extension.
+    // Names are escaped before they become a pattern, because a game
+    // may legitimately be called `Rock, Paper, Scissors (2+)`.
+    const patterns = [...want].map(n =>
+        new RegExp('(^|[/\\\\ ])' + n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+            '(\\.(exe|bat|cmd|sh))?($|\\s)', 'i'));
+
+    return new Promise((resolve) => {
+        // Read-only listings, run without a shell and parsed rather
+        // than matched, so nothing a game is called can be executed.
+        //
+        // Linux is asked for the full command line, not `comm`: comm is
+        // the thread name and is cut at fifteen characters, so `node`
+        // came back as `node-MainThread` and a game with a long name
+        // came back truncated. The full path is both complete and
+        // unambiguous.
+        const cmd = IS_WINDOWS
+            ? { file: 'tasklist', args: ['/FO', 'CSV', '/NH'] }
+            : { file: 'ps', args: ['-eo', 'pid=,args='] };
+
+        execFile(cmd.file, cmd.args, { maxBuffer: 16 * 1024 * 1024 }, (err, stdout) => {
+            if (err || !stdout) return resolve([]);
+            const found = [];
+
+            for (const line of String(stdout).split(/\r?\n/)) {
+                if (!line.trim()) continue;
+
+                let pid, name;
+                if (IS_WINDOWS) {
+                    // "Image Name","PID","Session Name","Session#","Mem Usage"
+                    const m = line.match(/^"([^"]*)","(\d+)"/);
+                    if (!m) continue;
+                    name = m[1];
+                    pid = Number(m[2]);
+                    const bare = path.basename(name).replace(/\.(exe|bat|cmd|sh)$/i, '').toLowerCase();
+                    if (want.has(bare)) found.push({ pid, name });
+                    continue;
+                }
+
+                const m = line.trim().match(/^(\d+)\s+(.+)$/);
+                if (!m) continue;
+                pid = Number(m[1]);
+                name = m[2];
+                if (patterns.some(re => re.test(name))) found.push({ pid, name });
+            }
+
+            resolve(found);
+        });
+    });
+}
+
+/**
+ * Ends a process and whatever it started.
+ *
+ * A game is a tree — launcher, anti-cheat, crash handler — and killing
+ * only the one we found leaves the rest behind, sometimes still
+ * holding the screen.
+ */
+function killTree(pid) {
+    return new Promise((resolve) => {
+        if (!pid) return resolve(false);
+        if (IS_WINDOWS) {
+            execFile('taskkill', ['/F', '/T', '/PID', String(pid)], () => resolve(true));
+            return;
+        }
+        // Negative pid is the process group, which is how a detached
+        // child's helpers are reached. If it was not a group leader
+        // that throws, and the process itself is the fallback.
+        try { process.kill(-pid, 'SIGKILL'); return resolve(true); } catch (e) { /* not a leader */ }
+        try { process.kill(pid, 'SIGKILL'); return resolve(true); } catch (e) { resolve(false); }
+    });
+}
+
 module.exports = {
+    findProcesses,
+    killTree,
     IS_WINDOWS,
     wrapperTools,
     commandExists,

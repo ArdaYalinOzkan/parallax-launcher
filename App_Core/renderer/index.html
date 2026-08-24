@@ -1108,6 +1108,46 @@
         </div>
     </div>
     <!-- New Game Search Modal -->
+    <!-- Shown once on entering the library when there is something
+         newer, so a version somebody is not running is not something
+         they have to go looking in Settings to find out about. -->
+    <div id="updateModal" class="modal hidden" style="z-index: 4000;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content update-card">
+            <button id="updateModalClose" class="modal-close-x" aria-label="Close">&times;</button>
+
+            <span class="label update-card__eyebrow" data-i18n="UPDATE_AVAILABLE_TITLE">A NEWER VERSION</span>
+
+            <div class="version-step">
+                <div class="version-step__from">
+                    <span class="version-step__tag" data-i18n="UPDATE_YOURS">Yours</span>
+                    <span class="version-step__num" id="updateFromVersion">—</span>
+                </div>
+                <svg class="version-step__arrow" viewBox="0 0 40 16" fill="none" aria-hidden="true">
+                    <path d="M0 8h34M28 2l6 6-6 6" stroke="currentColor" stroke-width="1.6"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div class="version-step__to">
+                    <span class="version-step__tag" data-i18n="UPDATE_NEW">New</span>
+                    <span class="version-step__num" id="updateToVersion">—</span>
+                </div>
+                <span class="version-step__size" id="updateSize"></span>
+            </div>
+
+            <div class="update-card__notes" id="updateModalNotes"></div>
+
+            <div class="update-card__actions">
+                <button id="updateLaterBtn" class="minimal-cancel-btn" data-i18n="UPDATE_LATER">Not now</button>
+                <button id="updateNowBtn" class="premium-btn" data-i18n="DOWNLOAD_UPDATE">DOWNLOAD AND INSTALL</button>
+            </div>
+
+            <div class="update-card__bar hidden" id="updateModalBar">
+                <span class="update-bar-fill" id="updateModalBarFill"></span>
+            </div>
+            <p class="sys-hint hidden" id="updateModalStatus" style="margin-top: 10px;"></p>
+        </div>
+    </div>
+
     <div id="addGameModal" class="modal hidden" style="z-index: 2500;">
         <div class="modal-overlay"></div>
         <div class="modal-content account-choice-card" style="max-width: 450px; padding: 40px;">
