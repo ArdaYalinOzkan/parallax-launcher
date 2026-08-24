@@ -2989,3 +2989,106 @@ body[data-screen="profileDetails"] .sky__near {
 .game-card.art-arrived .card-image {
     animation: art-in .45s ease-out both;
 }
+
+
+/* --- An empty shelf ---------------------------------------------
+   What a new account sees first. It used to see nothing at all: the
+   grid simply had no children, so the screen was blank and the two
+   things somebody needs were behind buttons they had no reason to
+   look for.
+   ---------------------------------------------------------------- */
+.empty-shelf {
+    /* Spans the whole grid however many columns it has. */
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+    padding: clamp(48px, 12vh, 110px) 24px;
+    max-width: 52ch;
+    margin-inline: auto;
+}
+
+.empty-shelf__mark {
+    width: 64px;
+    height: 64px;
+    color: var(--star-faint);
+    margin-bottom: 6px;
+}
+
+.empty-shelf h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--star-hi);
+    letter-spacing: -0.01em;
+}
+
+.empty-shelf p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--star-dim);
+}
+
+.empty-shelf__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+/* Nothing matched a filter — a smaller moment, and a smaller panel. */
+.empty-shelf--filtered {
+    padding-block: clamp(36px, 9vh, 80px);
+}
+
+.empty-shelf--filtered h2 {
+    font-size: 1.05rem;
+}
+
+
+/* --- A note about a missing key ---------------------------------
+   Shown only where a key would actually change what happens, and
+   only when there isn't one. It carries the two buttons that end
+   the problem rather than describing where to go looking.
+   ---------------------------------------------------------------- */
+.key-note {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: rgba(255, 255, 255, .025);
+    text-align: left;
+}
+
+.key-note p {
+    margin: 0 0 12px;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--star-dim);
+}
+
+.key-note__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.key-note__btn {
+    padding: 7px 13px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line-strong);
+    background: transparent;
+    color: var(--star);
+    font: 500 0.74rem/1 var(--font-ui);
+    cursor: pointer;
+    transition: color var(--t-fast), border-color var(--t-fast);
+}
+
+.key-note__btn:hover {
+    color: var(--star-hi);
+    border-color: var(--star-dim);
+}

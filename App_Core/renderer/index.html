@@ -873,6 +873,7 @@
 
                     <div class="settings-tab" data-tab="language" data-i18n="LANGUAGE">LANGUAGE</div>
                     <div class="settings-tab" data-tab="interface" data-i18n="INTERFACE">INTERFACE</div>
+                    <div class="settings-tab" data-tab="api" data-i18n="API">API</div>
                     <div class="settings-tab" data-tab="system" data-i18n="SYSTEM">SYSTEM</div>
                 </div>
 
@@ -993,35 +994,44 @@
                             <span class="sfx-volume-value" id="uiVolumeValue">100</span>
                         </div>
 
-                        <div class="settings-theme-group" style="margin-top: 35px;">
-                            <label class="filter-label" style="display: block; margin-bottom: 20px;"
-                                data-i18n="AMBIENT_COLOR">AMBIENT ATMOSPHERE</label>
-                            <div class="theme-palette">
-                                <div class="theme-swatch" data-rgb="60, 110, 180"
-                                    style="background: rgb(60, 110, 180);">
-                                </div>
-                                <div class="theme-swatch" data-rgb="180, 60, 60" style="background: rgb(180, 60, 60);">
-                                </div>
-                                <div class="theme-swatch" data-rgb="60, 180, 110"
-                                    style="background: rgb(60, 180, 110);">
-                                </div>
-                                <div class="theme-swatch" data-rgb="180, 140, 60"
-                                    style="background: rgb(180, 140, 60);">
-                                </div>
-                                <div class="theme-swatch" data-rgb="140, 60, 180"
-                                    style="background: rgb(140, 60, 180);">
-                                </div>
-                                <div class="theme-swatch" data-rgb="140, 140, 140"
-                                    style="background: rgb(140, 140, 140);"></div>
+
+
+
+                    <!-- Its own tab. These were at the bottom of SYSTEM, below
+                         hardware detection and compatibility defaults, where
+                         nobody looking for them would think to scroll. -->
+                    <div id="settings-api" class="settings-pane">
+                        <h2 class="settings-pane-title" data-i18n="API_KEYS">Your API keys</h2>
+
+                        <h3 class="sys-section-title" data-i18n="API_KEYS">Your API keys</h3>
+                        <p class="sys-hint" data-i18n="API_KEYS_HINT">Both are optional, and nothing is bundled with the app. Without them the launcher still finds your installed games and still fills every cover from Steam's public artwork.</p>
+
+                        <div class="key-row">
+                            <div class="key-label">
+                                <span class="filter-label" data-i18n="STEAM_WEB_API">STEAM WEB API</span>
+                                <span class="key-status" id="steamKeyStatus"></span>
                             </div>
-                            <button id="resetThemeBtn" class="minimal-text-btn"
-                                style="margin-top: 15px; opacity: 0.6; font-size: 0.6rem; letter-spacing: 2px; background: transparent; border: none; color: #fff; cursor: pointer;"
-                                data-i18n="RESET_THEME">RESET TO DEFAULT</button>
+                            <p class="sys-hint" data-i18n="STEAM_KEY_HINT">Lets the launcher import your whole Steam library, including games you have not installed. One-time — after the import it is never needed again. Get one at steamcommunity.com/dev/apikey</p>
+                            <div class="props-row">
+                                <input type="password" id="steamKeyInput" class="settings-input" spellcheck="false"
+                                    autocomplete="off" placeholder="Not set" data-i18n-placeholder="KEY_NONE">
+                                <button id="steamKeySave" class="premium-btn secondary-btn" data-i18n="SAVE">SAVE</button>
+                            </div>
                         </div>
 
+                        <div class="key-row">
+                            <div class="key-label">
+                                <span class="filter-label">STEAMGRIDDB</span>
+                                <span class="key-status" id="sgdbKeyStatus"></span>
+                            </div>
+                            <p class="sys-hint" data-i18n="SGDB_KEY_HINT">Unlocks community artwork — often hundreds of alternatives per game, instead of Steam's single official cover. Get one at steamgriddb.com/profile/api</p>
+                            <div class="props-row">
+                                <input type="password" id="sgdbKeyInput" class="settings-input" spellcheck="false"
+                                    autocomplete="off" placeholder="Not set" data-i18n-placeholder="KEY_NONE">
+                                <button id="sgdbKeySave" class="premium-btn secondary-btn" data-i18n="SAVE">SAVE</button>
+                            </div>
+                        </div>
                     </div>
-
-
 
                     <div id="settings-system" class="settings-pane">
                         <h2 class="settings-pane-title" data-i18n="THIS_MACHINE">This Machine</h2>
@@ -1077,37 +1087,6 @@
                         <p class="sys-hint" data-i18n="LIBRARY_SYNC_HINT">Reads Steam's own install records to find which games are really installed, and links each one to its Steam ID so it can be started.</p>
                         <button id="rescanInstalledBtn" class="premium-btn" data-i18n="RESCAN">RESCAN INSTALLED GAMES</button>
                         <div id="rescanResult" class="sys-hint" style="margin-top: 12px;"></div>
-
-                        <div class="sys-divider"></div>
-
-                        <h3 class="sys-section-title" data-i18n="API_KEYS">Your API keys</h3>
-                        <p class="sys-hint" data-i18n="API_KEYS_HINT">Both are optional, and nothing is bundled with the app. Without them the launcher still finds your installed games and still fills every cover from Steam's public artwork.</p>
-
-                        <div class="key-row">
-                            <div class="key-label">
-                                <span class="filter-label" data-i18n="STEAM_WEB_API">STEAM WEB API</span>
-                                <span class="key-status" id="steamKeyStatus"></span>
-                            </div>
-                            <p class="sys-hint" data-i18n="STEAM_KEY_HINT">Lets the launcher import your whole Steam library, including games you have not installed. One-time — after the import it is never needed again. Get one at steamcommunity.com/dev/apikey</p>
-                            <div class="props-row">
-                                <input type="password" id="steamKeyInput" class="settings-input" spellcheck="false"
-                                    autocomplete="off" placeholder="Not set" data-i18n-placeholder="KEY_NONE">
-                                <button id="steamKeySave" class="premium-btn secondary-btn" data-i18n="SAVE">SAVE</button>
-                            </div>
-                        </div>
-
-                        <div class="key-row">
-                            <div class="key-label">
-                                <span class="filter-label">STEAMGRIDDB</span>
-                                <span class="key-status" id="sgdbKeyStatus"></span>
-                            </div>
-                            <p class="sys-hint" data-i18n="SGDB_KEY_HINT">Unlocks community artwork — often hundreds of alternatives per game, instead of Steam's single official cover. Get one at steamgriddb.com/profile/api</p>
-                            <div class="props-row">
-                                <input type="password" id="sgdbKeyInput" class="settings-input" spellcheck="false"
-                                    autocomplete="off" placeholder="Not set" data-i18n-placeholder="KEY_NONE">
-                                <button id="sgdbKeySave" class="premium-btn secondary-btn" data-i18n="SAVE">SAVE</button>
-                            </div>
-                        </div>
 
                         <div class="sys-divider"></div>
 
@@ -1190,6 +1169,20 @@
                 </button>
                 <div id="gameSuggestions" class="autocomplete-suggestions hidden">
                     <!-- Suggestions will be injected here -->
+                </div>
+            </div>
+
+            <!-- Only shown when there is no SteamGridDB key. Somebody
+                 searching for a game Steam does not sell gets nothing
+                 back and no reason why; this says what is missing and
+                 goes straight to the two places that fix it. -->
+            <div class="key-note hidden" id="addGameKeyNote">
+                <p data-i18n="NEEDS_KEY_NOTE">Searching beyond Steam needs a SteamGridDB key.</p>
+                <div class="key-note__actions">
+                    <button class="key-note__btn" id="addGameGetKeyBtn"
+                        data-i18n="GET_A_KEY">Get a key</button>
+                    <button class="key-note__btn" id="addGameOpenApiBtn"
+                        data-i18n="API_SETTINGS">API settings</button>
                 </div>
             </div>
             <div class="modal-footer" style="display: flex; flex-direction: column; gap: 10px;">

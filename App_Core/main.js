@@ -820,21 +820,12 @@ ipcMain.handle('preview-launch', (event, game) => {
  */
 /** The user's SteamGridDB key, or '' if they have not set one. */
 /**
- * The author's own SteamGridDB key, shipped for the same reason as the
- * Steam one.
+ * The user's own SteamGridDB key, or '' if they have not set one.
  *
- * Steam's own search only knows about games Steam sells. Everything else
- * — anything from GOG, itch, a disc, a launcher of its own — is found
- * through SteamGridDB, and without a key those results simply were not
- * there. Somebody trying to add a non-Steam game searched, got nothing
- * back, and had no way to know a key was the reason.
- *
- * It is public and shared by everyone who has not set their own.
- * SteamGridDB counts requests per key, so anyone leaning on it should
- * paste in their own under Settings -> API, which is read first.
+ * Unlike the Steam key, none ships. Community artwork is the one thing
+ * here that costs somebody else money to serve, and handing every copy
+ * of the app the same key would spend one person's quota on everybody.
  */
-const BUNDLED_SGDB_KEY = '65473d7d01f85bc7931a3e43346c1383';
-
 function readSgdbKey() {
     try {
         if (fs.existsSync(apiKeysPath)) {
@@ -850,7 +841,7 @@ function readSgdbKey() {
             if (cfg.clientId) return String(cfg.clientId).trim();
         }
     } catch (e) { /* no key set */ }
-    return BUNDLED_SGDB_KEY;
+    return '';
 }
 
 /**
@@ -1411,6 +1402,26 @@ ipcMain.handle('check-for-update', async () => {
 ipcMain.handle('open-release-page', () => {
     const { shell } = require('electron');
     shell.openExternal('https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest');
+    return { success: true };
+});
+
+/**
+ * Opens the sign-up page for one of the two services.
+ *
+ * A fixed list rather than a URL from the page, for the same reason as
+ * above: which address the system browser opens is not a decision a
+ * renderer should be able to make.
+ */
+const KEY_PAGES = {
+    steam: 'https://steamcommunity.com/dev/apikey',
+    sgdb: 'https://www.steamgriddb.com/profile/preferences/api'
+};
+
+ipcMain.handle('open-key-page', (event, which) => {
+    const url = KEY_PAGES[which];
+    if (!url) return { success: false, error: 'UNKNOWN' };
+    const { shell } = require('electron');
+    shell.openExternal(url);
     return { success: true };
 });
 

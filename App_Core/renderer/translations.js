@@ -395,7 +395,15 @@ const translations = {
         UPDATE_NEW: "New",
         UPDATE_LATER: "Not now",
         FETCH_ARTWORK_AFTER: "Fetch artwork afterwards",
-        FETCH_ARTWORK_HINT: "Covers and banners for everything imported, from Steam's public images. Free, and it fills the shelf as it goes."
+        FETCH_ARTWORK_HINT: "Covers and banners for everything imported, from Steam's public images. Free, and it fills the shelf as it goes.",
+        EMPTY_TITLE: "Your shelf is empty.",
+        EMPTY_BODY: "Bring in the games you already own from Steam, or add one by hand. Either way takes a moment, and the covers arrive on their own.",
+        ADD_GAME_PLAIN: "Add a game",
+        NO_MATCHES_TITLE: "Nothing matches.",
+        NO_MATCHES_BODY: "Your games are still here — the search or the filters are hiding them.",
+        CLEAR_FILTERS: "Show everything",
+        GET_A_KEY: "Get a key",
+        NEEDS_KEY_NOTE: "Searching beyond Steam needs a SteamGridDB key. Without one, Steam's own catalogue is still searched — which covers most games."
     },
     tr: {
         WELCOME_TO: "Hoş geldiniz",
@@ -775,7 +783,15 @@ const translations = {
         UPDATE_NEW: "Yeni",
         UPDATE_LATER: "Şimdi değil",
         FETCH_ARTWORK_AFTER: "Sonrasında görselleri getir",
-        FETCH_ARTWORK_HINT: "İçe aktarılan her şey için kapak ve afiş, Steam'in herkese açık görsellerinden. Ücretsiz, ve rafı doldurdukça gösteriyor."
+        FETCH_ARTWORK_HINT: "İçe aktarılan her şey için kapak ve afiş, Steam'in herkese açık görsellerinden. Ücretsiz, ve rafı doldurdukça gösteriyor.",
+        EMPTY_TITLE: "Rafın boş.",
+        EMPTY_BODY: "Steam'de zaten sahip olduğun oyunları getir, ya da elle bir tane ekle. İkisi de bir dakika sürmez, kapaklar kendiliğinden gelir.",
+        ADD_GAME_PLAIN: "Oyun ekle",
+        NO_MATCHES_TITLE: "Eşleşen yok.",
+        NO_MATCHES_BODY: "Oyunların duruyor — arama ya da süzgeçler onları gizliyor.",
+        CLEAR_FILTERS: "Hepsini göster",
+        GET_A_KEY: "Anahtar al",
+        NEEDS_KEY_NOTE: "Steam dışını aramak için SteamGridDB anahtarı gerekiyor. O olmadan da Steam'in kendi kataloğu aranıyor — çoğu oyun zaten orada."
     },
     de: {
         WELCOME_TO: "Willkommen bei",
@@ -1139,7 +1155,15 @@ const translations = {
         UPDATE_NEW: "Neu",
         UPDATE_LATER: "Jetzt nicht",
         FETCH_ARTWORK_AFTER: "Bilder danach holen",
-        FETCH_ARTWORK_HINT: "Cover und Banner für alles Importierte, aus den öffentlichen Bildern von Steam. Kostenlos, und das Regal füllt sich sichtbar."
+        FETCH_ARTWORK_HINT: "Cover und Banner für alles Importierte, aus den öffentlichen Bildern von Steam. Kostenlos, und das Regal füllt sich sichtbar.",
+        EMPTY_TITLE: "Ihr Regal ist leer.",
+        EMPTY_BODY: "Holen Sie die Spiele herein, die Sie schon bei Steam haben, oder fügen Sie eines von Hand hinzu. Beides dauert einen Moment, die Cover kommen von selbst.",
+        ADD_GAME_PLAIN: "Spiel hinzufügen",
+        NO_MATCHES_TITLE: "Nichts passt.",
+        NO_MATCHES_BODY: "Ihre Spiele sind noch da — die Suche oder die Filter verbergen sie.",
+        CLEAR_FILTERS: "Alles anzeigen",
+        GET_A_KEY: "Schlüssel holen",
+        NEEDS_KEY_NOTE: "Über Steam hinaus zu suchen braucht einen SteamGridDB-Schlüssel. Ohne ihn wird weiterhin Steams eigener Katalog durchsucht — die meisten Spiele stehen dort."
     },
     ru: {
         WELCOME_TO: "Добро пожаловать в",
@@ -1503,7 +1527,15 @@ const translations = {
         UPDATE_NEW: "Новая",
         UPDATE_LATER: "Не сейчас",
         FETCH_ARTWORK_AFTER: "Затем загрузить изображения",
-        FETCH_ARTWORK_HINT: "Обложки и баннеры для всего импортированного, из публичных изображений Steam. Бесплатно, и полка заполняется на глазах."
+        FETCH_ARTWORK_HINT: "Обложки и баннеры для всего импортированного, из публичных изображений Steam. Бесплатно, и полка заполняется на глазах.",
+        EMPTY_TITLE: "Полка пуста.",
+        EMPTY_BODY: "Перенесите игры, которые уже есть у вас в Steam, или добавьте одну вручную. И то и другое займёт минуту, обложки придут сами.",
+        ADD_GAME_PLAIN: "Добавить игру",
+        NO_MATCHES_TITLE: "Ничего не найдено.",
+        NO_MATCHES_BODY: "Ваши игры на месте — их скрывают поиск или фильтры.",
+        CLEAR_FILTERS: "Показать всё",
+        GET_A_KEY: "Получить ключ",
+        NEEDS_KEY_NOTE: "Поиск за пределами Steam требует ключа SteamGridDB. Без него ищется каталог самого Steam — а там большинство игр."
     },
     uk: {
         WELCOME_TO: "Ласкаво просимо до",
@@ -1867,7 +1899,15 @@ const translations = {
         UPDATE_NEW: "Нова",
         UPDATE_LATER: "Не зараз",
         FETCH_ARTWORK_AFTER: "Потім завантажити зображення",
-        FETCH_ARTWORK_HINT: "Обкладинки та банери для всього імпортованого, з публічних зображень Steam. Безкоштовно, і полиця заповнюється на очах."
+        FETCH_ARTWORK_HINT: "Обкладинки та банери для всього імпортованого, з публічних зображень Steam. Безкоштовно, і полиця заповнюється на очах.",
+        EMPTY_TITLE: "Полиця порожня.",
+        EMPTY_BODY: "Перенесіть ігри, які вже є у вас у Steam, або додайте одну вручну. І те й інше займе хвилину, обкладинки прийдуть самі.",
+        ADD_GAME_PLAIN: "Додати гру",
+        NO_MATCHES_TITLE: "Нічого не знайдено.",
+        NO_MATCHES_BODY: "Ваші ігри на місці — їх приховують пошук або фільтри.",
+        CLEAR_FILTERS: "Показати все",
+        GET_A_KEY: "Отримати ключ",
+        NEEDS_KEY_NOTE: "Пошук поза Steam потребує ключа SteamGridDB. Без нього шукається каталог самого Steam — а там більшість ігор."
     },
     pt: {
         WELCOME_TO: "Bem-vindo ao",
@@ -2231,7 +2271,15 @@ const translations = {
         UPDATE_NEW: "Nova",
         UPDATE_LATER: "Agora não",
         FETCH_ARTWORK_AFTER: "Buscar imagens depois",
-        FETCH_ARTWORK_HINT: "Capas e banners para tudo o que for importado, das imagens públicas da Steam. Grátis, e a estante vai se preenchendo à vista."
+        FETCH_ARTWORK_HINT: "Capas e banners para tudo o que for importado, das imagens públicas da Steam. Grátis, e a estante vai se preenchendo à vista.",
+        EMPTY_TITLE: "Sua estante está vazia.",
+        EMPTY_BODY: "Traga os jogos que você já tem na Steam, ou adicione um à mão. Qualquer um leva um instante, e as capas chegam sozinhas.",
+        ADD_GAME_PLAIN: "Adicionar jogo",
+        NO_MATCHES_TITLE: "Nada corresponde.",
+        NO_MATCHES_BODY: "Seus jogos continuam aí — a busca ou os filtros estão escondendo eles.",
+        CLEAR_FILTERS: "Mostrar tudo",
+        GET_A_KEY: "Obter uma chave",
+        NEEDS_KEY_NOTE: "Buscar além da Steam precisa de uma chave do SteamGridDB. Sem ela, o catálogo da própria Steam continua sendo pesquisado — e ele cobre a maioria dos jogos."
     },
     zh: {
         WELCOME_TO: "欢迎使用",
@@ -2595,7 +2643,15 @@ const translations = {
         UPDATE_NEW: "新的",
         UPDATE_LATER: "暂不",
         FETCH_ARTWORK_AFTER: "之后获取图片",
-        FETCH_ARTWORK_HINT: "为导入的所有内容获取封面和横幅，来自 Steam 的公开图片。免费，而且会一边下载一边填满书架。"
+        FETCH_ARTWORK_HINT: "为导入的所有内容获取封面和横幅，来自 Steam 的公开图片。免费，而且会一边下载一边填满书架。",
+        EMPTY_TITLE: "你的书架是空的。",
+        EMPTY_BODY: "把你在 Steam 上已有的游戏导入进来，或者手动添加一个。两种方式都很快，封面会自己出现。",
+        ADD_GAME_PLAIN: "添加游戏",
+        NO_MATCHES_TITLE: "没有匹配的结果。",
+        NO_MATCHES_BODY: "你的游戏还在——是搜索或筛选把它们藏起来了。",
+        CLEAR_FILTERS: "显示全部",
+        GET_A_KEY: "获取密钥",
+        NEEDS_KEY_NOTE: "搜索 Steam 之外的游戏需要 SteamGridDB 密钥。没有它，仍会搜索 Steam 自己的目录——大多数游戏都在那里。"
     },
     ko: {
         WELCOME_TO: "환영합니다",
@@ -2959,6 +3015,14 @@ const translations = {
         UPDATE_NEW: "새 버전",
         UPDATE_LATER: "나중에",
         FETCH_ARTWORK_AFTER: "이어서 이미지 가져오기",
-        FETCH_ARTWORK_HINT: "가져온 모든 게임의 커버와 배너를 Steam의 공개 이미지에서 받아옵니다. 무료이고, 받는 대로 선반이 채워집니다."
+        FETCH_ARTWORK_HINT: "가져온 모든 게임의 커버와 배너를 Steam의 공개 이미지에서 받아옵니다. 무료이고, 받는 대로 선반이 채워집니다.",
+        EMPTY_TITLE: "선반이 비어 있습니다.",
+        EMPTY_BODY: "이미 Steam에 있는 게임을 가져오거나, 직접 하나 추가하세요. 어느 쪽이든 금방이고 커버는 알아서 들어옵니다.",
+        ADD_GAME_PLAIN: "게임 추가",
+        NO_MATCHES_TITLE: "일치하는 것이 없습니다.",
+        NO_MATCHES_BODY: "게임은 그대로 있습니다 — 검색이나 필터가 가리고 있을 뿐입니다.",
+        CLEAR_FILTERS: "전체 보기",
+        GET_A_KEY: "키 받기",
+        NEEDS_KEY_NOTE: "Steam 밖까지 검색하려면 SteamGridDB 키가 필요합니다. 키가 없어도 Steam 자체 목록은 계속 검색되며, 대부분의 게임은 거기에 있습니다."
     }
 };

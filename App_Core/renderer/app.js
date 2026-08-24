@@ -433,6 +433,7 @@ document.querySelectorAll('.details-container').forEach(container => {
 if (addGameBtn) {
     addGameBtn.addEventListener('click', () => {
         addGameModal.classList.remove('hidden');
+        refreshKeyNotes();
         gameSearchInput.value = '';
         selectedSteamApp = null;
         gameSuggestions.classList.add('hidden');
@@ -1405,8 +1406,87 @@ async function loadLibrary() {
     }
 }
 
+/* ----------------------------------------------------------------
+   An empty shelf
+   ----------------------------------------------------------------
+   A new account starts with nothing in it, and what somebody saw was
+   a blank screen — no games, no message, and no indication that the
+   two things they need are behind buttons elsewhere.
+
+   Two different emptinesses, and they need different answers. A
+   library with nothing in it is a beginning: say so, and offer the
+   two ways to fill it. A library whose filters match nothing is a
+   dead end: say that instead, and offer the way out.
+   ---------------------------------------------------------------- */
+function renderEmptyLibrary() {
+    const t = translations[currentLanguage];
+    const wrap = document.createElement('div');
+    wrap.className = 'empty-shelf';
+    wrap.innerHTML = `
+        <svg class="empty-shelf__mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+            <g stroke="currentColor" stroke-width="4" stroke-linejoin="round">
+                <path d="M50.00 15.00 L32.68 25.00 L32.68 45.00 L50.00 55.00 L67.32 45.00 L67.32 25.00 Z"/>
+                <path d="M32.68 45.00 L15.36 55.00 L15.36 75.00 L32.68 85.00 L50.00 75.00 L50.00 55.00 Z"/>
+                <path d="M67.32 45.00 L50.00 55.00 L50.00 75.00 L67.32 85.00 L84.64 75.00 L84.64 55.00 Z"/>
+            </g>
+        </svg>
+        <h2 data-i18n="EMPTY_TITLE">${t.EMPTY_TITLE}</h2>
+        <p data-i18n="EMPTY_BODY">${t.EMPTY_BODY}</p>
+        <div class="empty-shelf__actions">
+            <button id="emptyImportBtn" class="premium-btn" data-i18n="IMPORT_STEAM">${t.IMPORT_STEAM}</button>
+            <button id="emptyAddBtn" class="premium-btn secondary-btn" data-i18n="ADD_GAME_PLAIN">${t.ADD_GAME_PLAIN}</button>
+        </div>
+    `;
+    gameGrid.appendChild(wrap);
+
+    const imp = document.getElementById('emptyImportBtn');
+    const add = document.getElementById('emptyAddBtn');
+    // Reuse the buttons in the header rather than repeating what they
+    // do — one behaviour, two places to reach it.
+    // Straight to the panel each one leads to. The header's Add Game
+    // button is reused; importing lives behind the profile screen, so
+    // it is opened directly rather than walking somebody through two
+    // menus to reach the thing they were just told to do.
+    if (imp) imp.onclick = () => {
+        const modal = document.getElementById('steamImportModal');
+        if (modal) modal.classList.remove('hidden');
+    };
+    if (add) add.onclick = () => { if (addGameBtn) addGameBtn.click(); };
+}
+
+function renderNoMatches() {
+    const t = translations[currentLanguage];
+    const wrap = document.createElement('div');
+    wrap.className = 'empty-shelf empty-shelf--filtered';
+    wrap.innerHTML = `
+        <h2 data-i18n="NO_MATCHES_TITLE">${t.NO_MATCHES_TITLE}</h2>
+        <p data-i18n="NO_MATCHES_BODY">${t.NO_MATCHES_BODY}</p>
+        <div class="empty-shelf__actions">
+            <button id="clearFiltersBtn" class="premium-btn secondary-btn"
+                data-i18n="CLEAR_FILTERS">${t.CLEAR_FILTERS}</button>
+        </div>
+    `;
+    gameGrid.appendChild(wrap);
+
+    const clear = document.getElementById('clearFiltersBtn');
+    if (clear) clear.onclick = () => {
+        if (searchInput) searchInput.value = '';
+        if (platformFilter) platformFilter.value = 'All';
+        if (statusFilter) statusFilter.value = 'All';
+        if (typeof syncSearchClear === 'function') syncSearchClear();
+        handleFilters();
+    };
+}
+
 function renderGames(games) {
     gameGrid.innerHTML = '';
+
+    if (games.length === 0) {
+        // Nothing at all, or nothing that matches? The answer differs.
+        if (currentLibrary.length === 0) renderEmptyLibrary();
+        else renderNoMatches();
+        return;
+    }
 
     games.forEach(game => {
         const card = document.createElement('div');
@@ -2186,6 +2266,38 @@ async function handleGameSearch() {
 
 if (triggerSearchBtn) {
     triggerSearchBtn.addEventListener('click', handleGameSearch);
+}
+
+/* ----------------------------------------------------------------
+   Saying what a missing key costs, where it costs it
+   ----------------------------------------------------------------
+   Without a SteamGridDB key the search still works — it just only
+   knows what Steam sells. Somebody looking for a game from GOG or a
+   disc got an empty list and no reason for it. The note appears only
+   when the key is absent, only on the screen where it matters, and
+   carries the two buttons that end the problem.
+   ---------------------------------------------------------------- */
+async function refreshKeyNotes() {
+    const note = document.getElementById('addGameKeyNote');
+    if (!note || !window.api.getApiKeys) return;
+    try {
+        const have = await window.api.getApiKeys();
+        note.classList.toggle('hidden', !!(have && have.sgdb));
+    } catch (e) { /* leave it hidden rather than guess */ }
+}
+
+if (document.getElementById('addGameGetKeyBtn')) {
+    document.getElementById('addGameGetKeyBtn').onclick =
+        () => window.api.openKeyPage('sgdb');
+}
+
+if (document.getElementById('addGameOpenApiBtn')) {
+    document.getElementById('addGameOpenApiBtn').onclick = () => {
+        if (addGameModal) addGameModal.classList.add('hidden');
+        openMainSettings();
+        const tab = document.querySelector('.settings-tab[data-tab="api"]');
+        if (tab) tab.click();
+    };
 }
 
 if (gameSearchInput) {

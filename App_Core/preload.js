@@ -80,6 +80,8 @@ contextBridge.exposeInMainWorld('api', {
     downloadUpdate: () => ipcRenderer.invoke('download-update'),
     installUpdate: () => ipcRenderer.invoke('install-update'),
     openReleasePage: () => ipcRenderer.invoke('open-release-page'),
+    // 'steam' or 'sgdb' — the main process holds the addresses.
+    openKeyPage: (which) => ipcRenderer.invoke('open-key-page', which),
 
     onUpdateProgress: (fn) => ipcRenderer.on('update-progress', (_e, data) => fn(data)),
     onUpdateReady: (fn) => ipcRenderer.on('update-ready', (_e, data) => fn(data)),
