@@ -1,0 +1,96 @@
+# Cutting a release
+# =================
+# Everything below is set off by one command:
+#
+#     git tag v3.1.0 && git push --tags
+#
+# The version in App_Core/package.json is the one that counts — the tag
+# is only what starts the run. They are checked against each other
+# before anything is built, because a mismatch would produce a file
+# named after one version containing another, and that is the kind of
+# mistake nobody notices until somebody reports a bug against the wrong
+# build.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  # A dry run: builds and uploads nothing, so the workflow can be tried
+  # out without publishing anything.
+  workflow_dispatch:
+
+permissions:
+  contents: write        # needed to create the release and attach files
+
+jobs:
+  linux:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: App_Core/package-lock.json
+
+      - name: Check the tag against package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: App_Core
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          TAG="${GITHUB_REF_NAME#v}"
+          echo "package.json: $PKG"
+          echo "tag:          $TAG"
+          if [ "$PKG" != "$TAG" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json ($PKG). Update the version, commit, then tag."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        working-directory: App_Core
+        run: npm ci
+
+      # npm's postinstall does not always fetch Electron's own binary.
+      # It is cheap to check and a build without it fails much later
+      # with a far less obvious message.
+      - name: Make sure Electron's binary is present
+        working-directory: App_Core
+        run: |
+          if [ ! -x node_modules/electron/dist/electron ]; then
+            echo "Electron binary missing — fetching it"
+            node node_modules/electron/install.js
+          fi
+          node_modules/electron/dist/electron --version
+
+      - name: Build
+        working-directory: App_Core
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            npx electron-builder --linux AppImage deb --publish always
+          else
+            npx electron-builder --linux AppImage deb --publish never
+          fi
+
+      - name: List what was produced
+        working-directory: App_Core
+        run: ls -lh dist/ | grep -vE '^total|linux-unpacked|builder-'
+
+      # Kept for the dry run, where nothing is published — so there is
+      # still something to download and try.
+      - name: Keep the build
+        uses: actions/upload-artifact@v4
+        with:
+          name: parallax-linux
+          path: |
+            App_Core/dist/*.AppImage
+            App_Core/dist/*.deb
+            App_Core/dist/latest-linux.yml
+          if-no-files-found: error
+          retention-days: 14
