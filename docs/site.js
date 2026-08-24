@@ -147,6 +147,30 @@
 
     loadRelease();
 
+    /* ---- copy the repository commands -------------------------- */
+    const copyBtn = document.getElementById('copyRepo');
+    const repoCmd = document.getElementById('repoCmd');
+    if (copyBtn && repoCmd && navigator.clipboard) {
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(repoCmd.textContent.trim());
+                copyBtn.textContent = 'Copied';
+                copyBtn.classList.add('is-done');
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy';
+                    copyBtn.classList.remove('is-done');
+                }, 1800);
+            } catch (e) {
+                // Clipboard access can be refused. Saying so beats a
+                // button that silently does nothing.
+                copyBtn.textContent = 'Select it instead';
+                setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2200);
+            }
+        });
+    } else if (copyBtn) {
+        copyBtn.hidden = true;
+    }
+
     /* ---- screenshots not in yet -------------------------------
        A missing screenshot should not leave a broken image icon in
        the middle of the page. Each slot falls back to a drawn panel

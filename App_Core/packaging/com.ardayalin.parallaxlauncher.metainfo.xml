@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  What a software centre reads to show this as an application rather
+  than a bare package name. GNOME Software, KDE Discover and Ubuntu's
+  App Center all use it; so does Flathub, which is why writing it once
+  pays twice.
+-->
+<component type="desktop-application">
+  <id>com.ardayalin.parallaxlauncher</id>
+  <launchable type="desktop-id">parallax-launcher.desktop</launchable>
+
+  <name>Parallax Launcher</name>
+  <summary>One shelf for every game you own</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <developer id="com.ardayalin">
+    <name>Arda Yalın Özkan</name>
+  </developer>
+
+  <description>
+    <p>
+      Parallax Launcher gathers the games you already own into one library and
+      launches them from there. It reads Steam's own installation records, so
+      what it shows is what is actually on the disk.
+    </p>
+    <p>
+      Everything it knows stays on your computer. There is no account, nothing
+      is uploaded, and the library is a plain text file you can read.
+    </p>
+    <p>What it does:</p>
+    <ul>
+      <li>Finds your installed Steam games across every drive</li>
+      <li>Launches them through Steam, or directly so the Steam window stays put</li>
+      <li>Fills in covers and banners from Steam's public artwork, with no key</li>
+      <li>Keeps your playtime, merging in the hours Steam already recorded</li>
+      <li>Per-game Proton and Wine settings, launch options, GameMode and MangoHud</li>
+      <li>Speaks eight languages</li>
+    </ul>
+  </description>
+
+  <categories>
+    <category>Game</category>
+    <category>Utility</category>
+  </categories>
+
+  <keywords>
+    <keyword>games</keyword>
+    <keyword>library</keyword>
+    <keyword>steam</keyword>
+    <keyword>proton</keyword>
+    <keyword>launcher</keyword>
+  </keywords>
+
+  <url type="homepage">https://parallax-launcher.duckdns.org</url>
+  <url type="bugtracker">https://github.com/ArdaYalinOzkan/parallax-launcher/issues</url>
+  <url type="vcs-browser">https://github.com/ArdaYalinOzkan/parallax-launcher</url>
+
+  <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="3.0.0" date="2026-08-24">
+      <description>
+        <p>The first release.</p>
+      </description>
+    </release>
+  </releases>
+</component>

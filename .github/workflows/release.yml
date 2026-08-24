@@ -99,3 +99,108 @@ jobs:
             App_Core/dist/latest-linux.yml
           if-no-files-found: error
           retention-days: 14
+
+  apt:
+    name: Publish the APT repository
+    needs: linux
+    runs-on: ubuntu-latest
+    # Only for a real release. A dry run has nothing to publish, and
+    # rebuilding the index from a build nobody can download would point
+    # people's package managers at a file that is not there.
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Fetch the package that was just built
+        uses: actions/download-artifact@v4
+        with:
+          name: parallax-linux
+          path: incoming
+
+      - name: Install the packaging tools
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends apt-utils
+
+      - name: Import the signing key
+        env:
+          KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
+          PASS: ${{ secrets.APT_GPG_PASSPHRASE }}
+        run: |
+          echo "$KEY" | gpg --batch --import
+          # A key imported from a file carries no trust, and signing an
+          # untrusted key needs the ownertrust set or gpg refuses.
+          echo "${{ secrets.APT_GPG_KEY_ID }}:6:" | gpg --import-ownertrust
+          gpg --list-secret-keys --keyid-format=long
+
+      - name: Build the repository
+        env:
+          KEY_ID: ${{ secrets.APT_GPG_KEY_ID }}
+          PASS: ${{ secrets.APT_GPG_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+
+          # Only the current version is kept. Older ones are of no use to
+          # apt, which installs whatever the index names, and every .deb
+          # retained is another 85 MB living in git for ever.
+          mkdir -p repo/pool/main/p/parallax-launcher
+          mkdir -p repo/dists/stable/main/binary-amd64
+          cp incoming/*.deb repo/pool/main/p/parallax-launcher/
+
+          cd repo
+          # Tells GitHub Pages to serve the tree as-is.
+          touch .nojekyll
+
+          apt-ftparchive packages pool > dists/stable/main/binary-amd64/Packages
+          gzip -9kf dists/stable/main/binary-amd64/Packages
+
+          apt-ftparchive \
+            -o APT::FTPArchive::Release::Origin="Parallax Launcher" \
+            -o APT::FTPArchive::Release::Label="Parallax Launcher" \
+            -o APT::FTPArchive::Release::Suite="stable" \
+            -o APT::FTPArchive::Release::Codename="stable" \
+            -o APT::FTPArchive::Release::Architectures="amd64" \
+            -o APT::FTPArchive::Release::Components="main" \
+            -o APT::FTPArchive::Release::Description="Parallax Launcher releases" \
+            release dists/stable > dists/stable/Release
+
+          # Two signatures, because apt accepts either and older clients
+          # look for the detached one.
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$PASS" \
+              --local-user "$KEY_ID" --armor --detach-sign \
+              -o dists/stable/Release.gpg dists/stable/Release
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$PASS" \
+              --local-user "$KEY_ID" --clearsign \
+              -o dists/stable/InRelease dists/stable/Release
+
+          gpg --armor --export "$KEY_ID" > key.gpg
+
+          printf '%s\n' \
+            '# Parallax Launcher — APT repository' '' \
+            'A package index, not source code. Rebuilt on every release and' \
+            'holding only the current version.' '' \
+            'Install instructions: https://parallax-launcher.duckdns.org' > README.md
+
+          echo "--- built ---"
+          find . -type f -not -path './.git/*' | sort
+
+      - name: Publish it
+        env:
+          DEPLOY_KEY: ${{ secrets.APT_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+
+          cd repo
+          git init -q -b main
+          git config user.name "Parallax release"
+          git config user.email "ardayalin2011@gmail.com"
+          git add -A
+          git commit -q -m "Parallax Launcher ${GITHUB_REF_NAME}"
+          # A fresh history every time. The index only ever describes the
+          # current version, so keeping the old ones would grow the
+          # repository by the size of a release for no one's benefit.
+          git remote add origin git@github.com:ArdaYalinOzkan/parallax-apt.git
+          git push -q --force origin main
+          echo "published ${GITHUB_REF_NAME}"

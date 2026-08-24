@@ -402,6 +402,59 @@ a:hover { text-decoration-color: currentColor; }
     vertical-align: 2px;
 }
 
+/* ---- the repository block -------------------------------------
+   Commands somebody is going to paste into a root shell. They are
+   shown in full rather than wrapped in a one-line installer: adding
+   a signing key and a package source is exactly the kind of thing a
+   person should be able to read first.
+   ---------------------------------------------------------------- */
+.repo {
+    margin-top: 30px;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--ink-base);
+}
+
+.repo__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.copy {
+    flex: none;
+    padding: 6px 13px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line-strong);
+    background: transparent;
+    color: var(--star-dim);
+    font: 500 0.74rem/1 var(--font-ui);
+    cursor: pointer;
+    transition: color var(--t-fast), border-color var(--t-fast);
+}
+
+.copy:hover { color: var(--star-hi); border-color: var(--star-dim); }
+.copy.is-done { color: var(--star-hi); border-color: rgba(var(--ambient), .8); }
+
+.repo pre {
+    margin: 0;
+    padding: 18px;
+    border-radius: var(--r-sm);
+    background: var(--ink-void);
+    border: 1px solid var(--line-faint);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    line-height: 1.85;
+    color: var(--star);
+    tab-size: 2;
+}
+
+.repo code { font-family: inherit; }
+
 /* ---- languages ------------------------------------------------ */
 .langs {
     display: flex;

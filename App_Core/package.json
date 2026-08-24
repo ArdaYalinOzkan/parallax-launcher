@@ -19,8 +19,7 @@
     "appId": "com.ardayalin.parallaxlauncher",
     "productName": "Parallax Launcher",
     "directories": {
-      "output": "dist",
-      "buildResources": "build"
+      "output": "dist"
     },
     "files": [
       "*.js",
@@ -55,7 +54,23 @@
         "repo": "parallax-launcher",
         "releaseType": "release"
       }
-    ]
+    ],
+    "deb": {
+      "fpm": [
+        "packaging/com.ardayalin.parallaxlauncher.metainfo.xml=/usr/share/metainfo/com.ardayalin.parallaxlauncher.metainfo.xml"
+      ],
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libuuid1",
+        "libsecret-1-0"
+      ]
+    }
   },
   "repository": {
     "type": "git",

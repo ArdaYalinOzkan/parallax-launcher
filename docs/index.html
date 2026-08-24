@@ -162,16 +162,41 @@
                     </div>
 
                     <div class="file">
-                        <div class="file__name">.deb <span class="chip">Updates itself</span></div>
+                        <div class="file__name">.deb <span class="chip">Updates with your system</span></div>
                         <div class="file__for">Debian · Ubuntu · Mint</div>
-                        <p>Installs the way your other software does, and shows up in your menu
-                            with everything else. It updates itself too — through <code>dpkg</code>,
-                            which means it asks for your password the way any install does.</p>
+                        <p>Installs the way your other software does and shows up in your menu with
+                            everything else. Add the repository below and it joins your normal
+                            updates — one button in the software centre brings it up to date along
+                            with the rest.</p>
                         <a class="btn btn--ghost" id="dlDeb"
                             href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
                             Download .deb <span class="btn__meta" id="sizeDeb"></span>
                         </a>
                     </div>
+                </div>
+
+                <!-- The repository, written out rather than hidden behind a
+                     one-line installer. A command that adds a signing key and
+                     a package source to somebody's system is exactly the kind
+                     they should be able to read before running. -->
+                <div class="repo">
+                    <div class="repo__head">
+                        <span class="label" style="margin: 0;">Debian and Ubuntu — updates without downloading again</span>
+                        <button class="copy" id="copyRepo" type="button">Copy</button>
+                    </div>
+                    <p style="font-size: .84rem; color: var(--star-dim); margin-bottom: 16px;">
+                        Run this once. Afterwards Parallax appears in your system's updates like any
+                        other package, and <code>apt upgrade</code> keeps it current.
+                    </p>
+<pre id="repoCmd"><code>sudo install -d -m 0755 /etc/apt/keyrings
+curl -fsSL https://ardayalinozkan.github.io/parallax-apt/key.gpg \
+  | sudo tee /etc/apt/keyrings/parallax.asc > /dev/null
+
+echo "deb [signed-by=/etc/apt/keyrings/parallax.asc] \
+https://ardayalinozkan.github.io/parallax-apt stable main" \
+  | sudo tee /etc/apt/sources.list.d/parallax.list > /dev/null
+
+sudo apt update &amp;&amp; sudo apt install parallax-launcher</code></pre>
                 </div>
 
                 <p style="margin-top: 26px; font-size: .84rem; color: var(--star-faint);">
