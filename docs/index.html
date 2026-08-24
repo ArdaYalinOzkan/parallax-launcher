@@ -145,7 +145,8 @@
             <section id="get" class="wrap">
                 <span class="label">Download</span>
                 <h2>Two files. Take the first one.</h2>
-                <p class="lede">Both are built from the same source by the same automated run.</p>
+                <p class="lede">Both are built from the same source by the same automated run,
+                    and both keep themselves up to date.</p>
 
                 <div class="files">
                     <div class="file">
@@ -161,11 +162,11 @@
                     </div>
 
                     <div class="file">
-                        <div class="file__name">.deb</div>
+                        <div class="file__name">.deb <span class="chip">Updates itself</span></div>
                         <div class="file__for">Debian · Ubuntu · Mint</div>
-                        <p>Installs the way your other software does, and belongs to your package
-                            manager afterwards — so updates come from there rather than from the
-                            app itself.</p>
+                        <p>Installs the way your other software does, and shows up in your menu
+                            with everything else. It updates itself too — through <code>dpkg</code>,
+                            which means it asks for your password the way any install does.</p>
                         <a class="btn btn--ghost" id="dlDeb"
                             href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
                             Download .deb <span class="btn__meta" id="sizeDeb"></span>

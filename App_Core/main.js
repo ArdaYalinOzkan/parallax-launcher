@@ -1074,12 +1074,28 @@ ipcMain.handle('get-app-version', () => {
    ================================================================
    The app watches its own GitHub releases and can replace itself.
 
-   Only one kind of install can do that, and the check below is the
-   whole reason it exists: an AppImage is a single file, so it can be
-   swapped for a newer one. A .deb is owned by the system package
-   manager and a copy running from source has no file to replace —
-   in both cases the app must keep its hands off and say so plainly
-   rather than offering a button that cannot work.
+   How it replaces itself depends on how it was installed, and the
+   difference is not cosmetic:
+
+     AppImage — one file, which the updater overwrites with the newer
+                one. No password, no package manager.
+     .deb     — a real system package, so the new one has to go through
+                dpkg, which means asking for an administrator password.
+                The prompt comes from the system (pkexec), not from us.
+     installer— the Windows and macOS packages, which electron-updater
+                drives on its own.
+     source   — nothing to replace; the answer is `git pull`.
+     other    — installed by something we do not know how to drive
+                (a distribution package, a Flatpak); we say so and
+                point at the releases page rather than meddle.
+
+   Which of those we are is decided below rather than left to
+   electron-updater's own guess. Its guess reads a `package-type` file
+   that electron-builder writes into the resources directory, and that
+   directory is shared by both Linux targets during a build — so an
+   AppImage can end up carrying a file that says "deb". The AppImage
+   runtime sets $APPIMAGE, which cannot be wrong, so that is asked
+   first.
 
    Nothing is downloaded without being asked for. A hundred and
    twenty megabytes arriving unannounced on someone's connection is
@@ -1087,27 +1103,45 @@ ipcMain.handle('get-app-version', () => {
    only after somebody presses the button.
    ================================================================ */
 
-const { autoUpdater } = require('electron-updater');
+/**
+ * How this copy was installed: 'appimage', 'deb', 'installer' (the
+ * Windows and macOS packages), 'source', or 'managed' for anything
+ * else.
+ */
+function updateKind() {
+    if (!app.isPackaged) return 'source';
+    if (process.env.APPIMAGE) return 'appimage';
+    if (process.platform !== 'linux') return 'installer';
+    try {
+        const marker = path.join(process.resourcesPath, 'package-type');
+        if (fs.existsSync(marker) && fs.readFileSync(marker, 'utf8').trim() === 'deb') {
+            return 'deb';
+        }
+    } catch (_) { /* unreadable resources: treat as managed */ }
+    return 'managed';
+}
+
+/** Whether this copy is one that can replace itself. */
+function canSelfUpdate() {
+    const kind = updateKind();
+    return kind === 'appimage' || kind === 'deb' || kind === 'installer';
+}
+
+/**
+ * The updater matching this install, built once.
+ *
+ * Constructed by hand for the two Linux cases so the choice follows
+ * `updateKind()` above instead of the library's file sniffing.
+ */
+const autoUpdater = (() => {
+    const u = require('electron-updater');
+    if (process.platform !== 'linux') return u.autoUpdater;
+    return updateKind() === 'deb' ? new u.DebUpdater() : new u.AppImageUpdater();
+})();
 
 autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = false;
 autoUpdater.logger = null;
-
-/**
- * Whether this copy is one that can replace itself.
- * `APPIMAGE` is set by the AppImage runtime and holds the path of the
- * file that is running — which is exactly the file an update writes to.
- */
-function canSelfUpdate() {
-    return app.isPackaged && !!process.env.APPIMAGE;
-}
-
-/** Why it cannot, in a form the interface can turn into a sentence. */
-function updateKind() {
-    if (!app.isPackaged) return 'source';
-    if (process.env.APPIMAGE) return 'appimage';
-    return 'managed';        // .deb, or anything else installed for us
-}
 
 function sendToWindow(channel, payload) {
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -1140,9 +1174,10 @@ ipcMain.handle('check-for-update', async () => {
     const kind = updateKind();
     const current = app.getVersion();
 
-    if (kind !== 'appimage') {
-        // Still worth looking, so somebody on a .deb learns a new
-        // version exists — they just have to fetch it themselves.
+    if (!canSelfUpdate()) {
+        // Still worth looking, so somebody running from source or
+        // from a package we cannot drive learns a new version exists
+        // — they just have to fetch it themselves.
         try {
             const r = await fetch(
                 'https://api.github.com/repos/ArdaYalinOzkan/parallax-launcher/releases/latest',

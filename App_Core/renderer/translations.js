@@ -385,6 +385,8 @@ const translations = {
         UPDATE_DOWNLOAD_FAILED: "The download did not finish.",
         UPDATE_READY: "Version {v} is ready. Restart to finish.",
         UPDATE_MANAGED: "Version {v} is out. This copy was installed by your package manager, so update it the same way.",
+        UPDATE_AVAILABLE_DEB: "Version {v} is out. Installing it will ask for your administrator password.",
+        UPDATE_READY_DEB: "Version {v} is ready. Restart to install it — your administrator password will be asked for.",
         UPDATE_FROM_SOURCE: "Version {v} is out. This copy runs from source — pull the new code.",
         AUTO_CHECK_UPDATES: "Check automatically",
         AUTO_CHECK_HINT: "Asks GitHub once a day whether a newer version exists. Nothing is downloaded without you pressing the button."
@@ -757,6 +759,8 @@ const translations = {
         UPDATE_DOWNLOAD_FAILED: "İndirme tamamlanamadı.",
         UPDATE_READY: "{v} sürümü hazır. Bitirmek için yeniden başlat.",
         UPDATE_MANAGED: "{v} sürümü çıktı. Bu kopyayı paket yöneticin kurdu, güncellemesi de oradan yapılır.",
+        UPDATE_AVAILABLE_DEB: "{v} sürümü çıktı. Kurulumu için yönetici parolan sorulacak.",
+        UPDATE_READY_DEB: "{v} sürümü hazır. Kurmak için yeniden başlat — yönetici parolan sorulacak.",
         UPDATE_FROM_SOURCE: "{v} sürümü çıktı. Bu kopya kaynaktan çalışıyor — yeni kodu çek.",
         AUTO_CHECK_UPDATES: "Kendiliğinden kontrol et",
         AUTO_CHECK_HINT: "Günde bir kez GitHub'a yeni sürüm var mı diye sorar. Sen düğmeye basmadan hiçbir şey indirilmez."
@@ -1113,6 +1117,8 @@ const translations = {
         UPDATE_DOWNLOAD_FAILED: "Der Download wurde nicht abgeschlossen.",
         UPDATE_READY: "Version {v} ist bereit. Zum Abschließen neu starten.",
         UPDATE_MANAGED: "Version {v} ist erschienen. Diese Kopie stammt von Ihrer Paketverwaltung — aktualisieren Sie sie dort.",
+        UPDATE_AVAILABLE_DEB: "Version {v} ist erschienen. Für die Installation wird Ihr Administratorkennwort abgefragt.",
+        UPDATE_READY_DEB: "Version {v} ist bereit. Zum Installieren neu starten — Ihr Administratorkennwort wird abgefragt.",
         UPDATE_FROM_SOURCE: "Version {v} ist erschienen. Diese Kopie läuft aus dem Quellcode — holen Sie den neuen Code.",
         AUTO_CHECK_UPDATES: "Automatisch suchen",
         AUTO_CHECK_HINT: "Fragt einmal täglich bei GitHub nach einer neueren Version. Ohne Ihren Klick wird nichts heruntergeladen."
@@ -1469,6 +1475,8 @@ const translations = {
         UPDATE_DOWNLOAD_FAILED: "Загрузка не завершилась.",
         UPDATE_READY: "Версия {v} готова. Перезапустите, чтобы завершить.",
         UPDATE_MANAGED: "Вышла версия {v}. Эта копия установлена вашим пакетным менеджером — обновляйте её оттуда.",
+        UPDATE_AVAILABLE_DEB: "Вышла версия {v}. Для установки потребуется пароль администратора.",
+        UPDATE_READY_DEB: "Версия {v} готова. Перезапустите, чтобы установить — потребуется пароль администратора.",
         UPDATE_FROM_SOURCE: "Вышла версия {v}. Эта копия запущена из исходников — заберите новый код.",
         AUTO_CHECK_UPDATES: "Проверять автоматически",
         AUTO_CHECK_HINT: "Раз в день спрашивает у GitHub, есть ли новая версия. Без нажатия кнопки ничего не скачивается."
@@ -1825,6 +1833,8 @@ const translations = {
         UPDATE_DOWNLOAD_FAILED: "Завантаження не завершилося.",
         UPDATE_READY: "Версія {v} готова. Перезапустіть, щоб завершити.",
         UPDATE_MANAGED: "Вийшла версія {v}. Цю копію встановив ваш пакетний менеджер — оновлюйте її звідти.",
+        UPDATE_AVAILABLE_DEB: "Вийшла версія {v}. Для встановлення знадобиться пароль адміністратора.",
+        UPDATE_READY_DEB: "Версія {v} готова. Перезапустіть, щоб встановити — знадобиться пароль адміністратора.",
         UPDATE_FROM_SOURCE: "Вийшла версія {v}. Ця копія працює з початкового коду — заберіть новий код.",
         AUTO_CHECK_UPDATES: "Перевіряти автоматично",
         AUTO_CHECK_HINT: "Раз на день запитує GitHub, чи є новіша версія. Без натискання кнопки нічого не завантажується."
@@ -2181,6 +2191,8 @@ const translations = {
         UPDATE_DOWNLOAD_FAILED: "O download não terminou.",
         UPDATE_READY: "A versão {v} está pronta. Reinicie para concluir.",
         UPDATE_MANAGED: "A versão {v} saiu. Esta cópia foi instalada pelo seu gerenciador de pacotes, então atualize por lá.",
+        UPDATE_AVAILABLE_DEB: "A versão {v} saiu. A instalação vai pedir a sua senha de administrador.",
+        UPDATE_READY_DEB: "A versão {v} está pronta. Reinicie para instalar — a sua senha de administrador será pedida.",
         UPDATE_FROM_SOURCE: "A versão {v} saiu. Esta cópia roda a partir do código-fonte — puxe o código novo.",
         AUTO_CHECK_UPDATES: "Verificar automaticamente",
         AUTO_CHECK_HINT: "Pergunta ao GitHub uma vez por dia se existe uma versão mais nova. Nada é baixado sem você apertar o botão."
@@ -2537,6 +2549,8 @@ const translations = {
         UPDATE_DOWNLOAD_FAILED: "下载没有完成。",
         UPDATE_READY: "{v} 版本已就绪，重启即可完成。",
         UPDATE_MANAGED: "{v} 版本已发布。这份副本是由你的包管理器安装的，请从那里更新。",
+        UPDATE_AVAILABLE_DEB: "{v} 版本已发布。安装时会要求输入管理员密码。",
+        UPDATE_READY_DEB: "{v} 版本已就绪。重启以安装 —— 届时会要求输入管理员密码。",
         UPDATE_FROM_SOURCE: "{v} 版本已发布。这份副本是从源码运行的——拉取新代码即可。",
         AUTO_CHECK_UPDATES: "自动检查",
         AUTO_CHECK_HINT: "每天向 GitHub 查询一次是否有新版本。不按按钮就不会下载任何东西。"
@@ -2893,6 +2907,8 @@ const translations = {
         UPDATE_DOWNLOAD_FAILED: "내려받기가 끝나지 못했습니다.",
         UPDATE_READY: "{v} 버전이 준비됐습니다. 다시 시작하면 끝납니다.",
         UPDATE_MANAGED: "{v} 버전이 나왔습니다. 이 사본은 패키지 관리자가 설치한 것이므로 거기서 업데이트하세요.",
+        UPDATE_AVAILABLE_DEB: "{v} 버전이 나왔습니다. 설치할 때 관리자 암호를 묻습니다.",
+        UPDATE_READY_DEB: "{v} 버전이 준비되었습니다. 다시 시작하면 설치됩니다 — 관리자 암호를 묻습니다.",
         UPDATE_FROM_SOURCE: "{v} 버전이 나왔습니다. 이 사본은 소스에서 실행 중입니다 — 새 코드를 받으세요.",
         AUTO_CHECK_UPDATES: "자동으로 확인",
         AUTO_CHECK_HINT: "하루에 한 번 GitHub에 새 버전이 있는지 물어봅니다. 버튼을 누르기 전에는 아무것도 내려받지 않습니다."

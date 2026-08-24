@@ -3593,6 +3593,11 @@ function showUpdateButtons({ check = false, download = false, restart = false, o
     set('updateOpenBtn', open);
 }
 
+/** The installs that can replace themselves; see UPDATES in main.js. */
+function canInstallItself(kind) {
+    return kind === 'appimage' || kind === 'deb' || kind === 'installer';
+}
+
 function renderUpdateNotes(text) {
     const box = el('updateNotes');
     if (!box) return;
@@ -3648,11 +3653,19 @@ async function runUpdateCheck({ silent = false } = {}) {
     setUpdateStatus('UPDATE_AVAILABLE', r.version);
     renderUpdateNotes(r.notes);
 
-    if (r.kind === 'appimage') {
+    if (r.kind === 'deb') {
+        // A .deb can be replaced too, but only through dpkg — which
+        // means a password prompt. Saying so before the button is
+        // pressed is the difference between an expected dialog and a
+        // suspicious one.
+        setUpdateStatus('UPDATE_AVAILABLE_DEB', r.version);
+        showUpdateButtons({ download: true });
+    } else if (canInstallItself(r.kind)) {
         showUpdateButtons({ download: true });
     } else {
-        // A .deb belongs to the package manager and a copy running from
-        // source has no file to replace, so the honest offer is a link.
+        // A copy running from source has no file to replace, and one
+        // installed by something we do not drive is not ours to touch,
+        // so the honest offer is a link.
         setUpdateStatus(r.kind === 'source' ? 'UPDATE_FROM_SOURCE' : 'UPDATE_MANAGED', r.version);
         showUpdateButtons({ open: true });
     }
@@ -3703,7 +3716,8 @@ if (window.api && window.api.onUpdateProgress) {
         updateState.ready = true;
         const bar = el('updateBar');
         if (bar) bar.classList.add('hidden');
-        setUpdateStatus('UPDATE_READY', info && info.version);
+        const debInstall = updateState.info && updateState.info.kind === 'deb';
+        setUpdateStatus(debInstall ? 'UPDATE_READY_DEB' : 'UPDATE_READY', info && info.version);
         showUpdateButtons({ restart: true });
         if (window.SFX) window.SFX.play('ok');
     });
@@ -3738,9 +3752,9 @@ function scheduleUpdateCheck() {
     setTimeout(() => runUpdateCheck({ silent: true }).then(() => {
         const r = updateState.info;
         if (r && r.checked && r.available) {
-            setUpdateStatus('UPDATE_AVAILABLE', r.version);
+            setUpdateStatus(r.kind === 'deb' ? 'UPDATE_AVAILABLE_DEB' : 'UPDATE_AVAILABLE', r.version);
             renderUpdateNotes(r.notes);
-            showUpdateButtons(r.kind === 'appimage' ? { download: true } : { open: true });
+            showUpdateButtons(canInstallItself(r.kind) ? { download: true } : { open: true });
         }
     }), 8000);
 }
