@@ -69,8 +69,11 @@
                 </p>
 
                 <div class="hero__actions rise rise--4">
+                    <!-- To the install page, which starts the download and then
+                         says what to do with it. The file on its own says
+                         nothing. -->
                     <a class="btn btn--primary" id="dlPrimary"
-                        href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
+                        href="https://help.parallax-launcher.duckdns.org/install.html">
                         <span id="dlPrimaryLabel">Download for Linux</span>
                         <span class="btn__meta" id="dlVersion">AppImage</span>
                     </a>
@@ -142,85 +145,6 @@
                 </div>
             </section>
 
-            <section id="get" class="wrap">
-                <span class="label">Download</span>
-                <h2>Take the one for your system.</h2>
-                <p class="lede">All three are built from the same source by the same automated run,
-                    and all three keep themselves up to date.</p>
-
-                <div class="files">
-                    <div class="file">
-                        <div class="file__name">.AppImage <span class="chip">Updates itself</span></div>
-                        <div class="file__for">Any distribution</div>
-                        <p>One file. Make it executable and run it — nothing is installed and
-                            nothing is left behind. Because it is a single file, the app can
-                            replace it: it watches for new releases and offers to fetch one.</p>
-                        <a class="btn btn--primary" id="dlAppImage"
-                            href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
-                            Download AppImage <span class="btn__meta" id="sizeAppImage"></span>
-                        </a>
-                    </div>
-
-                    <div class="file">
-                        <div class="file__name">.deb <span class="chip">Updates itself</span></div>
-                        <div class="file__for">Debian · Ubuntu · Mint</div>
-                        <p>Installs the way your other software does and shows up in your menu with
-                            everything else. It updates itself too, through <code>dpkg</code> — which
-                            means it asks for your password the way any install does. Add the
-                            repository below and your system takes that over instead.</p>
-                        <a class="btn btn--ghost" id="dlDeb"
-                            href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
-                            Download .deb <span class="btn__meta" id="sizeDeb"></span>
-                        </a>
-                    </div>
-
-                    <div class="file">
-                        <div class="file__name">.exe <span class="chip">Updates itself</span></div>
-                        <div class="file__for">Windows 10 · 11</div>
-                        <p>An ordinary installer — it asks where to put things and makes the
-                            shortcuts. It watches for new versions and replaces itself when you say
-                            so. It is not code-signed, so Windows warns you the first time:
-                            <a href="https://help.parallax-launcher.duckdns.org/windows.html">what the warnings look like, and what to do</a>.</p>
-                        <a class="btn btn--ghost" id="dlWin"
-                            href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
-                            Download for Windows <span class="btn__meta" id="sizeWin"></span>
-                        </a>
-                    </div>
-                </div>
-
-
-                <!-- Straight under the buttons, because this is the next thing
-                     that happens to a Windows user and the worst place to learn
-                     it is from the warning itself. The heading carries the whole
-                     point on its own, for anyone who reads no further. -->
-                <a class="heads-up" href="https://help.parallax-launcher.duckdns.org/windows.html">
-                    <div class="heads-up__icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 9v4" />
-                            <path d="M12 17h.01" />
-                            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
-                        </svg>
-                    </div>
-                    <div class="heads-up__body">
-                        <h3>On Windows, the installer will be blocked the first time.</h3>
-                        <p>Nothing is wrong with it — it is not code-signed, so Windows stops
-                            anything it has not seen before. Two clicks get past SmartScreen;
-                            Smart App Control needs one setting changed. Both are shown step by
-                            step, with pictures.</p>
-                        <span class="heads-up__go">How to get past it →</span>
-                    </div>
-                </a>
-
-                <p style="margin-top: 26px; font-size: .84rem; color: var(--star-faint);">
-                    On Debian or Ubuntu you can add the package repository instead and let your
-                    system handle updates —
-                    <a href="https://github.com/ArdaYalinOzkan/parallax-apt">the commands are here</a>.
-                    Running from source is
-                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher#running-it">in the readme</a>.
-                </p>
-            </section>
-
             <section class="wrap">
                 <span class="label">Up close</span>
                 <h2>Everything it will do, before it does it.</h2>
@@ -259,6 +183,77 @@
                     <span class="lang">한국어</span>
                 </div>
             </section>
+
+            <section id="get" class="wrap">
+                <span class="label">Download</span>
+                <h2>Take the one for your system.</h2>
+                <p class="lede">All three are built from the same source by the same automated run,
+                    and all three keep themselves up to date.</p>
+
+                <div class="files">
+                    <div class="file">
+                        <div class="file__name">.AppImage <span class="chip">Updates itself</span></div>
+                        <div class="file__for">Any distribution</div>
+                        <p>One file. Make it executable and run it — nothing is installed and
+                            nothing is left behind. Because it is a single file, the app can
+                            replace it: it watches for new releases and offers to fetch one.</p>
+                        <a class="btn btn--primary" id="dlAppImage"
+                            href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
+                            Download AppImage <span class="btn__meta" id="sizeAppImage"></span>
+                        </a>
+                    </div>
+
+                    <div class="file">
+                        <div class="file__name">.deb <span class="chip">Updates itself</span></div>
+                        <div class="file__for">Debian · Ubuntu · Mint</div>
+                        <p>Installs the way your other software does and shows up in your menu with
+                            everything else. It updates itself too, through <code>dpkg</code> — which
+                            means it asks for your password the way any install does. Add the
+                            repository below and your system takes that over instead.</p>
+                        <a class="btn btn--ghost" id="dlDeb"
+                            href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
+                            Download .deb <span class="btn__meta" id="sizeDeb"></span>
+                        </a>
+                    </div>
+
+                    <div class="file">
+                        <div class="file__name">.exe <span class="chip">Updates itself</span></div>
+                        <div class="file__for">Windows 10 · 11</div>
+                        <p>An ordinary installer — it asks where to put things and makes the
+                            shortcuts. It watches for new versions and replaces itself when you say
+                            so.</p>
+                        <!-- At the end of the text rather than buried inside it,
+                             and above the button so all three buttons still line
+                             up along the bottom. Small, but not the same grey as
+                             the paragraph it was moved out of. -->
+                        <a class="card-note" href="https://help.parallax-launcher.duckdns.org/windows.html">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 9v4" />
+                                <path d="M12 17h.01" />
+                                <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
+                            </svg>
+                            <span>Windows blocks it the first time — here is how to get past it</span>
+                        </a>
+
+                        <a class="btn btn--ghost" id="dlWin"
+                            href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
+                            Download for Windows <span class="btn__meta" id="sizeWin"></span>
+                        </a>
+                    </div>
+                </div>
+
+
+
+                <p style="margin-top: 26px; font-size: .84rem; color: var(--star-faint);">
+                    On Debian or Ubuntu you can add the package repository instead and let your
+                    system handle updates —
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-apt">the commands are here</a>.
+                    Running from source is
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher#running-it">in the readme</a>.
+                </p>
+            </section>
+
         </main>
 
         <footer class="foot">

@@ -604,60 +604,38 @@ a:hover { text-decoration-color: currentColor; }
 }
 
 
-/* --- The Windows heads-up --------------------------------------
-   Sits directly under the download buttons. Amber rather than red:
-   this is the next thing that will happen, not something that has
-   gone wrong — and the whole block is the link, so there is no
-   small target to find.
+/* --- A note at the foot of a card -------------------------------
+   Read after the decision, not during it. Amber because it is the
+   one thing on the page somebody will otherwise meet cold, and grey
+   would have it blend into the paragraph it was moved out of.
    ---------------------------------------------------------------- */
-.heads-up {
+.card-note {
     display: flex;
-    gap: 18px;
     align-items: flex-start;
-    margin-top: 22px;
-    padding: 22px 24px;
-    border: 1px solid rgba(224, 162, 71, .34);
-    border-radius: var(--r-md);
-    background: linear-gradient(180deg, rgba(224, 162, 71, .055), transparent 62%), var(--ink-base);
+    gap: 9px;
+    /* Sits at the end of the text and above the button, so the three
+       buttons stay level across the row. */
+    margin-top: 0;
+    margin-bottom: 18px;
+    padding: 10px 12px;
+    border: 1px solid rgba(224, 162, 71, .28);
+    border-radius: var(--r-sm);
+    background: rgba(224, 162, 71, .045);
+    font-size: 0.76rem;
+    line-height: 1.5;
+    color: #E0A247;
     text-decoration: none;
-    transition: border-color var(--t-fast), transform var(--t-fast);
+    transition: border-color var(--t-fast), background var(--t-fast);
 }
 
-.heads-up:hover {
-    border-color: rgba(224, 162, 71, .6);
-    transform: translateY(-2px);
+.card-note:hover {
+    border-color: rgba(224, 162, 71, .55);
+    background: rgba(224, 162, 71, .085);
 }
 
-.heads-up__icon {
+.card-note svg {
     flex: none;
-    width: 30px;
-    height: 30px;
-    color: #E0A247;
+    width: 15px;
+    height: 15px;
     margin-top: 1px;
-}
-
-.heads-up__icon svg { width: 100%; height: 100%; }
-
-/* The heading carries the point by itself — somebody who reads only
-   this line has still been told the useful thing. */
-.heads-up h3 {
-    color: var(--star-hi);
-    font-size: 1rem;
-    margin-bottom: 8px;
-}
-
-.heads-up p {
-    font-size: 0.86rem;
-    color: var(--star-dim);
-    margin-bottom: 12px;
-    max-width: 68ch;
-}
-
-.heads-up__go {
-    font-size: 0.82rem;
-    color: #E0A247;
-}
-
-@media (max-width: 560px) {
-    .heads-up { flex-direction: column; gap: 12px; }
 }

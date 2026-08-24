@@ -144,13 +144,15 @@
 
             // The big button follows whoever is reading. Offering a
             // Linux AppImage to somebody on Windows is a download they
-            // will get halfway through before finding out.
+            // would get halfway through before finding out.
+            //
+            // It goes to the install page rather than straight at the
+            // file: that page starts the download itself and then says
+            // what to do with it, which the file on its own does not.
             const onWindows = /Windows/i.test(navigator.userAgent);
-            const pick = onWindows ? win : appImage;
             const label = onWindows ? 'Download for Windows' : 'Download for Linux';
             const kind = onWindows ? 'Installer' : 'AppImage';
 
-            if (pick) link('dlPrimary', pick.browser_download_url);
             set('dlPrimaryLabel', label);
             if (version) set('dlVersion', 'v' + version + ' · ' + kind);
         } catch (e) {
@@ -198,7 +200,7 @@
        not start, and the honest answer is to make retrying easy rather
        than to insist everything is fine.
        ------------------------------------------------------------ */
-    document.querySelectorAll('a.btn[id^="dl"]').forEach(btn => {
+    document.querySelectorAll('a.btn[id^="dl"]:not(#dlPrimary)').forEach(btn => {
         btn.addEventListener('click', () => {
             if (btn.dataset.busy === '1') return;
             btn.dataset.busy = '1';
