@@ -2108,12 +2108,26 @@ async function handleGameSearch() {
     gameSuggestions.classList.remove('hidden');
 
     try {
-        // Run both searches in parallel for "Google-like" efficiency
-        // We append " game" to global search as requested to sharpen results if needed
-        const [steamResults, globalResults] = await Promise.all([
+        /* Two searches, and they must not be able to take each other
+         * down. Steam's store search needs no key and finds anything
+         * sold there; SteamGridDB needs one and finds everything else.
+         *
+         * Without a key the second returns { error: 'NO_API_KEY' } — an
+         * object, not a list — and calling forEach on it threw, which
+         * sent the whole function to its catch and discarded the Steam
+         * results that had arrived perfectly well. Somebody with no key
+         * saw the search fail completely rather than return the half
+         * that works. Each side is now taken only if it is a list. */
+        const settled = await Promise.allSettled([
             window.api.onlineSteamSearch(query),
             window.api.igdbNameSearch(query)
         ]);
+
+        const listOf = (r) =>
+            (r.status === 'fulfilled' && Array.isArray(r.value)) ? r.value : [];
+
+        const steamResults = listOf(settled[0]);
+        const globalResults = listOf(settled[1]);
 
         let combined = [];
         const seenNames = new Set();

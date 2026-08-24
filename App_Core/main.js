@@ -689,6 +689,13 @@ ipcMain.handle('preview-launch', (event, game) => {
  * stops being a wall of blank cards.
  */
 /** The user's SteamGridDB key, or '' if they have not set one. */
+/**
+ * The user's own SteamGridDB key, or '' if they have not set one.
+ *
+ * Unlike the Steam key, none ships. Community artwork is the one thing
+ * here that costs somebody else money to serve, and handing every copy
+ * of the app the same key would spend one person's quota on everybody.
+ */
 function readSgdbKey() {
     try {
         if (fs.existsSync(apiKeysPath)) {
