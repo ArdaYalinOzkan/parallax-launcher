@@ -2817,3 +2817,36 @@ body[data-screen="profileDetails"] .sky__near {
 }
 
 .autocomplete-suggestions .suggestion-item:first-child { border-top: 0; }
+
+/* Long titles ran off the right edge and were simply cut — "Microsoft
+   Flight Simulator (2020) 40th Anniversar". The name is the only thing
+   distinguishing one row from the next, so it gets the room, the badge
+   keeps its own, and what will not fit ends in an ellipsis that says so. */
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+}
+
+.suggestion-item > span:first-child,
+.suggestion-item > .suggestion-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The badge that used to be a wall of inline style. */
+.global-tag {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.52rem;
+    letter-spacing: .1em;
+    padding: 2px 6px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    color: var(--star-faint);
+}

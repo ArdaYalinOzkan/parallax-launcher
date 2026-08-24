@@ -2203,14 +2203,25 @@ function renderSuggestions(results) {
     results.forEach(app => {
         const div = document.createElement('div');
         div.className = 'suggestion-item';
-        div.style.display = 'flex';
-        div.style.justifyContent = 'space-between';
-        div.style.alignItems = 'center';
 
-        div.innerHTML = `
-            <span>${app.name}</span>
-            ${app.isGlobal ? `<span style="font-size: 0.5rem; opacity: 0.4; border: 1px solid currentColor; padding: 2px 5px; border-radius: 4px; letter-spacing: 0.5px;">GLOBAL</span>` : ''}
-        `;
+        /* Built as nodes rather than a template string. These names come
+         * back from Steam and SteamGridDB — they are somebody else's
+         * text, and a title containing markup would have been parsed as
+         * markup. The layout that was set inline here lives in the
+         * stylesheet now, where it can also stop long titles running off
+         * the edge. */
+        const name = document.createElement('span');
+        name.className = 'suggestion-name';
+        name.textContent = app.name;
+        name.title = app.name;          // the full title, for the ones that are cut
+        div.appendChild(name);
+
+        if (app.isGlobal) {
+            const tag = document.createElement('span');
+            tag.className = 'global-tag';
+            tag.textContent = 'GLOBAL';
+            div.appendChild(tag);
+        }
 
         div.onclick = async () => {
             gameSearchInput.value = app.name;
