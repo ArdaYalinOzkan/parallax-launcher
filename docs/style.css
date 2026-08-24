@@ -360,7 +360,14 @@ a:hover { text-decoration-color: currentColor; }
     margin-top: 30px;
 }
 
+/* The three cards hold different amounts of text, and with the button
+   simply following the paragraph each one landed at a different height
+   — three buttons on three lines, in a row meant to be scanned across.
+   A column with the button pushed to the bottom lines them up whatever
+   is written above. */
 .file {
+    display: flex;
+    flex-direction: column;
     border: 1px solid var(--line);
     border-radius: var(--r-md);
     padding: 24px;
@@ -385,7 +392,16 @@ a:hover { text-decoration-color: currentColor; }
 
 .file p { font-size: 0.86rem; color: var(--star-dim); }
 
-.file .btn { margin-top: 18px; width: 100%; justify-content: center; }
+.file .btn {
+    margin-top: auto;
+    padding-top: 13px;
+    width: 100%;
+    justify-content: center;
+}
+
+/* The gap above the button, held here so `margin-top: auto` above is
+   free to do the aligning. */
+.file p { margin-bottom: 18px; }
 
 /* A chip for the one thing that actually distinguishes the two. */
 .chip {
@@ -579,3 +595,69 @@ a:hover { text-decoration-color: currentColor; }
 
 .warn h3 { color: #E0A247; }
 .warn p { color: var(--star); }
+
+/* A button waiting on a download it cannot see. Dimmed rather than
+   coloured — nothing has gone wrong, it is only that the browser has
+   not said anything yet. */
+.btn--retry {
+    opacity: .82;
+}
+
+
+/* --- The Windows heads-up --------------------------------------
+   Sits directly under the download buttons. Amber rather than red:
+   this is the next thing that will happen, not something that has
+   gone wrong — and the whole block is the link, so there is no
+   small target to find.
+   ---------------------------------------------------------------- */
+.heads-up {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    margin-top: 22px;
+    padding: 22px 24px;
+    border: 1px solid rgba(224, 162, 71, .34);
+    border-radius: var(--r-md);
+    background: linear-gradient(180deg, rgba(224, 162, 71, .055), transparent 62%), var(--ink-base);
+    text-decoration: none;
+    transition: border-color var(--t-fast), transform var(--t-fast);
+}
+
+.heads-up:hover {
+    border-color: rgba(224, 162, 71, .6);
+    transform: translateY(-2px);
+}
+
+.heads-up__icon {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    color: #E0A247;
+    margin-top: 1px;
+}
+
+.heads-up__icon svg { width: 100%; height: 100%; }
+
+/* The heading carries the point by itself — somebody who reads only
+   this line has still been told the useful thing. */
+.heads-up h3 {
+    color: var(--star-hi);
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.heads-up p {
+    font-size: 0.86rem;
+    color: var(--star-dim);
+    margin-bottom: 12px;
+    max-width: 68ch;
+}
+
+.heads-up__go {
+    font-size: 0.82rem;
+    color: #E0A247;
+}
+
+@media (max-width: 560px) {
+    .heads-up { flex-direction: column; gap: 12px; }
+}

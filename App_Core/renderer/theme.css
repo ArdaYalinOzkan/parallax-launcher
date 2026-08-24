@@ -2083,41 +2083,38 @@ body[data-screen="profileDetails"] .sky__near {
 
 /* --- Scrollbar ------------------------------------------------- */
 
-.grid-container::-webkit-scrollbar,
-.details-container::-webkit-scrollbar,
-.settings-content::-webkit-scrollbar,
-.props-body::-webkit-scrollbar,
-.igdb-results-grid::-webkit-scrollbar {
+/* Every scrolling area, not a list of five.
+   The list was written when there were five, and the sixth — the
+   suggestions under the game search — arrived without anyone adding
+   it, so it showed the operating system's own grey bar in the middle
+   of a dark panel. A named list of everything that scrolls goes stale
+   the first time something new scrolls; this cannot. */
+*::-webkit-scrollbar {
     width: 12px;
+    height: 12px;
 }
 
-.grid-container::-webkit-scrollbar-track,
-.details-container::-webkit-scrollbar-track,
-.settings-content::-webkit-scrollbar-track,
-.props-body::-webkit-scrollbar-track,
-.igdb-results-grid::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.grid-container::-webkit-scrollbar-thumb,
-.details-container::-webkit-scrollbar-thumb,
-.settings-content::-webkit-scrollbar-thumb,
-.props-body::-webkit-scrollbar-thumb,
-.igdb-results-grid::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
     background: rgba(198, 214, 255, .14);
+    /* A transparent border with background-clip is what makes the
+       thumb narrower than the track it sits in. */
     border: 4px solid transparent;
     background-clip: content-box;
     border-radius: 99px;
     transition: background-color var(--t-fast);
 }
 
-.grid-container::-webkit-scrollbar-thumb:hover,
-.details-container::-webkit-scrollbar-thumb:hover,
-.settings-content::-webkit-scrollbar-thumb:hover,
-.props-body::-webkit-scrollbar-thumb:hover,
-.igdb-results-grid::-webkit-scrollbar-thumb:hover {
+*::-webkit-scrollbar-thumb:hover {
     background: rgba(198, 214, 255, .30);
     background-clip: content-box;
+}
+
+*::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 
@@ -2798,3 +2795,25 @@ body[data-screen="profileDetails"] .sky__near {
 .update-actions > .hidden {
     display: none;
 }
+
+
+/* --- The game search suggestions -------------------------------
+   The list is absolutely positioned at the bottom of its container,
+   and the container carried 30px of padding — so the suggestions
+   appeared a clear gap below the field they belong to, looking like
+   a separate panel that had drifted. The spacing is the same, but
+   held as margin, which the positioning does not count.
+   ---------------------------------------------------------------- */
+.creation-input-container {
+    padding: 0;
+    margin: 30px 0;
+}
+
+.autocomplete-suggestions {
+    margin-top: 6px;
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    overscroll-behavior: contain;
+}
+
+.autocomplete-suggestions .suggestion-item:first-child { border-top: 0; }

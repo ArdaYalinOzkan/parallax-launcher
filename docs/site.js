@@ -161,30 +161,6 @@
 
     loadRelease();
 
-    /* ---- copy the repository commands -------------------------- */
-    const copyBtn = document.getElementById('copyRepo');
-    const repoCmd = document.getElementById('repoCmd');
-    if (copyBtn && repoCmd && navigator.clipboard) {
-        copyBtn.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(repoCmd.textContent.trim());
-                copyBtn.textContent = 'Copied';
-                copyBtn.classList.add('is-done');
-                setTimeout(() => {
-                    copyBtn.textContent = 'Copy';
-                    copyBtn.classList.remove('is-done');
-                }, 1800);
-            } catch (e) {
-                // Clipboard access can be refused. Saying so beats a
-                // button that silently does nothing.
-                copyBtn.textContent = 'Select it instead';
-                setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2200);
-            }
-        });
-    } else if (copyBtn) {
-        copyBtn.hidden = true;
-    }
-
     /* ---- screenshots not in yet -------------------------------
        A missing screenshot should not leave a broken image icon in
        the middle of the page. Each slot falls back to a drawn panel
@@ -212,5 +188,49 @@
             return;
         }
         img.addEventListener('error', () => emptySlot(img), { once: true });
+    });
+
+    /* ---- download feedback -------------------------------------
+       A browser gives no sign that a 120 MB file has begun; the page
+       just sits there, and the natural reading is that the button did
+       nothing. So the button says what is happening and, after a few
+       seconds, offers to try again — because sometimes it really did
+       not start, and the honest answer is to make retrying easy rather
+       than to insist everything is fine.
+       ------------------------------------------------------------ */
+    document.querySelectorAll('a.btn[id^="dl"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.busy === '1') return;
+            btn.dataset.busy = '1';
+
+            // The label is its own element on the primary button and a
+            // bare text node elsewhere; the size chip must not be touched.
+            const meta = btn.querySelector('.btn__meta');
+            const label = btn.querySelector('span:not(.btn__meta)');
+            const textNode = label ? null :
+                [...btn.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
+
+            const original = label ? label.textContent
+                : (textNode ? textNode.textContent : '');
+            const write = (t) => {
+                if (label) label.textContent = t;
+                else if (textNode) textNode.textContent = t + ' ';
+            };
+
+            write('Starting the download…');
+            if (meta) meta.style.opacity = '.4';
+
+            setTimeout(() => {
+                write('Not started? Click again');
+                btn.classList.add('btn--retry');
+            }, 4500);
+
+            setTimeout(() => {
+                write(original);
+                btn.classList.remove('btn--retry');
+                if (meta) meta.style.opacity = '';
+                btn.dataset.busy = '0';
+            }, 15000);
+        });
     });
 })();

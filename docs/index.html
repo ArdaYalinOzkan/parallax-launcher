@@ -45,8 +45,8 @@
                     <span>Parallax</span>
                 </a>
                 <nav class="top__links">
-                    <a href="#what" data-optional>What it does</a>
                     <a href="#get">Download</a>
+                    <a href="https://help.parallax-launcher.duckdns.org" data-optional>Help</a>
                     <a href="https://github.com/ArdaYalinOzkan/parallax-launcher">Source</a>
                 </nav>
             </div>
@@ -180,7 +180,7 @@
                         <p>An ordinary installer — it asks where to put things and makes the
                             shortcuts. It watches for new versions and replaces itself when you say
                             so. It is not code-signed, so Windows warns you the first time:
-                            <a href="windows.html">what the warnings look like, and what to do</a>.</p>
+                            <a href="https://help.parallax-launcher.duckdns.org/windows.html">what the warnings look like, and what to do</a>.</p>
                         <a class="btn btn--ghost" id="dlWin"
                             href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
                             Download for Windows <span class="btn__meta" id="sizeWin"></span>
@@ -188,35 +188,36 @@
                     </div>
                 </div>
 
-                <!-- The repository, written out rather than hidden behind a
-                     one-line installer. A command that adds a signing key and
-                     a package source to somebody's system is exactly the kind
-                     they should be able to read before running. -->
-                <div class="repo">
-                    <div class="repo__head">
-                        <span class="label" style="margin: 0;">Or let your system do it</span>
-                        <button class="copy" id="copyRepo" type="button">Copy</button>
+
+                <!-- Straight under the buttons, because this is the next thing
+                     that happens to a Windows user and the worst place to learn
+                     it is from the warning itself. The heading carries the whole
+                     point on its own, for anyone who reads no further. -->
+                <a class="heads-up" href="https://help.parallax-launcher.duckdns.org/windows.html">
+                    <div class="heads-up__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 9v4" />
+                            <path d="M12 17h.01" />
+                            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
+                        </svg>
                     </div>
-                    <p style="font-size: .84rem; color: var(--star-dim); margin-bottom: 16px;">
-                        Run this once and Parallax joins your normal updates — one button in the
-                        software centre brings it up to date along with everything else, and the app
-                        stops asking. Worth it if you would rather one thing kept track of your
-                        software than have each program do it for itself.
-                    </p>
-<pre id="repoCmd"><code>sudo install -d -m 0755 /etc/apt/keyrings
-curl -fsSL https://ardayalinozkan.github.io/parallax-apt/key.gpg \
-  | sudo tee /etc/apt/keyrings/parallax.asc > /dev/null
-
-echo "deb [signed-by=/etc/apt/keyrings/parallax.asc] \
-https://ardayalinozkan.github.io/parallax-apt stable main" \
-  | sudo tee /etc/apt/sources.list.d/parallax.list > /dev/null
-
-sudo apt update &amp;&amp; sudo apt install parallax-launcher</code></pre>
-                </div>
+                    <div class="heads-up__body">
+                        <h3>On Windows, the installer will be blocked the first time.</h3>
+                        <p>Nothing is wrong with it — it is not code-signed, so Windows stops
+                            anything it has not seen before. Two clicks get past SmartScreen;
+                            Smart App Control needs one setting changed. Both are shown step by
+                            step, with pictures.</p>
+                        <span class="heads-up__go">How to get past it →</span>
+                    </div>
+                </a>
 
                 <p style="margin-top: 26px; font-size: .84rem; color: var(--star-faint);">
-                    Prefer to run it from source? <code>npm install &amp;&amp; npm start</code> in
-                    <code>App_Core/</code>.
+                    On Debian or Ubuntu you can add the package repository instead and let your
+                    system handle updates —
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-apt">the commands are here</a>.
+                    Running from source is
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher#running-it">in the readme</a>.
                 </p>
             </section>
 
