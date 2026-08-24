@@ -370,6 +370,47 @@ function createWindow() {
    Only for AppImage. A .deb already ships an entry, and a run from
    source is a developer's machine.
    ---------------------------------------------------------------- */
+/* Entries left pointing at an AppImage that is no longer there.
+
+   Until the file was given a name without a version in it, an update
+   deleted the old AppImage and wrote the new one under a new name —
+   so every menu entry made for it stopped working, silently. Clicking
+   did nothing at all. That is fixed at the source now, but the dead
+   entries are still sitting on people's machines.
+
+   Only entries whose command names a Parallax AppImage that does not
+   exist are removed, and only from the user's own directory. Anything
+   else somebody put there is left alone. */
+function removeDeadEntries(appsDir, keepPath) {
+    let names;
+    try {
+        names = fs.readdirSync(appsDir);
+    } catch {
+        return;
+    }
+
+    for (const name of names) {
+        if (!name.endsWith('.desktop')) continue;
+        const full = path.join(appsDir, name);
+        if (full === keepPath) continue;
+
+        try {
+            const text = fs.readFileSync(full, 'utf8');
+            const line = text.split('\n').find(l => l.startsWith('TryExec=') || l.startsWith('Exec='));
+            if (!line) continue;
+
+            const target = (line.split('=').slice(1).join('=').match(/[^"]*\.AppImage/) || [])[0];
+            if (!target || !/Parallax[^/]*\.AppImage$/i.test(target)) continue;
+            if (fs.existsSync(target)) continue;
+
+            fs.unlinkSync(full);
+            console.log(`Removed a menu entry pointing at a file that is gone: ${name}`);
+        } catch {
+            // A file we cannot read is a file we should not delete.
+        }
+    }
+}
+
 function installDesktopEntry() {
     if (process.platform !== 'linux' || !process.env.APPIMAGE) return;
 
@@ -419,6 +460,8 @@ function installDesktopEntry() {
             const have = fs.existsSync(iconPath) ? fs.readFileSync(iconPath) : null;
             if (!have || !have.equals(wanted)) fs.writeFileSync(iconPath, wanted);
         }
+
+        removeDeadEntries(appsDir, entryPath);
 
         // Menus that cache do not notice a new file on their own. If the
         // tools are missing the entry still works, it just may take until

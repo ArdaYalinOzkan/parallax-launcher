@@ -1,6 +1,6 @@
 {
   "name": "parallax-launcher",
-  "version": "3.2.2",
+  "version": "3.2.3",
   "main": "main.js",
   "author": "Arda Yalın Özkan",
   "license": "GPL-3.0-or-later",
@@ -83,6 +83,9 @@
       "shortcutName": "Parallax Launcher",
       "deleteAppDataOnUninstall": false,
       "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "appImage": {
+      "artifactName": "${productName}.${ext}"
     }
   },
   "repository": {
