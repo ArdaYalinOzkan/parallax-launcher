@@ -100,6 +100,79 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  windows:
+    name: Build for Windows
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: App_Core/package-lock.json
+
+      - name: Check the tag against package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: App_Core
+        shell: bash
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          TAG="${GITHUB_REF_NAME#v}"
+          if [ "$PKG" != "$TAG" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json ($PKG)."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        working-directory: App_Core
+        run: npm ci
+
+      # The same gap as on Linux: npm does not reliably fetch Electron's
+      # own binary, and without it the build fails much later with a far
+      # less obvious message.
+      - name: Make sure Electron's binary is present
+        working-directory: App_Core
+        shell: bash
+        run: |
+          if [ ! -f node_modules/electron/dist/electron.exe ]; then
+            echo "Electron binary missing - fetching it"
+            node node_modules/electron/install.js
+          fi
+          node -p "require('electron/package.json').version"
+
+      # Unsigned. A code-signing certificate is a yearly cost, and
+      # without one Windows shows SmartScreen's "unrecognised app"
+      # warning on first run. That is said plainly on the download page
+      # rather than left for people to be surprised by.
+      - name: Build
+        working-directory: App_Core
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            npx electron-builder --win --publish always
+          else
+            npx electron-builder --win --publish never
+          fi
+
+      - name: List what was produced
+        working-directory: App_Core
+        shell: bash
+        run: ls -lh dist/ | grep -viE 'total|win-unpacked|builder-'
+
+      - name: Keep the build
+        uses: actions/upload-artifact@v4
+        with:
+          name: parallax-windows
+          path: |
+            App_Core/dist/*.exe
+            App_Core/dist/latest.yml
+          if-no-files-found: error
+          retention-days: 14
+
   apt:
     name: Publish the APT repository
     needs: linux

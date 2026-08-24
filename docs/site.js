@@ -127,11 +127,9 @@
 
             const appImage = find('.appimage');
             const deb = find('.deb');
-
-            if (version) set('dlVersion', 'v' + version + ' · AppImage');
+            const win = find('.exe');
 
             if (appImage) {
-                link('dlPrimary', appImage.browser_download_url);
                 link('dlAppImage', appImage.browser_download_url);
                 set('sizeAppImage', MB(appImage.size));
             }
@@ -139,6 +137,22 @@
                 link('dlDeb', deb.browser_download_url);
                 set('sizeDeb', MB(deb.size));
             }
+            if (win) {
+                link('dlWin', win.browser_download_url);
+                set('sizeWin', MB(win.size));
+            }
+
+            // The big button follows whoever is reading. Offering a
+            // Linux AppImage to somebody on Windows is a download they
+            // will get halfway through before finding out.
+            const onWindows = /Windows/i.test(navigator.userAgent);
+            const pick = onWindows ? win : appImage;
+            const label = onWindows ? 'Download for Windows' : 'Download for Linux';
+            const kind = onWindows ? 'Installer' : 'AppImage';
+
+            if (pick) link('dlPrimary', pick.browser_download_url);
+            set('dlPrimaryLabel', label);
+            if (version) set('dlVersion', 'v' + version + ' · ' + kind);
         } catch (e) {
             /* Offline, blocked, or GitHub having a moment. The page was
                already correct before this ran; leave it alone. */

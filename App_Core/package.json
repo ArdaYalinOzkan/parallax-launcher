@@ -1,6 +1,6 @@
 {
   "name": "parallax-launcher",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "main": "main.js",
   "author": "Arda Yalın Özkan",
   "license": "GPL-3.0-or-later",
@@ -44,8 +44,11 @@
       }
     },
     "win": {
-      "target": "nsis",
-      "icon": "Assets_Default/AppLogo.ico"
+      "target": [
+        "nsis"
+      ],
+      "icon": "Assets_Default/AppLogo.ico",
+      "legalTrademarks": "Parallax Launcher — Arda Yalın Özkan"
     },
     "publish": [
       {
@@ -70,6 +73,16 @@
         "libuuid1",
         "libsecret-1-0"
       ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Parallax Launcher",
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
     }
   },
   "repository": {

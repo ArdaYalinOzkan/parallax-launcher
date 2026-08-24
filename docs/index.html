@@ -71,7 +71,7 @@
                 <div class="hero__actions rise rise--4">
                     <a class="btn btn--primary" id="dlPrimary"
                         href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
-                        Download for Linux
+                        <span id="dlPrimaryLabel">Download for Linux</span>
                         <span class="btn__meta" id="dlVersion">AppImage</span>
                     </a>
                     <a class="btn btn--ghost" href="https://github.com/ArdaYalinOzkan/parallax-launcher">
@@ -144,9 +144,9 @@
 
             <section id="get" class="wrap">
                 <span class="label">Download</span>
-                <h2>Two files. Take the first one.</h2>
-                <p class="lede">Both are built from the same source by the same automated run,
-                    and both keep themselves up to date.</p>
+                <h2>Take the one for your system.</h2>
+                <p class="lede">All three are built from the same source by the same automated run,
+                    and all three keep themselves up to date.</p>
 
                 <div class="files">
                     <div class="file">
@@ -171,6 +171,19 @@
                         <a class="btn btn--ghost" id="dlDeb"
                             href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
                             Download .deb <span class="btn__meta" id="sizeDeb"></span>
+                        </a>
+                    </div>
+
+                    <div class="file">
+                        <div class="file__name">.exe <span class="chip">Updates itself</span></div>
+                        <div class="file__for">Windows 10 · 11</div>
+                        <p>An ordinary installer — it asks where to put things and makes the
+                            shortcuts. It watches for new versions and replaces itself when you say
+                            so. It is not code-signed, so Windows warns you the first time:
+                            <strong>More info → Run anyway</strong>.</p>
+                        <a class="btn btn--ghost" id="dlWin"
+                            href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
+                            Download for Windows <span class="btn__meta" id="sizeWin"></span>
                         </a>
                     </div>
                 </div>
@@ -203,8 +216,7 @@ sudo apt update &amp;&amp; sudo apt install parallax-launcher</code></pre>
 
                 <p style="margin-top: 26px; font-size: .84rem; color: var(--star-faint);">
                     Prefer to run it from source? <code>npm install &amp;&amp; npm start</code> in
-                    <code>App_Core/</code>. Windows builds exist in the repository but are not
-                    published yet.
+                    <code>App_Core/</code>.
                 </p>
             </section>
 
