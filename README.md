@@ -22,6 +22,21 @@ played, and stays out of your way otherwise.
 Everything it knows lives in a plain text file on your computer. There is no
 account, no telemetry, and nothing is uploaded anywhere.
 
+## What it looks like
+
+<div align="center">
+
+<img src="docs/shot-library.jpg" alt="The Parallax Launcher library: a grid of game cover art over a dark background." width="900">
+
+<sub>The library — sorted here by hours played.</sub>
+
+</div>
+
+|  |  |
+|---|---|
+| <img src="docs/shot-game.jpg" alt="A single game's page, with cover art, playtime and a Play button." width="440"> | <img src="docs/shot-settings.png" alt="The per-game compatibility settings, showing the exact command that will run." width="440"> |
+| A game's page. | Properties — and the exact command that is about to run. |
+
 ## What it does
 
 - **Finds your Steam games.** Reads Steam's library folders and install
