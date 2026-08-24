@@ -392,6 +392,55 @@ a:hover { text-decoration-color: currentColor; }
 
 .file p { font-size: 0.86rem; color: var(--star-dim); }
 
+/* Removing it. Set apart from the download cards: nobody reads this
+   until they want it, and then they want it to be findable. */
+.removal {
+    margin-top: 40px;
+    padding: 24px 26px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--ink-base);
+}
+
+.removal h3 {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--star-dim);
+    margin-bottom: 14px;
+}
+
+.removal p {
+    font-size: 0.84rem;
+    color: var(--star-faint);
+    margin-bottom: 12px;
+}
+
+.removal strong { color: var(--star-dim); font-weight: 600; }
+
+.removal code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    color: var(--star-dim);
+}
+
+.removal pre {
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border-radius: var(--r-sm);
+    background: var(--ink-raise);
+    border: 1px solid var(--line);
+    /* Long paths must not push the page sideways. */
+    overflow-x: auto;
+}
+
+.removal pre code {
+    font-size: 0.78rem;
+    line-height: 1.7;
+    white-space: pre;
+}
+
 /* The rescue note under the AppImage. Set apart and dimmer than the
    description above it: it is for the person whose download did
    nothing, and nobody else needs to read it. */

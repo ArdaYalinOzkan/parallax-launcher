@@ -258,6 +258,31 @@
 
 
 
+                <!-- Uninstalling. Worth saying plainly: the AppImage is one
+                     file, but it does put an entry in the menu, so deleting
+                     the file alone leaves that behind. -->
+                <div class="removal">
+                    <h3>Removing it</h3>
+                    <p>Your library, your settings and your artwork live in
+                        <code>~/.config/parallax-launcher</code> on Linux and
+                        <code>%APPDATA%\parallax-launcher</code> on Windows. None of the steps
+                        below touch that folder, so reinstalling picks up where you left off —
+                        delete it yourself if you want everything gone.</p>
+
+                    <p><strong>.AppImage</strong> — delete the file. It also left a menu entry
+                        and an icon behind, since it put itself in your menu:</p>
+                    <pre><code>rm ~/.local/share/applications/parallax-launcher-appimage.desktop
+rm ~/.local/share/icons/hicolor/256x256/apps/parallax-launcher.png
+rm -r ~/.cache/parallax-launcher-updater</code></pre>
+
+                    <p><strong>.deb</strong> — <code>sudo apt remove parallax-launcher</code>.
+                        If you added the repository, drop it too:
+                        <code>sudo rm /etc/apt/sources.list.d/parallax.list</code></p>
+
+                    <p><strong>Windows</strong> — Settings, Apps, Parallax Launcher, Uninstall.
+                        Same as anything else.</p>
+                </div>
+
                 <p style="margin-top: 26px; font-size: .84rem; color: var(--star-faint);">
                     On Debian or Ubuntu you can add the package repository instead and let your
                     system handle updates —
