@@ -19,6 +19,13 @@
          screen for anyone who had already visited. -->
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="alternate icon" href="favicon.ico" sizes="any">
+    <!-- iOS asks for these by name, without being told to, the moment
+         somebody considers keeping the page on their home screen. They
+         were not here, so every visit from an iPhone left two 404s in
+         the log — which is how they were found. Solid ground rather
+         than transparent: iOS composites the icon itself and gives it
+         its own rounded corners. -->
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
