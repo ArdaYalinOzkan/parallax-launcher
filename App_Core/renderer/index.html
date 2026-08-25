@@ -13,6 +13,29 @@
 </head>
 
 <body>
+    <!-- The wait, made deliberate.
+
+         Walking into the library used to jerk, because the library was
+         still being assembled while the animation played. Rather than
+         chase the last of that, the work is now done before anything
+         moves and the app says so: this is on screen while the covers
+         are decoded, and the shelf is only revealed once there is
+         nothing left to do. -->
+    <div id="bootVeil" class="boot">
+        <div class="boot__mark">
+            <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                <path d="M50.00 15.00 L32.68 25.00 L32.68 45.00 L50.00 55.00 L67.32 45.00 L67.32 25.00 Z" stroke="#EEF1F6" stroke-width="4" />
+                <path d="M32.68 45.00 L15.36 55.00 L15.36 75.00 L32.68 85.00 L50.00 75.00 L50.00 55.00 Z" stroke="#EEF1F6" stroke-width="4" />
+                <path d="M67.32 45.00 L50.00 55.00 L50.00 75.00 L67.32 85.00 L84.64 75.00 L84.64 55.00 Z" stroke="#EEF1F6" stroke-width="4" />
+            </svg>
+        </div>
+        <span class="boot__small" data-i18n="WELCOME_TO">Welcome To</span>
+        <h1 class="boot__large" data-i18n="PARALLAX_LAUNCHER">Parallax Launcher</h1>
+
+        <div class="boot__bar"><span class="boot__fill" id="bootFill"></span></div>
+        <p class="boot__status" id="bootStatus" data-i18n="BOOT_PREPARING">Preparing your library…</p>
+    </div>
+
     <div id="app">
         <!-- The Gateway (Account Selection) -->
         <div id="gateway" class="screen active">

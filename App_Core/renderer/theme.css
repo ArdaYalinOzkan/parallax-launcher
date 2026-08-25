@@ -3206,3 +3206,101 @@ body[data-screen="profileDetails"] .sky__near {
 #detailsBannerImg {
     transition: opacity .18s ease;
 }
+
+/* ==============================================================
+   THE BOOT VEIL
+   ==============================================================
+   The same mark and wordmark the gateway wears, so the app does not
+   appear to change identity between the wait and the thing waited
+   for — plus a bar, because a wait with no measure is a wait that
+   feels twice as long.
+
+   It leaves by growing very slightly and fading, which reads as the
+   veil lifting off the library rather than the library arriving. */
+.boot {
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    background: var(--ink-base, #05060A);
+    /* A thousandth short of solid, and deliberately so. An element
+       that covers the window at full opacity lets the browser skip
+       painting everything behind it — so the library was not drawn
+       until the veil began to fade, which put its most expensive frame
+       in the middle of the only animation anybody sees. This keeps the
+       shelf painting while it is still hidden. It was tried at .995
+       first and the gateway showed faintly through; at .999 nothing
+       does. */
+    opacity: 0.999;
+    transition: opacity .45s cubic-bezier(0.4, 0, 0.2, 1),
+        transform .45s cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0s linear .45s;
+    visibility: visible;
+}
+
+.boot.done {
+    opacity: 0;
+    transform: scale(1.03);
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.boot__mark {
+    width: 92px;
+    height: 92px;
+    margin-bottom: 18px;
+}
+
+.boot__mark svg { width: 100%; height: 100%; }
+
+.boot__small {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--star-faint);
+}
+
+.boot__large {
+    font-family: var(--font-mono);
+    font-size: 1.9rem;
+    font-weight: 300;
+    letter-spacing: 0.42em;
+    text-indent: 0.42em;
+    text-transform: uppercase;
+    color: var(--star-hi);
+    margin: 13px 0 0;
+}
+
+/* Low and narrow. It is there to be glanced at, not read. */
+.boot__bar {
+    width: min(300px, 40vw);
+    height: 2px;
+    margin-top: 54px;
+    border-radius: 2px;
+    background: var(--line);
+    overflow: hidden;
+}
+
+.boot__fill {
+    display: block;
+    width: 0%;
+    height: 100%;
+    background: var(--star-hi);
+    border-radius: 2px;
+    /* Eased, so a burst of progress does not snap across the bar. */
+    transition: width .3s cubic-bezier(0.2, 0, 0.1, 1);
+}
+
+.boot__status {
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    color: var(--star-faint);
+    min-height: 1em;
+}

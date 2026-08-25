@@ -1882,6 +1882,7 @@ setInterval(() => {
 // ================================================================
 async function initApp() {
     try {
+        setBootProgress(1, 8, 'BOOT_PREPARING');
         userDataPath = await window.api.getUserDataPath();
 
         // Load persisted settings
@@ -1896,6 +1897,7 @@ async function initApp() {
             appSettings = { ...appSettings, ...settings };
         }
 
+        setBootProgress(3, 8, 'BOOT_PREPARING');
         currentLanguage = appSettings.language || 'en';
 
         if (appLanguageSelect) appLanguageSelect.value = currentLanguage;
@@ -1922,6 +1924,8 @@ async function initApp() {
         // handleFilters() that runs once the library is on screen.
         if (sortFilter && appSettings.sortBy) sortFilter.value = appSettings.sortBy;
 
+        setBootProgress(5, 8, 'BOOT_PREPARING');
+
         applyTheme();
         gatewayScreen.style.transition = 'none';
         gatewayScreen.style.opacity = '1';
@@ -1933,14 +1937,27 @@ async function initApp() {
 
         // Load initially
         await loadAccounts();
+        setBootProgress(7, 8, 'BOOT_PREPARING');
 
         appVersion = await window.api.getAppVersion();
         const cur = document.getElementById('updateCurrent');
         if (cur) cur.textContent = 'v' + appVersion;
 
         translateApp();
+
+        /* The veil has been up since the first frame. Launching used to
+           show the account screen part-drawn and then animate it in,
+           which is the worst possible order — the animation ran over
+           work that had not finished. Now nothing is shown until it is
+           finished, and the veil lifting is the only movement. */
+        setBootProgress(8, 8, 'BOOT_READY');
+        await afterPaint(140);
+        await hideBootVeil();
+
         scheduleUpdateCheck();
     } catch (error) {
+        // A launch that failed must not leave the veil up for ever.
+        hideBootVeil();
         console.error("App initialization failed:", error);
         if (typeof showError === 'function') {
             showError(translations[currentLanguage].INIT_ERROR + ' ' + error.message);
@@ -1948,6 +1965,145 @@ async function initApp() {
             alert("CRITICAL ERROR during startup: " + error.message);
         }
     }
+}
+
+/* ----------------------------------------------------------------
+   The wait before the shelf
+
+   Every screen was slowest the first time it was opened, and the
+   reason was always the same: pictures being decoded while something
+   was trying to animate. Rather than keep shaving that down, the work
+   is moved in front of the animation. The veil holds until the covers
+   are ready, and the library is revealed with nothing left to do.
+
+   Two rules keep it honest. It never waits longer than the budget —
+   a library of two thousand should not hold somebody hostage — and
+   the bar only ever moves forward.
+   ---------------------------------------------------------------- */
+
+const BOOT_BUDGET_MS = 3000;
+/* Decoding is not free, and eight at a time keeps the main thread
+   responsive enough that the bar itself still animates. */
+const BOOT_PARALLEL = 8;
+/* Only the covers somebody could actually be looking at within a
+   scroll or two. Decoding a library of two hundred takes about eight
+   seconds, which is not a wait worth imposing to prevent a stutter —
+   and the stutter only ever came from the first screenful anyway. The
+   rest are fetched afterwards, while the app sits idle. */
+const BOOT_EAGER_COVERS = 60;
+/* A loading screen that comes and goes inside a blink reads as a
+   glitch rather than as a wait. If the work finishes sooner than this,
+   the veil stays anyway — long enough to be seen as deliberate. */
+const BOOT_MIN_MS = 900;
+const bootShownAt = performance.now();
+
+function bootVeilEl() { return document.getElementById('bootVeil'); }
+
+/** Waits for the browser to have painted, plus a little breathing room. */
+function afterPaint(extraMs = 0) {
+    return new Promise(resolve => {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            extraMs ? setTimeout(resolve, extraMs) : resolve();
+        }));
+    });
+}
+
+function setBootProgress(done, total, key) {
+    /* getElementById rather than the el() helper: this runs during
+       start-up, before that helper's const has been initialised. */
+    const fill = document.getElementById('bootFill');
+    const status = document.getElementById('bootStatus');
+    if (fill) fill.style.width = (total ? Math.round((done / total) * 100) : 0) + '%';
+    if (status && key) {
+        const table = (typeof translations !== 'undefined' && translations[currentLanguage]) || {};
+        status.removeAttribute('data-i18n');
+        status.textContent = table[key] || key;
+    }
+}
+
+async function hideBootVeil() {
+    const left = BOOT_MIN_MS - (performance.now() - bootShownAt);
+    if (left > 0) await new Promise(r => setTimeout(r, left));
+    const veil = bootVeilEl();
+    if (veil) veil.classList.add('done');
+}
+
+/**
+ * Decodes every cover, a few at a time, reporting progress as it goes.
+ * Gives up on the budget rather than on the pictures: whatever has not
+ * been decoded by then is simply decoded later, when it scrolls in.
+ */
+async function warmCovers(games) {
+    const urls = [];
+    for (const g of games) {
+        const p = resolvePath(g.Cover);
+        if (p) urls.push(p);
+    }
+    if (!urls.length) return;
+
+    const started = performance.now();
+    let done = 0;
+    let next = 0;
+
+    setBootProgress(0, urls.length, 'BOOT_ARTWORK');
+
+    const worker = async () => {
+        while (next < urls.length) {
+            if (performance.now() - started > BOOT_BUDGET_MS) return;
+            const url = urls[next++];
+            await new Promise(resolve => {
+                const img = new Image();
+                const finish = () => { done++; setBootProgress(done, urls.length); resolve(); };
+                img.onload = () => (img.decode ? img.decode().then(finish, finish) : finish());
+                img.onerror = finish;
+                img.src = url;
+            });
+        }
+    };
+
+    await Promise.all(Array.from({ length: BOOT_PARALLEL }, worker));
+    setBootProgress(urls.length, urls.length, 'BOOT_READY');
+}
+
+/**
+ * The banners, fetched in the background once the app is usable.
+ * A game's page is the other place that used to stutter on its first
+ * visit; this makes most of those visits not the first one. It runs
+ * only while the browser is idle, so it never competes with anything
+ * the person is actually doing.
+ */
+function warmRestWhenIdle(games) {
+    const queue = [];
+    // The covers past the eager ones first — they are what the next
+    // scroll needs — and then the banners, for the game pages.
+    for (const g of games.slice(BOOT_EAGER_COVERS)) {
+        const c = resolvePath(g.Cover);
+        if (c) queue.push(c);
+    }
+    for (const g of games) {
+        const b = resolvePath(g.Banner);
+        if (b) queue.push(b);
+    }
+    if (!queue.length) return;
+
+    const idle = window.requestIdleCallback || (fn => setTimeout(() => fn({ timeRemaining: () => 8 }), 300));
+
+    /* A handful per slice, with a pause between them. Draining the
+       queue as fast as idle time allowed stalled a frame for half a
+       second about a second after the library appeared — idle work
+       that anybody can see is not idle work. */
+    const PER_SLICE = 5;
+
+    const step = () => {
+        let n = 0;
+        while (queue.length && n++ < PER_SLICE) {
+            const img = new Image();
+            img.src = queue.shift();
+        }
+        if (queue.length) setTimeout(() => idle(step), 120);
+    };
+
+    idle(step);
 }
 
 // ================================================================
@@ -2036,9 +2192,32 @@ async function loginAs(accountId) {
     playtimeSynced = false;   // her hesabın kendi kütüphanesi ayrı senkronlanmalı
     try {
         currentAccountId = accountId;
+
+        const veil = bootVeilEl();
+        if (veil) {
+            veil.classList.remove('done');
+            setBootProgress(0, 1, 'BOOT_PREPARING');
+        }
+        await afterPaint();
+
         await window.api.setAccount(accountId);
         await loadLibrary();
+
+        // The shelf exists in the document by now but has not been shown.
+        // Decoding here means the transition has nothing left to do.
+        await warmCovers(currentLibrary.slice(0, BOOT_EAGER_COVERS));
+
+        /* The swap happens underneath the veil, not next to it. Bringing
+           the library on screen costs one expensive frame — the layout
+           of the whole shelf and its first paint — and if the veil is
+           lifting at the same moment, that frame is the one everybody
+           sees. Behind the veil it costs nothing anybody notices, and
+           the only animation left is the veil itself. */
         transitionScreen(gatewayScreen, libraryScreen);
+        await afterPaint(260);
+
+        hideBootVeil();
+        warmRestWhenIdle(currentLibrary);
     } catch (error) {
         console.error("Login failed:", error);
         showError(`${translations[currentLanguage].LOGIN_FAILED} ${error.message}`);
