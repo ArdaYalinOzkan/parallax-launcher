@@ -891,6 +891,61 @@ body {
    different values, both were eased: enough separation that the dialog
    sits clearly in front, little enough that the shelf behind is still
    recognisably a shelf. */
+/* Opening and closing a dialog.
+
+   Two things were wrong. The dialog faded in by animating opacity on
+   the whole modal, and an element with animating opacity becomes its
+   own compositing layer — the backdrop-filter inside it has nothing to
+   sample until that layer settles, so the blur arrived in one step
+   after the window had already finished sliding in. And closing was
+   `display: none`, which is not a thing that can be animated at all:
+   window and blur vanished together, mid-frame.
+
+   So neither uses opacity on the modal now. The overlay fades and
+   un-blurs on its own, the panel moves on its own, and the modal
+   itself only stops taking clicks — its visibility switch waits out
+   the transition so the two children are still on screen while they
+   leave. */
+.modal {
+    visibility: visible;
+    transition: visibility 0s;
+}
+
+.modal.hidden {
+    /* Overriding `.hidden { display: none !important }`, which would
+       otherwise cut the close animation off before its first frame. */
+    display: flex !important;
+    visibility: hidden;
+    pointer-events: none;
+    transition: visibility 0s linear .24s;
+}
+
+.modal-overlay {
+    opacity: 1;
+    transition: opacity .24s ease,
+        backdrop-filter .24s ease,
+        -webkit-backdrop-filter .24s ease;
+}
+
+.modal.hidden .modal-overlay {
+    opacity: 0;
+    backdrop-filter: blur(0px) saturate(100%);
+    -webkit-backdrop-filter: blur(0px) saturate(100%);
+}
+
+/* Everything in a modal that is not the overlay is the panel itself. */
+.modal > *:not(.modal-overlay) {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    transition: opacity .24s cubic-bezier(0.2, 0, 0.1, 1),
+        transform .24s cubic-bezier(0.2, 0, 0.1, 1);
+}
+
+.modal.hidden > *:not(.modal-overlay) {
+    opacity: 0;
+    transform: scale(0.965) translateY(10px);
+}
+
 .modal-overlay {
     background: rgba(5, 6, 10, .58);
     backdrop-filter: blur(7px) saturate(115%);

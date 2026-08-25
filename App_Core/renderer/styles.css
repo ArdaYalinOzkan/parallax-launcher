@@ -47,7 +47,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: modalFadeIn 0.3s ease;
 }
 
 .modal-overlay {
@@ -64,7 +63,6 @@
 .modal-content {
     position: relative;
     z-index: 3001;
-    animation: modalScaleIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 @keyframes modalFadeIn {
