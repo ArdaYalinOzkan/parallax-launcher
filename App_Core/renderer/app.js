@@ -1995,8 +1995,13 @@ const BOOT_BUDGET_MS = 4000;
 const BOOT_PARALLEL = 8;
 /* A loading screen that comes and goes inside a blink reads as a
    glitch rather than as a wait. If the work finishes sooner than this,
-   the veil stays anyway — long enough to be seen as deliberate. */
-const BOOT_MIN_MS = 900;
+   the veil stays anyway.
+
+   Three seconds is longer than the work usually needs, and that is the
+   point: the app is doing something on your behalf and this is where
+   it says so. A launcher that opens instantly and then stutters feels
+   worse than one that takes a moment and then does not. */
+const BOOT_MIN_MS = 3000;
 const bootShownAt = performance.now();
 
 function bootVeilEl() { return document.getElementById('bootVeil'); }
