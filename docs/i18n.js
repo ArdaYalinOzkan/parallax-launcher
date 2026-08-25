@@ -719,17 +719,58 @@ ko: {
 (() => {
     const FALLBACK = 'en';
     const STORE = 'parallaxLang';
+    /* The site and its help pages are two subdomains, which is to say
+       two origins with two separate localStorages. A cookie set on the
+       shared parent domain is one setting for both, so choosing Korean
+       anywhere is choosing it everywhere. localStorage is kept as well,
+       for the case where cookies are refused. */
+    const DOMAIN = 'parallaxlauncher.com';
 
-    /* Which language to start in, in order of how much it means:
-       the address bar (a link from the other site), then what the
-       reader chose here before, then what the browser asks for. */
+    function readCookie() {
+        try {
+            const hit = document.cookie.split('; ').find(c => c.startsWith(STORE + '='));
+            return hit ? decodeURIComponent(hit.slice(STORE.length + 1)) : null;
+        } catch {
+            return null;
+        }
+    }
+
+    function remember(lang) {
+        try { localStorage.setItem(STORE, lang); } catch { }
+        try {
+            // The domain attribute only applies on the real site; on
+            // localhost it would silently void the cookie.
+            const shared = location.hostname.endsWith(DOMAIN) ? '; domain=.' + DOMAIN : '';
+            const secure = location.protocol === 'https:' ? '; Secure' : '';
+            document.cookie = STORE + '=' + encodeURIComponent(lang) +
+                '; path=/; max-age=31536000; SameSite=Lax' + shared + secure;
+        } catch { }
+    }
+
+    /* Which language to start in, in order of how much it means: the
+       address bar, then the shared cookie, then this origin's own
+       storage, then what the browser asks for. */
     function initial() {
         const asked = new URLSearchParams(location.search).get('lang');
-        if (asked && PARALLAX_STRINGS[asked]) return asked;
+        if (asked && PARALLAX_STRINGS[asked]) {
+            // A choice arriving by link is still a choice, and it used
+            // not to be written down — so the next page forgot it and
+            // fell back to English. That was the bug where one page of
+            // the site was Turkish and the next one was not.
+            remember(asked);
+            return asked;
+        }
+
+        const shared = readCookie();
+        if (shared && PARALLAX_STRINGS[shared]) return shared;
 
         let saved = null;
         try { saved = localStorage.getItem(STORE); } catch { }
-        if (saved && PARALLAX_STRINGS[saved]) return saved;
+        if (saved && PARALLAX_STRINGS[saved]) {
+            // Seen before this site used a cookie; carry it over.
+            remember(saved);
+            return saved;
+        }
 
         for (const tag of navigator.languages || [navigator.language || '']) {
             const short = String(tag).toLowerCase().split('-')[0];
@@ -797,7 +838,7 @@ ko: {
         }
 
         select.addEventListener('change', () => {
-            try { localStorage.setItem(STORE, select.value); } catch { }
+            remember(select.value);
             apply(select.value);
             select.setAttribute('aria-label', PARALLAX_STRINGS[select.value].LANG_ARIA);
         });
