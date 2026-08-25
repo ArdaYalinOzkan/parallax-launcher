@@ -1402,6 +1402,12 @@ body {
 }
 
 
+.status-size {
+    margin-left: 0.6em;
+    color: var(--star-dim);
+    font-weight: 400;
+}
+
 .game-playtime,
 .game-platform,
 .game-status-text {

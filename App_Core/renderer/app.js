@@ -150,7 +150,6 @@ const detailsBannerImg = document.getElementById('detailsBannerImg');
 const detailsPlayTime = document.getElementById('detailsPlayTime');
 const detailsPlatform = document.getElementById('detailsPlatform');
 const detailsStatus = document.getElementById('detailsStatus');
-const detailsDiskSize = document.getElementById('detailsDiskSize');
 const platformSelect = document.getElementById('platformSelect');
 const playBtn = document.getElementById('playBtn');
 
@@ -1348,16 +1347,16 @@ function resetDeleteButton() {
 }
 
 function updateStatusTextImmediately(status) {
+    // The size belongs to the old state until it is measured again, so it
+    // goes before anything is drawn rather than lingering beside a status
+    // it no longer describes.
+    detailsDiskText = '';
+    renderStatusLine(status);
+
     const acikOyun = currentLibrary.find(g => g.Id === detailsTitle.dataset.gameId);
     if (acikOyun) {
         diskSizeCache.delete(acikOyun.Path);
         paintDiskSize(acikOyun);
-    }
-    detailsStatus.textContent = translations[currentLanguage][status.toUpperCase()] || status;
-    if (status === 'Uninstalled') {
-        detailsStatus.classList.add('uninstalled');
-    } else {
-        detailsStatus.classList.remove('uninstalled');
     }
 }
 
@@ -1400,6 +1399,33 @@ async function saveGameChanges() {
    only ever raises a number, never lowers one. Runs on every load, so
    it stays current without anyone having to ask for it. */
 let playtimeSynced = false;
+
+/* The library can be edited from outside this window — by the command
+   line, or by anything built on it. The main process watches the file
+   and says when that has happened, so the window can pick the change up
+   instead of writing its own older copy back over it.
+
+   Not while the person is in the middle of editing a game, though: they
+   are holding the newer version, and pulling the rug would lose what
+   they had typed. It waits, and the save they are about to make wins. */
+if (window.api.onLibraryChanged) {
+    window.api.onLibraryChanged(async () => {
+        if (isEditMode) {
+            console.log('[Library] changed outside, but an edit is open — leaving it alone');
+            return;
+        }
+        console.log('[Library] changed outside this window, reloading');
+        const acikOyun = detailsTitle && detailsTitle.dataset.gameId;
+        await loadLibrary();
+
+        // If a game's page is open, redraw it from the record that just
+        // arrived rather than the one it was showing.
+        if (acikOyun) {
+            const g = currentLibrary.find(x => x.Id === acikOyun);
+            if (g) showGameDetails(g);
+        }
+    });
+}
 
 async function loadLibrary() {
     try {
@@ -1607,40 +1633,68 @@ function formatDiskSize(bytes) {
     return (bytes / 1e3).toLocaleString(currentLanguage, { maximumFractionDigits: 0 }) + ' KB';
 }
 
+/* The size shares the Status field rather than sitting in a column of
+   its own. A column that reads "—" for every game you have not installed
+   is mostly empty space asking to be looked at; hung off the status it
+   only appears when there is something to say. */
+let detailsDiskText = '';
+
+function renderStatusLine(status) {
+    if (!detailsStatus) return;
+    const etiket = translations[currentLanguage][status.toUpperCase()] || status;
+
+    detailsStatus.textContent = etiket;
+    if (detailsDiskText) {
+        // Set a shade back rather than divided off by a rule. It is the
+        // same fact continued — how much of the disk being installed
+        // costs — so it reads as the quieter half of one line.
+        const boyut = document.createElement('span');
+        boyut.className = 'status-size';
+        boyut.textContent = detailsDiskText;
+        detailsStatus.appendChild(boyut);
+    }
+    detailsStatus.classList.toggle('uninstalled', status === 'Uninstalled');
+}
+
+function gameStatusOf(game) {
+    return game.Status || (game.Path ? 'Installed' : 'Uninstalled');
+}
+
 async function paintDiskSize(game) {
-    if (!detailsDiskSize) return;
+    if (!detailsStatus) return;
 
     // The page can be left while the walk is still running, so every
     // result is checked against the game still on screen.
     const token = game.Id;
-    detailsDiskSize.dataset.for = token;
+    detailsStatus.dataset.for = token;
 
     if (!game.Path) {
-        detailsDiskSize.textContent = '—';
+        detailsDiskText = '';
+        renderStatusLine(gameStatusOf(game));
         return;
     }
 
     const cached = diskSizeCache.get(game.Path);
     if (cached !== undefined) {
-        detailsDiskSize.textContent = cached;
+        detailsDiskText = cached;
+        renderStatusLine(gameStatusOf(game));
         return;
     }
 
-    detailsDiskSize.textContent = '…';
     let sonuc;
     try {
         sonuc = await window.api.gameDiskSize(game.Path);
     } catch {
         sonuc = null;
     }
-    if (detailsDiskSize.dataset.for !== token) return;
+    if (detailsStatus.dataset.for !== token) return;
 
-    let metin = '—';
+    detailsDiskText = '';
     if (sonuc && sonuc.ok) {
-        metin = (sonuc.truncated ? '> ' : '') + formatDiskSize(sonuc.bytes);
-        diskSizeCache.set(game.Path, metin);
+        detailsDiskText = (sonuc.truncated ? '> ' : '') + formatDiskSize(sonuc.bytes);
+        diskSizeCache.set(game.Path, detailsDiskText);
     }
-    detailsDiskSize.textContent = metin;
+    renderStatusLine(gameStatusOf(game));
 }
 
 // ================================================================
@@ -1656,14 +1710,8 @@ function showGameDetails(game) {
     detailsPlatform.textContent = translations[currentLanguage][(game.Platform || 'PC').toUpperCase()] || (game.Platform || 'PC');
     platformSelect.value = game.Platform || 'PC';
 
-    const status = game.Status || (game.Path ? 'Installed' : 'Uninstalled');
-    detailsStatus.textContent = translations[currentLanguage][status.toUpperCase()] || status;
-    if (status === 'Uninstalled') {
-        detailsStatus.classList.add('uninstalled');
-    } else {
-        detailsStatus.classList.remove('uninstalled');
-    }
-
+    detailsDiskText = '';
+    renderStatusLine(gameStatusOf(game));
     paintDiskSize(game);
 
     const pathText = game.Path || translations[currentLanguage].NOT_SET;

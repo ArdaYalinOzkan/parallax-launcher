@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('api', {
     selectExe: () => ipcRenderer.invoke('select-exe'),
     selectImage: () => ipcRenderer.invoke('select-image'),
     onGameStatus: (callback) => ipcRenderer.on('game-status', (event, data) => callback(data)),
+    onLibraryChanged: (fn) => ipcRenderer.on('library-changed', () => fn()),
 
     // Account Management
     getAccounts: () => ipcRenderer.invoke('get-accounts'),

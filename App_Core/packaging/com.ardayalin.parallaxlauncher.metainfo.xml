@@ -60,6 +60,15 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="3.7.0" date="2026-08-26">
+      <description>
+        <p>Parallax can now be driven from a command line, so scripts and AI
+           assistants can read the library, start games and edit entries.</p>
+        <p>The library is watched for changes made outside the window, and
+           reloaded when they arrive.</p>
+        <p>How much room a game takes is shown beside its status.</p>
+      </description>
+    </release>
     <release version="3.6.0" date="2026-08-25">
       <description>
         <p>Games can be sorted by the colour of their cover art.</p>

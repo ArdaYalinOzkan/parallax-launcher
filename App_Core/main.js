@@ -17,6 +17,30 @@ const LibraryManager = require('./LibraryManager');
 const Platform = require('./Platform');
 const Artwork = require('./Artwork');
 
+/* Run as a command instead of a window.
+ *
+ *     Parallax-Launcher.AppImage --cli games --json
+ *
+ * Everything after --cli is handed to the command line and the process
+ * exits without a window ever being made. This is here rather than in a
+ * separate program because there is only one thing to install: whatever
+ * copy of Parallax somebody already has can answer questions about
+ * their library, which is the whole point of it being reachable to
+ * anything but a person with a mouse.
+ *
+ * It has to happen before anything else in this file — the migrations
+ * below expect a window's lifetime, and none of them is any of a
+ * command's business.
+ */
+{
+    const bayrakYeri = process.argv.indexOf('--cli');
+    if (bayrakYeri !== -1) {
+        const { main: cliMain } = require('./cli');
+        // Chromium is never started, so nothing here needs a display.
+        process.exit(cliMain(process.argv.slice(bayrakYeri + 1)));
+    }
+}
+
 /* One Steam Web API key ships with this app; the SteamGridDB one does not.
  *
  * The bundled key is the author's own, included so that importing a
@@ -631,6 +655,61 @@ ipcMain.handle('get-accounts', async () => {
     return accounts;
 });
 
+/* Somebody else may be editing this library.
+
+   The command line writes straight to Library.txt, and so does anything
+   built on it. The window keeps the whole library in memory and writes
+   it out whole, so without this an edit made outside would live until
+   the next save here and then vanish — the window would put its own
+   older copy back over it, and nobody would ever see what happened.
+
+   Our own writes look identical to anyone else's from the filesystem's
+   point of view, so they are marked as they happen and ignored for a
+   moment afterwards. */
+let libraryWatcher = null;
+let sonYazma = 0;
+
+function markOwnWrite() { sonYazma = Date.now(); }
+
+/* Every write goes through here, so none of them has to remember to
+   say it was ours. */
+function ownedLibrary(fullPath) {
+    const lm = new LibraryManager(fullPath);
+    for (const ad of ['updateLibrary', 'addGame', 'bulkAddGames']) {
+        const asil = lm[ad].bind(lm);
+        lm[ad] = (...a) => { markOwnWrite(); const r = asil(...a); markOwnWrite(); return r; };
+    }
+    return lm;
+}
+
+function watchLibraryFile(dosya) {
+    if (libraryWatcher) {
+        try { libraryWatcher.close(); } catch { }
+        libraryWatcher = null;
+    }
+    if (!fs.existsSync(dosya)) return;
+
+    try {
+        let bekleyen = null;
+        libraryWatcher = fs.watch(dosya, () => {
+            if (Date.now() - sonYazma < 1500) return;   // our own save
+            // Editors and our own writer both touch the file more than
+            // once per save; one notification per settled change is
+            // enough.
+            clearTimeout(bekleyen);
+            bekleyen = setTimeout(() => {
+                if (Date.now() - sonYazma < 1500) return;
+                console.log('[Library] changed on disk by something else — telling the window');
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('library-changed');
+                }
+            }, 400);
+        });
+    } catch (err) {
+        console.warn('[Library] could not watch the file:', err.message);
+    }
+}
+
 ipcMain.handle('set-account', (event, accountId) => {
     console.log(`Setting account to: ${accountId}`);
     const fullPath = path.join(accountsPath, accountId);
@@ -644,7 +723,8 @@ ipcMain.handle('set-account', (event, accountId) => {
         fs.mkdirSync(vaultPath, { recursive: true });
     }
 
-    libraryManager = new LibraryManager(fullPath);
+    libraryManager = ownedLibrary(fullPath);
+    watchLibraryFile(path.join(fullPath, 'Library.txt'));
     return true;
 });
 
@@ -680,7 +760,8 @@ ipcMain.handle('rename-account', async (event, { oldId, newId }) => {
     try {
         fs.renameSync(oldPath, newPath);
         // Re-initialize manager for the new path
-        libraryManager = new LibraryManager(newPath);
+        libraryManager = ownedLibrary(newPath);
+        watchLibraryFile(path.join(newPath, 'Library.txt'));
         return { success: true };
     } catch (err) {
         return { success: false, error: err.message };
