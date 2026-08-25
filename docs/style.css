@@ -375,11 +375,32 @@ a:hover { text-decoration-color: currentColor; }
 }
 
 .file__name {
+    display: flex;
+    align-items: baseline;
     font-family: var(--font-mono);
     font-size: 0.92rem;
     color: var(--star-hi);
     margin-bottom: 4px;
 }
+
+/* How many times this file has been taken, pushed to the far end of the
+   row. Quiet on purpose: it is a fact about the project, not a claim
+   being made to the reader, and it should not compete with the name of
+   the file it sits beside. */
+.file__count {
+    margin-left: auto;
+    padding-left: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: .06em;
+    color: var(--star-faint);
+    white-space: nowrap;
+    /* Nothing at all until the number arrives, so the row never jumps. */
+    opacity: 0;
+    transition: opacity .3s ease;
+}
+
+.file__count[data-ready="1"] { opacity: 1; }
 
 .file__for {
     font-family: var(--font-mono);

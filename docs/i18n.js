@@ -76,6 +76,7 @@ en: {
     GET_LEDE: 'All three are built from the same source by the same automated run, and all three keep themselves up to date.',
 
     CHIP_UPDATES: 'Updates itself',
+    DOWNLOADS: "downloads",
     APPIMAGE_FOR: 'Any distribution',
     APPIMAGE_P_html: 'One file. Your browser downloads it without permission to run, so give it that first — right-click, Properties, tick <em>allow executing</em>, or <code>chmod +x</code> on the file. Then open it. It adds itself to your application menu on first run, and because it is a single file it can replace itself: it watches for new releases and offers to fetch one.',
     BTN_APPIMAGE: 'Download AppImage',
@@ -162,6 +163,7 @@ tr: {
     GET_LEDE: 'Üçü de aynı kaynaktan, aynı otomatik derlemeyle çıkıyor ve üçü de kendini güncel tutuyor.',
 
     CHIP_UPDATES: 'Kendini günceller',
+    DOWNLOADS: "indirme",
     APPIMAGE_FOR: 'Her dağıtım',
     APPIMAGE_P_html: 'Tek dosya. Tarayıcı onu çalıştırma izni olmadan indiriyor, o izni sen vereceksin: sağ tık, Özellikler, <em>çalıştırmaya izin ver</em>, ya da dosyaya <code>chmod +x</code>. Sonra açman yeterli. İlk açılışta kendini uygulama menüne ekliyor; tek dosya olduğu için de kendi yerine geçebiliyor, yeni sürüm çıkınca haber verip indirmeyi teklif ediyor.',
     BTN_APPIMAGE: 'AppImage indir',
@@ -248,6 +250,7 @@ de: {
     GET_LEDE: 'Alle drei entstehen aus derselben Quelle im selben automatischen Durchlauf, und alle drei halten sich selbst aktuell.',
 
     CHIP_UPDATES: 'Aktualisiert sich selbst',
+    DOWNLOADS: "Downloads",
     APPIMAGE_FOR: 'Jede Distribution',
     APPIMAGE_P_html: 'Eine einzige Datei. Der Browser lädt sie ohne Ausführungsrecht herunter, das gibst du ihr: Rechtsklick, Eigenschaften, <em>Ausführen erlauben</em>, oder <code>chmod +x</code> auf die Datei. Danach öffnen, fertig. Beim ersten Start trägt sie sich ins Anwendungsmenü ein; und weil sie aus einer Datei besteht, kann sie sich selbst ersetzen — erscheint eine neue Version, meldet sie sich und bietet den Download an.',
     BTN_APPIMAGE: 'AppImage laden',
@@ -334,6 +337,7 @@ ru: {
     GET_LEDE: 'Все три собираются из одного исходного кода одним и тем же автоматическим прогоном, и все три обновляются сами.',
 
     CHIP_UPDATES: 'Обновляется сам',
+    DOWNLOADS: "загрузок",
     APPIMAGE_FOR: 'Любой дистрибутив',
     APPIMAGE_P_html: 'Один-единственный файл. Браузер скачивает его без права на запуск — это право даёте вы: правой кнопкой, «Свойства», <em>разрешить выполнение</em>, либо <code>chmod +x</code> по файлу. Дальше просто откройте. При первом запуске он добавляет себя в меню приложений, а поскольку файл один, умеет заменить сам себя: выйдет новая версия — сообщит и предложит скачать.',
     BTN_APPIMAGE: 'Скачать AppImage',
@@ -420,6 +424,7 @@ uk: {
     GET_LEDE: 'Усі три збираються з одного коду одним і тим самим автоматичним прогоном, і всі три оновлюються самі.',
 
     CHIP_UPDATES: 'Оновлюється сам',
+    DOWNLOADS: "завантажень",
     APPIMAGE_FOR: 'Будь-який дистрибутив',
     APPIMAGE_P_html: 'Один-єдиний файл. Браузер завантажує його без права на запуск — це право даєте ви: права кнопка, «Властивості», <em>дозволити виконання</em>, або <code>chmod +x</code> по файлу. Далі просто відкрийте. Під час першого запуску він додає себе до меню програм, а оскільки файл один, вміє замінити сам себе: вийде нова версія — повідомить і запропонує завантажити.',
     BTN_APPIMAGE: 'Завантажити AppImage',
@@ -506,6 +511,7 @@ pt: {
     GET_LEDE: 'Os três saem do mesmo código na mesma execução automática, e os três se mantêm atualizados sozinhos.',
 
     CHIP_UPDATES: 'Atualiza sozinho',
+    DOWNLOADS: "downloads",
     APPIMAGE_FOR: 'Qualquer distribuição',
     APPIMAGE_P_html: 'Um arquivo só. O navegador baixa sem permissão de execução, e essa permissão quem dá é você: botão direito, Propriedades, <em>permitir execução</em>, ou <code>chmod +x</code> no arquivo. Depois é só abrir. Na primeira vez ele se coloca no menu de aplicativos; e como é um arquivo só, consegue se substituir — quando sai versão nova, ele avisa e oferece o download.',
     BTN_APPIMAGE: 'Baixar AppImage',
@@ -592,6 +598,7 @@ zh: {
     GET_LEDE: '三个都由同一份源代码、同一次自动构建产出，也都会自己保持更新。',
 
     CHIP_UPDATES: '自动更新',
+    DOWNLOADS: "次下载",
     APPIMAGE_FOR: '任意发行版',
     APPIMAGE_P_html: '只有一个文件。浏览器下载时不会给它执行权限，这个权限由你来给：右键、属性、勾上<em>允许执行</em>，或者对文件执行 <code>chmod +x</code>。之后打开就行。第一次运行时它会把自己加进应用菜单；又因为只有一个文件，它能替换掉自己——有新版本时会提醒你并问要不要下载。',
     BTN_APPIMAGE: '下载 AppImage',
@@ -678,6 +685,7 @@ ko: {
     GET_LEDE: '셋 다 같은 소스에서 같은 자동 빌드로 나오고, 셋 다 스스로 최신 상태를 지킵니다.',
 
     CHIP_UPDATES: '스스로 업데이트',
+    DOWNLOADS: "회 다운로드",
     APPIMAGE_FOR: '모든 배포판',
     APPIMAGE_P_html: '파일 하나가 전부입니다. 브라우저는 실행 권한 없이 내려받으니 그 권한은 사용자가 줍니다. 마우스 오른쪽, 속성, <em>실행 허용</em>에 체크하거나 파일에 <code>chmod +x</code>. 그다음 열면 됩니다. 처음 실행할 때 스스로 응용 프로그램 메뉴에 등록되고, 파일이 하나뿐이라 자기 자신을 바꿔 놓을 수 있습니다. 새 버전이 나오면 알려 주고 내려받을지 물어봅니다.',
     BTN_APPIMAGE: 'AppImage 받기',

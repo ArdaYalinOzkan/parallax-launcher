@@ -110,16 +110,67 @@
         if (el && url) el.href = url;
     }
 
+    /* Grouped by thousands in the reader's own convention — a German
+       page saying 1,204 where it means 1.204 is a small thing that
+       reads as carelessness. */
+    const counts = {};
+
+    function showCount(id, n) {
+        counts[id] = n;
+        paintCount(id);
+    }
+
+    /* The tooltip's word and the thousands separator both change with
+       the language, so the numbers are redrawn when it does. */
+    document.addEventListener('parallax:lang', () => {
+        Object.keys(counts).forEach(paintCount);
+    });
+
+    function paintCount(id) {
+        const el = document.getElementById(id);
+        const n = counts[id];
+        if (!el || typeof n !== 'number') return;
+
+        const lang = (window.parallaxI18n && window.parallaxI18n.lang) || 'en';
+        const word = (window.parallaxI18n && window.parallaxI18n.t('DOWNLOADS')) || 'downloads';
+
+        el.textContent = '↓ ' + n.toLocaleString(lang);
+        el.title = n.toLocaleString(lang) + ' ' + word;
+        el.dataset.ready = '1';
+    }
+
+    /* Every release rather than only the newest, because the counts are
+       a running total: a file that has been taken forty times over six
+       versions has been taken forty times, and resetting to nought on
+       every release would say something false. The list comes back
+       newest first, so the head of it is still the latest — one request
+       does both jobs. */
     async function loadRelease() {
         try {
-            const r = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
+            const r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=100`, {
                 headers: { Accept: 'application/vnd.github+json' }
             });
             // No releases yet, or a rate limit. Either way the buttons
             // already point at the releases page, which is the right
             // place to land — so there is nothing to correct.
             if (!r.ok) return;
-            const rel = await r.json();
+
+            const all = (await r.json()).filter(x => !x.draft && !x.prerelease);
+            const rel = all[0];
+            if (!rel) return;
+
+            // Totals per kind of file, across everything ever published.
+            const totals = { '.appimage': 0, '.deb': 0, '.exe': 0 };
+            for (const release of all) {
+                for (const a of (release.assets || [])) {
+                    for (const ext of Object.keys(totals)) {
+                        if (a.name.toLowerCase().endsWith(ext)) totals[ext] += a.download_count || 0;
+                    }
+                }
+            }
+            showCount('countAppImage', totals['.appimage']);
+            showCount('countDeb', totals['.deb']);
+            showCount('countWin', totals['.exe']);
 
             const version = String(rel.tag_name || '').replace(/^v/, '');
             const assets = rel.assets || [];
