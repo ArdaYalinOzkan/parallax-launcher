@@ -69,7 +69,7 @@ en: {
 
     LBL_LANGS: 'Languages',
     LANGS_H2: "Available in eight languages.",
-    LANGS_LEDE: 'Every string in the app exists in all of them — not a partial translation that falls back to English halfway down a screen.',
+    LANGS_LEDE: "Every word in it is translated, not only the menus.",
 
     LBL_GET: 'Download',
     GET_H2: "Choose the file for your system.",
@@ -155,7 +155,7 @@ tr: {
 
     LBL_LANGS: 'Diller',
     LANGS_H2: 'Sekiz dilde kullanılabilir.',
-    LANGS_LEDE: 'Programdaki her metin sekizinde de var. Ekranın ortasında İngilizceye düşen yarım bir çeviri değil.',
+    LANGS_LEDE: "Programdaki her yazı çevrildi, sadece menüler değil.",
 
     LBL_GET: 'İndir',
     GET_H2: 'Sistemine uygun dosyayı seç.',
@@ -241,7 +241,7 @@ de: {
 
     LBL_LANGS: 'Sprachen',
     LANGS_H2: 'In acht Sprachen verfügbar.',
-    LANGS_LEDE: 'Jeder Text im Programm existiert in allen acht. Keine halbe Übersetzung, die mitten auf dem Bildschirm ins Englische zurückfällt.',
+    LANGS_LEDE: "Übersetzt ist alles darin, nicht nur die Menüs.",
 
     LBL_GET: 'Download',
     GET_H2: 'Wähle die Datei für dein System.',
@@ -327,7 +327,7 @@ ru: {
 
     LBL_LANGS: 'Языки',
     LANGS_H2: 'Доступен на восьми языках.',
-    LANGS_LEDE: 'Каждая надпись в программе есть на всех восьми. Это не половинчатый перевод, который посреди экрана срывается на английский.',
+    LANGS_LEDE: "Переведено всё, что в ней есть, а не только меню.",
 
     LBL_GET: 'Скачать',
     GET_H2: 'Выберите файл для вашей системы.',
@@ -413,7 +413,7 @@ uk: {
 
     LBL_LANGS: 'Мови',
     LANGS_H2: 'Доступний вісьмома мовами.',
-    LANGS_LEDE: 'Кожен напис у програмі є в усіх восьми. Це не половинчастий переклад, що посеред екрана зривається на англійську.',
+    LANGS_LEDE: "Перекладено все, що в ній є, а не лише меню.",
 
     LBL_GET: 'Завантажити',
     GET_H2: 'Виберіть файл для вашої системи.',
@@ -499,7 +499,7 @@ pt: {
 
     LBL_LANGS: 'Idiomas',
     LANGS_H2: 'Disponível em oito idiomas.',
-    LANGS_LEDE: 'Cada texto do programa existe nos oito. Não é tradução pela metade, daquelas que voltam para o inglês no meio da tela.',
+    LANGS_LEDE: "Tudo nele está traduzido, não só os menus.",
 
     LBL_GET: 'Baixar',
     GET_H2: 'Escolha o arquivo para o seu sistema.',
@@ -585,7 +585,7 @@ zh: {
 
     LBL_LANGS: '语言',
     LANGS_H2: '提供八种语言。',
-    LANGS_LEDE: '程序里的每一句话，八种语言里都有。不是翻到一半、屏幕中间又冒出英文的那种半成品。',
+    LANGS_LEDE: "里面的每一处文字都翻译了，不只是菜单。",
 
     LBL_GET: '下载',
     GET_H2: '选择适合你系统的文件。',
@@ -671,7 +671,7 @@ ko: {
 
     LBL_LANGS: '언어',
     LANGS_H2: '여덟 개 언어로 제공됩니다.',
-    LANGS_LEDE: '프로그램의 모든 문구가 여덟 언어에 다 있습니다. 화면 중간에서 영어로 되돌아가는 반쪽짜리 번역이 아닙니다.',
+    LANGS_LEDE: "안의 모든 문구가 번역되어 있습니다. 메뉴만이 아닙니다.",
 
     LBL_GET: '다운로드',
     GET_H2: '당신의 시스템에 맞는 파일을 고르세요.',
