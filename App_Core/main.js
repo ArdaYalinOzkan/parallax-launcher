@@ -1074,9 +1074,27 @@ ipcMain.handle('scan-installed', () => {
                 continue;
             }
 
-            // Only demote entries whose recorded folder is really gone.
-            // A game the user pointed at by hand stays exactly as it is.
-            if (game.Status === 'Installed' && game.Path && !fs.existsSync(game.Path)) {
+            if (game.Status !== 'Installed') continue;
+
+            /* Steam's own manifest is the authority for a Steam game,
+               not the folder. Uninstalling through Steam removes
+               appmanifest_<id>.acf but frequently leaves the directory
+               behind — empty, or with a stray file in it — and checking
+               only for the directory meant the launcher went on
+               insisting the game was installed no matter how many times
+               the library was refreshed. */
+            if (game.SteamAppId) {
+                const state = Platform.appInstallState(game.SteamAppId);
+                if (!state.found) {
+                    game.Status = 'Uninstalled';
+                    dropped++;
+                }
+                continue;
+            }
+
+            // Anything pointed at by hand is judged the only way it can
+            // be: is the folder still there.
+            if (game.Path && !fs.existsSync(game.Path)) {
                 game.Status = 'Uninstalled';
                 dropped++;
             }

@@ -1937,7 +1937,6 @@ async function initApp() {
 
         // Load initially
         await loadAccounts();
-        setBootProgress(7, 8, 'BOOT_PREPARING');
 
         appVersion = await window.api.getAppVersion();
         const cur = document.getElementById('updateCurrent');
@@ -1945,12 +1944,19 @@ async function initApp() {
 
         translateApp();
 
-        /* The veil has been up since the first frame. Launching used to
-           show the account screen part-drawn and then animate it in,
-           which is the worst possible order — the animation ran over
-           work that had not finished. Now nothing is shown until it is
-           finished, and the veil lifting is the only movement. */
-        setBootProgress(8, 8, 'BOOT_READY');
+        /* The veil has been up since the first frame, and this is what
+           it is for. Every account's pictures are fetched here, while
+           there is nothing else happening and nobody is waiting on a
+           click — so that afterwards, opening the library, a game or a
+           profile costs nothing at all. */
+        try {
+            const accounts = await window.api.getAccounts();
+            const art = await collectArt(accounts);
+            await warmArt(art.covers, art.banners);
+        } catch (e) {
+            console.warn('[Boot] warm-up skipped:', e);
+        }
+
         await afterPaint(140);
         await hideBootVeil();
 
@@ -1981,16 +1987,12 @@ async function initApp() {
    the bar only ever moves forward.
    ---------------------------------------------------------------- */
 
-const BOOT_BUDGET_MS = 3000;
-/* Decoding is not free, and eight at a time keeps the main thread
-   responsive enough that the bar itself still animates. */
+/* The whole point of the wait is that nothing waits afterwards, so it
+   is given room to actually finish the job. */
+const BOOT_BUDGET_MS = 4000;
+/* Eight at a time keeps the main thread responsive enough that the bar
+   itself still animates while the work happens. */
 const BOOT_PARALLEL = 8;
-/* Only the covers somebody could actually be looking at within a
-   scroll or two. Decoding a library of two hundred takes about eight
-   seconds, which is not a wait worth imposing to prevent a stutter —
-   and the stutter only ever came from the first screenful anyway. The
-   rest are fetched afterwards, while the app sits idle. */
-const BOOT_EAGER_COVERS = 60;
 /* A loading screen that comes and goes inside a blink reads as a
    glitch rather than as a wait. If the work finishes sooner than this,
    the veil stays anyway — long enough to be seen as deliberate. */
@@ -2029,82 +2031,78 @@ async function hideBootVeil() {
 }
 
 /**
- * Decodes every cover, a few at a time, reporting progress as it goes.
- * Gives up on the budget rather than on the pictures: whatever has not
- * been decoded by then is simply decoded later, when it scrolls in.
+ * Everything the library and the game pages will need, fetched before
+ * either is shown.
+ *
+ * Covers are decoded, because the shelf paints them the moment it
+ * appears. Banners are only fetched, not decoded: a screen-sized
+ * picture costs several megabytes decoded and there are as many of
+ * them as there are games, so holding them all would cost more than it
+ * saves. With the bytes already here, opening a game page decodes one
+ * in a few milliseconds — which is the difference between a page that
+ * pops and a page that arrives.
  */
-async function warmCovers(games) {
-    const urls = [];
-    for (const g of games) {
-        const p = resolvePath(g.Cover);
-        if (p) urls.push(p);
-    }
-    if (!urls.length) return;
+async function warmArt(covers, banners) {
+    const total = covers.length + banners.length;
+    if (!total) return;
 
     const started = performance.now();
     let done = 0;
-    let next = 0;
 
-    setBootProgress(0, urls.length, 'BOOT_ARTWORK');
+    const tick = () => setBootProgress(++done, total);
 
-    const worker = async () => {
-        while (next < urls.length) {
-            if (performance.now() - started > BOOT_BUDGET_MS) return;
-            const url = urls[next++];
-            await new Promise(resolve => {
-                const img = new Image();
-                const finish = () => { done++; setBootProgress(done, urls.length); resolve(); };
-                img.onload = () => (img.decode ? img.decode().then(finish, finish) : finish());
-                img.onerror = finish;
-                img.src = url;
-            });
-        }
+    const run = async (urls, decode, key) => {
+        let next = 0;
+        setBootProgress(done, total, key);
+
+        const worker = async () => {
+            while (next < urls.length) {
+                if (performance.now() - started > BOOT_BUDGET_MS) return;
+                const url = urls[next++];
+                await new Promise(resolve => {
+                    const img = new Image();
+                    const finish = () => { tick(); resolve(); };
+                    img.onload = () => ((decode && img.decode) ? img.decode().then(finish, finish) : finish());
+                    img.onerror = finish;
+                    img.src = url;
+                });
+            }
+        };
+
+        await Promise.all(Array.from({ length: BOOT_PARALLEL }, worker));
     };
 
-    await Promise.all(Array.from({ length: BOOT_PARALLEL }, worker));
-    setBootProgress(urls.length, urls.length, 'BOOT_READY');
+    await run(covers, true, 'BOOT_ARTWORK');
+    await run(banners, false, 'BOOT_BANNERS');
+
+    setBootProgress(total, total, 'BOOT_READY');
 }
 
 /**
- * The banners, fetched in the background once the app is usable.
- * A game's page is the other place that used to stutter on its first
- * visit; this makes most of those visits not the first one. It runs
- * only while the browser is idle, so it never competes with anything
- * the person is actually doing.
+ * The art of every account, gathered before any of them is opened.
+ *
+ * Which account somebody will pick is not knowable at start-up, and
+ * warming the wrong one would be worse than warming none. Reading each
+ * library is cheap — a JSON file apiece — and the pictures are what
+ * cost, so all of them are collected and warmed together.
  */
-function warmRestWhenIdle(games) {
-    const queue = [];
-    // The covers past the eager ones first — they are what the next
-    // scroll needs — and then the banners, for the game pages.
-    for (const g of games.slice(BOOT_EAGER_COVERS)) {
-        const c = resolvePath(g.Cover);
-        if (c) queue.push(c);
-    }
-    for (const g of games) {
-        const b = resolvePath(g.Banner);
-        if (b) queue.push(b);
-    }
-    if (!queue.length) return;
-
-    const idle = window.requestIdleCallback || (fn => setTimeout(() => fn({ timeRemaining: () => 8 }), 300));
-
-    /* A handful per slice, with a pause between them. Draining the
-       queue as fast as idle time allowed stalled a frame for half a
-       second about a second after the library appeared — idle work
-       that anybody can see is not idle work. */
-    const PER_SLICE = 5;
-
-    const step = () => {
-        let n = 0;
-        while (queue.length && n++ < PER_SLICE) {
-            const img = new Image();
-            img.src = queue.shift();
+async function collectArt(accounts) {
+    const covers = [], banners = [];
+    for (const acc of accounts) {
+        try {
+            await window.api.setAccount(acc.id);
+            const data = await window.api.getLibrary();
+            for (const g of (data.games || [])) {
+                const c = resolvePath(g.Cover); if (c) covers.push(c);
+                const b = resolvePath(g.Banner); if (b) banners.push(b);
+            }
+        } catch (e) {
+            console.warn('[Boot] could not read', acc.id, e);
         }
-        if (queue.length) setTimeout(() => idle(step), 120);
-    };
-
-    idle(step);
+    }
+    return { covers, banners };
 }
+
 
 // ================================================================
 // ACCOUNT MANAGEMENT
@@ -2193,31 +2191,12 @@ async function loginAs(accountId) {
     try {
         currentAccountId = accountId;
 
-        const veil = bootVeilEl();
-        if (veil) {
-            veil.classList.remove('done');
-            setBootProgress(0, 1, 'BOOT_PREPARING');
-        }
-        await afterPaint();
-
+        /* No waiting here, by design. Everything this needs was fetched
+           at start-up, behind the one loading screen there is — so
+           picking an account is a transition and nothing else. */
         await window.api.setAccount(accountId);
         await loadLibrary();
-
-        // The shelf exists in the document by now but has not been shown.
-        // Decoding here means the transition has nothing left to do.
-        await warmCovers(currentLibrary.slice(0, BOOT_EAGER_COVERS));
-
-        /* The swap happens underneath the veil, not next to it. Bringing
-           the library on screen costs one expensive frame — the layout
-           of the whole shelf and its first paint — and if the veil is
-           lifting at the same moment, that frame is the one everybody
-           sees. Behind the veil it costs nothing anybody notices, and
-           the only animation left is the veil itself. */
         transitionScreen(gatewayScreen, libraryScreen);
-        await afterPaint(260);
-
-        hideBootVeil();
-        warmRestWhenIdle(currentLibrary);
     } catch (error) {
         console.error("Login failed:", error);
         showError(`${translations[currentLanguage].LOGIN_FAILED} ${error.message}`);
