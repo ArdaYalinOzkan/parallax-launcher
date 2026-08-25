@@ -5,12 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parallax Launcher</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- Inter carries names and prose; JetBrains Mono carries every
          reading and label, so the two roles never blur together. -->
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="fonts.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -906,8 +903,6 @@
                                 <p class="sys-hint" id="updateStatus" data-i18n="UPDATE_IDLE">
                                     Checks GitHub for a newer version.</p>
 
-                                <div class="update-notes hidden" id="updateNotes"></div>
-
                                 <div class="update-bar hidden" id="updateBar">
                                     <span class="update-bar-fill" id="updateBarFill"></span>
                                 </div>
@@ -1137,17 +1132,36 @@
                     <span class="version-step__size" id="updateSize"></span>
                 </div>
 
-                <div class="update-card__notes" id="updateModalNotes"></div>
+                <!-- The same controls the Updates panel in settings has.
+                     This dialog used to hand over to that panel, which meant
+                     being dropped into settings to finish something started
+                     here. Now the whole thing — check, download, progress,
+                     restart — happens where it was begun. -->
+                <p class="sys-hint" id="updateModalStatus"></p>
 
-                <div class="update-card__bar hidden" id="updateModalBar">
+                <div class="update-bar hidden" id="updateModalBar">
                     <span class="update-bar-fill" id="updateModalBarFill"></span>
                 </div>
-                <p class="sys-hint hidden" id="updateModalStatus" style="margin-top: 10px;"></p>
+
+                <div class="settings-row-checkbox" style="margin-top: 18px;">
+                    <label data-i18n="AUTO_CHECK_UPDATES">Check automatically</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="modalAutoUpdateCheck">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
             </div>
 
             <div class="update-window__footer">
                 <button id="updateLaterBtn" class="minimal-cancel-btn" data-i18n="UPDATE_LATER">Not now</button>
-                <button id="updateNowBtn" class="premium-btn" data-i18n="DOWNLOAD_UPDATE">DOWNLOAD AND INSTALL</button>
+                <button id="mUpdateCheckBtn" class="premium-btn secondary-btn hidden"
+                    data-i18n="CHECK_FOR_UPDATES">CHECK FOR UPDATES</button>
+                <button id="mUpdateOpenBtn" class="premium-btn secondary-btn hidden"
+                    data-i18n="OPEN_DOWNLOAD_PAGE">OPEN DOWNLOAD PAGE</button>
+                <button id="mUpdateDownloadBtn" class="premium-btn hidden"
+                    data-i18n="DOWNLOAD_UPDATE">DOWNLOAD AND INSTALL</button>
+                <button id="mUpdateRestartBtn" class="premium-btn hidden"
+                    data-i18n="RESTART_TO_UPDATE">RESTART NOW</button>
             </div>
         </div>
     </div>

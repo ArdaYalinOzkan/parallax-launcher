@@ -57,7 +57,6 @@ function readSteamKey() {
     } catch (e) { /* unreadable file falls through to the bundled key */ }
     return BUNDLED_STEAM_KEY;
 }
-
 const userDataPath = app.getPath('userData');
 const accountsPath = path.join(userDataPath, 'Parallax_Accounts');
 
@@ -260,13 +259,18 @@ function ensureAppDataSetup() {
         }
     }
 }
-
 ensureAppDataSetup();
 // Init Memory Cache
 if (fs.existsSync(steamAppListPath)) {
     try { cachedSteamApps = JSON.parse(fs.readFileSync(steamAppListPath, 'utf-8')); } catch (e) { }
 }
-updateSteamAppList();
+/* The full Steam catalogue used to be fetched here, on every launch.
+   Two things were wrong with it: the endpoint it called
+   (ISteamApps/GetAppList/v2) has been returning 404 for some time, and
+   the only reader of what it cached — search-steam-games — is never
+   called by the renderer. So it was a network request at startup
+   feeding a cache nobody reads. It is fetched on demand instead, if
+   that search is ever wired up again. */
 
 function updateSteamAppList() {
     return new Promise((resolve) => {
@@ -343,7 +347,6 @@ function createWindow() {
 
     mainWindow = win;
     win.on('closed', () => { mainWindow = null; });
-
     win.loadFile('renderer/index.html');
 
     win.once('ready-to-show', () => {
@@ -354,96 +357,22 @@ function createWindow() {
 
 
 /* ----------------------------------------------------------------
-   Showing up in the application menu (AppImage only)
+   The application menu
 
-   An AppImage is a single file: nothing installs it, so nothing puts
-   it in the menu either. People download it, run it once, and then
-   have to go back to their Downloads folder every time — while the
-   .deb sitting next to it on the download page appears in the menu
-   like any other program.
+   Nothing to do here. An AppImage integrates itself: on first run it
+   writes ~/.local/share/applications/parallax-launcher.desktop and
+   drops the icon alongside, and it rewrites both when the file moves.
 
-   So the app writes the entry itself, every launch rather than once.
-   That is deliberate: an update replaces the file it points at and
-   may carry a new icon, and a rewrite is the only thing that keeps
-   both correct. Cheap enough — two small files.
-
-   Only for AppImage. A .deb already ships an entry, and a run from
-   source is a developer's machine.
-
-   Nothing here deletes anything. There is one entry and it is
-   rewritten on every launch, so it cannot go stale while the app can
-   still run — and once the file is deleted the app cannot run at all,
-   which is what the uninstall instructions on the site are for. An
-   earlier version swept the whole directory for entries naming a
-   missing Parallax AppImage; that was a wider reach than the job
-   needs, and not the app's business.
+   This used to write a second entry of its own, because the AppRun
+   script looked like it did no integration — the part that does lives
+   elsewhere in the image. The result was two identical Parallax
+   entries in every menu. The duplicate is gone; the one the AppImage
+   writes is the one that counts, and StartupWMClass is corrected in
+   the build config so the window matches it.
    ---------------------------------------------------------------- */
 
 
-function installDesktopEntry() {
-    if (process.platform !== 'linux' || !process.env.APPIMAGE) return;
-
-    const appImage = process.env.APPIMAGE;
-    if (!fs.existsSync(appImage)) return;
-
-    const home = app.getPath('home');
-    const appsDir = path.join(home, '.local', 'share', 'applications');
-    const iconDir = path.join(home, '.local', 'share', 'icons', 'hicolor', '256x256', 'apps');
-
-    // A name of its own, not 'parallax-launcher'. A user file of that
-    // name would shadow the one a .deb installs system-wide, and if the
-    // AppImage were later deleted the menu entry left behind would point
-    // at nothing.
-    const entryPath = path.join(appsDir, 'parallax-launcher-appimage.desktop');
-    const iconPath = path.join(iconDir, 'parallax-launcher.png');
-
-    // Exec is quoted: the file may well sit in a path with a space in it.
-    const entry = [
-        '[Desktop Entry]',
-        'Type=Application',
-        'Name=Parallax Launcher',
-        'GenericName=Game Library',
-        'Comment=One shelf for every game you own, kept on your own machine.',
-        `Exec="${appImage}" %U`,
-        `TryExec=${appImage}`,
-        'Icon=parallax-launcher',
-        'Terminal=false',
-        'Categories=Game;',
-        'StartupNotify=true',
-        'StartupWMClass=parallax-launcher',
-        ''
-    ].join('\n');
-
-    try {
-        fs.mkdirSync(appsDir, { recursive: true });
-        fs.mkdirSync(iconDir, { recursive: true });
-
-        // Only write when something actually differs, so a launch does not
-        // touch the file for nothing — some menus watch it and rebuild.
-        const current = fs.existsSync(entryPath) ? fs.readFileSync(entryPath, 'utf8') : '';
-        if (current !== entry) fs.writeFileSync(entryPath, entry);
-
-        const source = path.join(__dirname, 'Assets_Default', 'AppIcon.png');
-        if (fs.existsSync(source)) {
-            const wanted = fs.readFileSync(source);
-            const have = fs.existsSync(iconPath) ? fs.readFileSync(iconPath) : null;
-            if (!have || !have.equals(wanted)) fs.writeFileSync(iconPath, wanted);
-        }
-
-        // Menus that cache do not notice a new file on their own. If the
-        // tools are missing the entry still works, it just may take until
-        // the next login to appear.
-        const { execFile } = require('child_process');
-        execFile('update-desktop-database', [appsDir], () => { });
-        execFile('gtk-update-icon-cache', ['-f', '-t', path.join(home, '.local', 'share', 'icons', 'hicolor')], () => { });
-    } catch (err) {
-        // Never worth failing a launch over.
-        console.error('Could not write the desktop entry:', err.message);
-    }
-}
-
 app.whenReady().then(() => {
-    installDesktopEntry();
     createWindow();
 
     app.on('activate', () => {

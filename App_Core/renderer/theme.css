@@ -625,6 +625,26 @@ body {
     transform-style: preserve-3d;
     transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
     will-change: transform;
+    position: relative;
+}
+
+/* The card's reach into the gutter around it.
+
+   The grid leaves 22px between columns and 26px between rows, and
+   sweeping along a shelf used to drop the tilt on every crossing: the
+   row flickered instead of passing the highlight along. This is an
+   invisible box 10px larger on every side — just under half the
+   narrower gap, so two neighbours' reaches never overlap and no pixel
+   belongs to both.
+
+   Padding on the card itself would have done the same thing, but
+   box-sizing is border-box here, so it would have taken those pixels
+   out of the cover instead of adding them outside it. */
+.game-card::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    /* No paint of its own — it exists only to be hit. */
 }
 
 .game-card:hover {

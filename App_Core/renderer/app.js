@@ -3853,21 +3853,38 @@ function updateT(key) {
     return (translations[currentLanguage] && translations[currentLanguage][key]) || key;
 }
 
+/* The same words in both places. There are two panels now — the one in
+   settings and the dialog that opens on its own — and whichever the
+   reader is looking at has to be the one telling the truth. */
 function setUpdateStatus(key, extra) {
-    const node = el('updateStatus');
-    if (!node) return;
-    // The status line is written by hand here, so it must not also be
-    // rewritten by translateApp on the next language change.
-    node.removeAttribute('data-i18n');
-    node.textContent = extra ? updateT(key).replace('{v}', extra) : updateT(key);
+    const text = extra ? updateT(key).replace('{v}', extra) : updateT(key);
+    for (const id of ['updateStatus', 'updateModalStatus']) {
+        const node = el(id);
+        if (!node) continue;
+        // Written by hand here, so translateApp must not rewrite it on
+        // the next language change.
+        node.removeAttribute('data-i18n');
+        node.textContent = text;
+    }
 }
 
 function showUpdateButtons({ check = false, download = false, restart = false, open = false }) {
     const set = (id, on) => { const b = el(id); if (b) b.classList.toggle('hidden', !on); };
-    set('updateCheckBtn', check);
-    set('updateDownloadBtn', download);
-    set('updateRestartBtn', restart);
-    set('updateOpenBtn', open);
+    for (const p of ['update', 'mUpdate']) {
+        set(p + 'CheckBtn', check);
+        set(p + 'DownloadBtn', download);
+        set(p + 'RestartBtn', restart);
+        set(p + 'OpenBtn', open);
+    }
+}
+
+/** Both progress bars, since either panel may be the visible one. */
+function setUpdateBar(percent, visible) {
+    for (const [barId, fillId] of [['updateBar', 'updateBarFill'], ['updateModalBar', 'updateModalBarFill']]) {
+        const bar = el(barId), fill = el(fillId);
+        if (bar) bar.classList.toggle('hidden', !visible);
+        if (fill && percent !== null) fill.style.width = percent + '%';
+    }
 }
 
 /** The installs that can replace themselves; see UPDATES in main.js. */
@@ -3875,16 +3892,11 @@ function canInstallItself(kind) {
     return kind === 'appimage' || kind === 'deb' || kind === 'installer';
 }
 
-function renderUpdateNotes(text) {
-    const box = el('updateNotes');
-    if (!box) return;
-    const clean = String(text || '').trim();
-    if (!clean) { box.classList.add('hidden'); box.textContent = ''; return; }
-    // Release notes come from GitHub, which is to say from outside the
-    // app — so they go in as text, never as markup.
-    box.textContent = clean.length > 600 ? clean.slice(0, 600) + '…' : clean;
-    box.classList.remove('hidden');
-}
+/* The release notes used to be shown here. They are written for the
+   commit log, not for this box: the text arrived with its own markup
+   in it and with paragraphs about internals nobody using the app has
+   any use for. What matters at this moment is the version and the
+   size, and both are on the dialog already. */
 
 async function runUpdateCheck({ silent = false } = {}) {
     if (updateState.checking || updateState.downloading) return;
@@ -3914,7 +3926,6 @@ async function runUpdateCheck({ silent = false } = {}) {
     if (!r || !r.checked) {
         if (silent) return;
         setUpdateStatus('UPDATE_CHECK_FAILED');
-        renderUpdateNotes('');
         showUpdateButtons({ check: true });
         return;
     }
@@ -3922,13 +3933,11 @@ async function runUpdateCheck({ silent = false } = {}) {
     if (!r.available) {
         if (silent) return;
         setUpdateStatus('UPDATE_NONE');
-        renderUpdateNotes('');
         showUpdateButtons({ check: true });
         return;
     }
 
     setUpdateStatus('UPDATE_AVAILABLE', r.version);
-    renderUpdateNotes(r.notes);
 
     if (r.kind === 'deb') {
         // A .deb can be replaced too, but only through dpkg — which
@@ -3948,51 +3957,50 @@ async function runUpdateCheck({ silent = false } = {}) {
     }
 }
 
-if (el('updateCheckBtn')) {
-    el('updateCheckBtn').onclick = () => runUpdateCheck();
+async function startUpdateDownload() {
+    updateState.downloading = true;
+    setUpdateStatus('UPDATE_DOWNLOADING');
+    showUpdateButtons({});
+    setUpdateBar(0, true);
+
+    const res = await window.api.downloadUpdate();
+    if (!res || !res.success) {
+        updateState.downloading = false;
+        setUpdateBar(null, false);
+        setUpdateStatus('UPDATE_DOWNLOAD_FAILED');
+        showUpdateButtons({ check: true });
+    }
+    // Success is announced by the update-ready event, not here —
+    // downloadUpdate resolves when the transfer starts finishing, and
+    // the file is only usable once the event says so.
 }
 
-if (el('updateDownloadBtn')) {
-    el('updateDownloadBtn').onclick = async () => {
-        updateState.downloading = true;
-        setUpdateStatus('UPDATE_DOWNLOADING');
-        showUpdateButtons({});
-        const bar = el('updateBar');
-        if (bar) bar.classList.remove('hidden');
+/* One action, two buttons. The panel in settings and the dialog carry
+   the same four, and either can be the one somebody is looking at. */
+const UPDATE_ACTIONS = {
+    CheckBtn: () => runUpdateCheck(),
+    DownloadBtn: startUpdateDownload,
+    RestartBtn: () => window.api.installUpdate(),
+    OpenBtn: () => window.api.openReleasePage()
+};
 
-        const res = await window.api.downloadUpdate();
-        if (!res || !res.success) {
-            updateState.downloading = false;
-            if (bar) bar.classList.add('hidden');
-            setUpdateStatus('UPDATE_DOWNLOAD_FAILED');
-            showUpdateButtons({ check: true });
-        }
-        // Success is announced by the update-ready event, not here —
-        // downloadUpdate resolves when the transfer starts finishing,
-        // and the file is only usable once the event says so.
-    };
-}
-
-if (el('updateRestartBtn')) {
-    el('updateRestartBtn').onclick = () => window.api.installUpdate();
-}
-
-if (el('updateOpenBtn')) {
-    el('updateOpenBtn').onclick = () => window.api.openReleasePage();
+for (const [suffix, action] of Object.entries(UPDATE_ACTIONS)) {
+    for (const prefix of ['update', 'mUpdate']) {
+        const btn = el(prefix + suffix);
+        if (btn) btn.onclick = action;
+    }
 }
 
 if (window.api && window.api.onUpdateProgress) {
     window.api.onUpdateProgress((p) => {
-        const fill = el('updateBarFill');
-        if (fill) fill.style.width = (p.percent || 0) + '%';
+        setUpdateBar(p.percent || 0, true);
         setUpdateStatus('UPDATE_DOWNLOADING_PCT', String(p.percent || 0));
     });
 
     window.api.onUpdateReady((info) => {
         updateState.downloading = false;
         updateState.ready = true;
-        const bar = el('updateBar');
-        if (bar) bar.classList.add('hidden');
+        setUpdateBar(null, false);
         const debInstall = updateState.info && updateState.info.kind === 'deb';
         setUpdateStatus(debInstall ? 'UPDATE_READY_DEB' : 'UPDATE_READY', info && info.version);
         showUpdateButtons({ restart: true });
@@ -4001,18 +4009,23 @@ if (window.api && window.api.onUpdateProgress) {
 
     window.api.onUpdateError((e) => {
         updateState.downloading = false;
-        const bar = el('updateBar');
-        if (bar) bar.classList.add('hidden');
+        setUpdateBar(null, false);
         setUpdateStatus('UPDATE_CHECK_FAILED');
         showUpdateButtons({ check: true });
         console.warn('[Update]', e && e.message);
     });
 }
 
-const checkAutoUpdate = el('settingAutoUpdateCheck');
-if (checkAutoUpdate) {
-    checkAutoUpdate.onchange = async () => {
-        appSettings.autoCheckUpdates = checkAutoUpdate.checked;
+/* The same switch in both panels, kept in step with each other. */
+for (const id of ['settingAutoUpdateCheck', 'modalAutoUpdateCheck']) {
+    const box = el(id);
+    if (!box) continue;
+    box.onchange = async () => {
+        appSettings.autoCheckUpdates = box.checked;
+        for (const other of ['settingAutoUpdateCheck', 'modalAutoUpdateCheck']) {
+            const b = el(other);
+            if (b && b !== box) b.checked = box.checked;
+        }
         await saveAppSettings();
     };
 }
@@ -4045,30 +4058,23 @@ function openUpdateModal(info) {
     // they are paying for by the megabyte.
     put('updateSize', info.size ? Math.round(info.size / 1048576) + ' MB' : '');
 
-    const notes = el('updateModalNotes');
-    if (notes) {
-        // Release notes are written elsewhere; they go in as text.
-        const clean = String(info.notes || '').trim();
-        notes.textContent = clean.length > 1500 ? clean.slice(0, 1500) + '…' : clean;
-    }
+    // The dialog used to close itself and open settings so the download
+    // could run there. Being moved somewhere else to finish what you
+    // started here is the sort of thing that makes an update feel like
+    // a chore, so it all happens in place now: the status line, the
+    // bar, and Restart when it is done.
+    const canInstall = canInstallItself(info.kind);
+    showUpdateButtons(canInstall ? { download: true } : { open: true });
+    setUpdateStatus(
+        info.kind === 'deb' ? 'UPDATE_AVAILABLE_DEB'
+            : canInstall ? 'UPDATE_AVAILABLE'
+                : info.kind === 'source' ? 'UPDATE_FROM_SOURCE' : 'UPDATE_MANAGED',
+        info.version
+    );
+    setUpdateBar(0, false);
 
-    const go = el('updateNowBtn');
-    if (go) {
-        const canInstall = canInstallItself(info.kind);
-        go.textContent = updateT(canInstall ? 'DOWNLOAD_UPDATE' : 'OPEN_DOWNLOAD_PAGE');
-        go.onclick = () => {
-            if (!canInstall) { window.api.openReleasePage(); return; }
-            // The panel already knows how to do this, including its
-            // progress bar and its failure handling — so the dialog
-            // hands over to it rather than growing a second copy.
-            closeUpdateModal();
-            // Settings opens on About, which is where that panel lives,
-            // so the progress the download reports is on screen.
-            openMainSettings();
-            const btn = el('updateDownloadBtn');
-            if (btn) btn.onclick();
-        };
-    }
+    const auto = el('modalAutoUpdateCheck');
+    if (auto) auto.checked = !!appSettings.autoCheckUpdates;
 
     modal.classList.remove('hidden');
     if (window.SFX) window.SFX.play('open');
@@ -4095,7 +4101,6 @@ function scheduleUpdateCheck() {
 
         // Keep the panel in step for whoever opens it later.
         setUpdateStatus(r.kind === 'deb' ? 'UPDATE_AVAILABLE_DEB' : 'UPDATE_AVAILABLE', r.version);
-        renderUpdateNotes(r.notes);
         showUpdateButtons(canInstallItself(r.kind) ? { download: true } : { open: true });
 
         openUpdateModal(r);

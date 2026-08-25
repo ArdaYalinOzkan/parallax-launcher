@@ -1,6 +1,6 @@
 {
   "name": "parallax-launcher",
-  "version": "3.2.4",
+  "version": "3.3.0",
   "main": "main.js",
   "author": "Arda Yalın Özkan",
   "license": "GPL-3.0-or-later",
@@ -40,7 +40,8 @@
       "synopsis": "Game library manager",
       "description": "One shelf for every game you own, kept on your own machine. Finds your installed Steam games, fills in the artwork, and launches them.",
       "desktop": {
-        "Categories": "Game;"
+        "Categories": "Game;",
+        "StartupWMClass": "parallax-launcher"
       }
     },
     "win": {
