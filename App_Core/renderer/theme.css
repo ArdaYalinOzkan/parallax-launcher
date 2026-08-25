@@ -621,11 +621,34 @@ body {
    object seen from a shifted viewpoint, and a tilt is exactly that —
    you are looking at the cover from slightly to one side. The picture
    itself never moves or scales, so it stays sharp and uncropped. */
+/* Only the cards you can see cost anything.
+
+   The shelf holds a couple of hundred of them, and rendering all of
+   those at once is what made the first walk into the library stutter:
+   one 317ms task, one 206ms task, and a 750ms gap where nothing moved.
+   The second visit was smooth, which is the tell — the work is laying
+   out and decoding covers, and it only happens once each.
+
+   content-visibility lets the browser skip everything below the fold
+   until it scrolls near. The intrinsic size keeps the scrollbar honest
+   in the meantime, and `auto` means each card remembers its real size
+   once it has been measured. */
 .game-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 360px;
     transform-style: preserve-3d;
     transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
-    will-change: transform;
     position: relative;
+
+    /* Kept deliberately, against the usual advice not to leave
+       will-change on hundreds of elements. Moving it to :hover was
+       measured and made things much worse: walking into the library
+       went from 4 stalled frames to 47, and opening settings from 2 to
+       32. The cards sit under a backdrop-filter whenever a dialog is
+       open, and filtering unpromoted content means rasterising the
+       whole shelf again every frame. Promoted, they are already there.
+       Measure before removing this. */
+    will-change: transform;
 }
 
 /* The card's reach into the gutter around it.
@@ -3175,4 +3198,11 @@ body[data-screen="profileDetails"] .sky__near {
 .key-note__btn:hover {
     color: var(--star-hi);
     border-color: var(--star-dim);
+}
+
+/* The banner fades in rather than cutting, so the moment between one
+   game and the next is a fade from nothing instead of a flash of the
+   game you just left. */
+#detailsBannerImg {
+    transition: opacity .18s ease;
 }

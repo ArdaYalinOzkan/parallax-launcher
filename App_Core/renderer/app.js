@@ -1067,12 +1067,35 @@ function applyBannerToUI(game) {
     const bImg = game.Name === 'Gamer-6464' ? PLACEHOLDER_BANNER : (game.Banner || PLACEHOLDER_BANNER);
     const bannerUrl = resolvePath(bImg);
 
-    // Initial source set (fast)
-    detailsBannerImg.src = bannerUrl;
+    /* An <img> keeps showing the picture it has until the next one has
+       decoded. Opening one game straight after another meant a flash of
+       the previous game's banner — brief, but long enough to see and
+       exactly the sort of thing that makes a page feel unfinished.
+       So the element is emptied first and only shown once the new
+       picture is ready to paint. */
+    if (detailsBannerImg.dataset.for !== String(game.Id)) {
+        detailsBannerImg.dataset.for = String(game.Id);
+        detailsBannerImg.style.opacity = '0';
+    }
+
     detailsBannerImg.onerror = () => {
         const fallback = resolvePath(PLACEHOLDER_BANNER);
         if (detailsBannerImg.src !== fallback) detailsBannerImg.src = fallback;
+        detailsBannerImg.style.opacity = '1';
     };
+    detailsBannerImg.onload = () => { detailsBannerImg.style.opacity = '1'; };
+    detailsBannerImg.src = bannerUrl;
+
+    // A picture already in the cache fires no load event in some paths;
+    // decode() settles either way, and resolves immediately when it is
+    // already decoded.
+    if (detailsBannerImg.decode) {
+        detailsBannerImg.decode()
+            .then(() => { detailsBannerImg.style.opacity = '1'; })
+            .catch(() => { detailsBannerImg.style.opacity = '1'; });
+    } else if (detailsBannerImg.complete) {
+        detailsBannerImg.style.opacity = '1';
+    }
 
     const bT = game.BannerTransform || { x: 0, y: 0, s: 1 };
     const bannerImgEl = new Image();
@@ -1495,6 +1518,12 @@ function renderGames(games) {
         return;
     }
 
+    /* Built off to one side and put in once. Appending each card to the
+       live grid made the browser reconsider the layout two hundred-odd
+       times on the way in; a fragment is not in the document, so none of
+       that happens until the single append at the end. */
+    const shelf = document.createDocumentFragment();
+
     games.forEach(game => {
         const card = document.createElement('div');
         const isUninstalled = (game.Status === 'Uninstalled' || !game.Path);
@@ -1520,7 +1549,9 @@ function renderGames(games) {
 
         card.innerHTML = `
             <div class="card-image-container">
-                <img src="${imagePath}" alt="${game.Name}" class="card-image" onerror="this.src='${PLACEHOLDER_COVER}'">
+                <img src="${imagePath}" alt="${game.Name}" class="card-image"
+                     loading="lazy" decoding="async"
+                     onerror="this.src='${PLACEHOLDER_COVER}'">
                 <div class="card-overlay"></div>
                 ${showLabel ? `<div class="card-status-badge">${translations[currentLanguage].NOT_INSTALLED}</div>` : ''}
                 ${isAutoFetching ? `
@@ -1540,8 +1571,10 @@ function renderGames(games) {
         `;
 
         card.addEventListener('click', () => showGameDetails(game));
-        gameGrid.appendChild(card);
+        shelf.appendChild(card);
     });
+
+    gameGrid.appendChild(shelf);
 }
 
 // ================================================================
@@ -1581,15 +1614,17 @@ function showGameDetails(game) {
         mini.classList.remove('visible');
     }
 
-    // Initial call to start loading asset
+    // Sets the picture going while the shelf is still on screen.
     applyBannerToUI(game);
 
-    transitionScreen(libraryScreen, gameDetailsScreen);
-
-    // Recalculate banner scale AFTER screen transition is triggered (so display is block)
-    setTimeout(() => {
-        applyBannerToUI(game);
-    }, 450);
+    /* The banner is measured a second time once the page is actually
+       visible, because its size cannot be read while it is display:none.
+       That second pass used to run on a 450ms timer, which put it in the
+       middle of the transition — the most expensive frame of the whole
+       thing landed exactly where the movement was. Hanging it off the
+       end of the transition instead costs the same work at a moment
+       when nothing is moving. */
+    transitionScreen(libraryScreen, gameDetailsScreen, () => applyBannerToUI(game));
 }
 
 function updatePlayButtonState(game) {
