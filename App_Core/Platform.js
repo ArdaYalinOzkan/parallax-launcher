@@ -837,6 +837,143 @@ function killTree(pid) {
     });
 }
 
+/* Where a game actually lives.
+
+   Adding a game used to mean finding its folder yourself, which sounds
+   easy until you try it: the folder is rarely named after the game, it
+   is often on a second disk, and every store puts it somewhere else.
+   Somebody adding Microsoft Flight Simulator had to dig through
+   C:\XboxGames by hand before the entry would work.
+
+   Steam is the easy case and is answered exactly — the appmanifest
+   names the folder. Everything else is a search: look where games are
+   kept, compare folder names against the title, and let
+   resolveExecutable pick the binary out of whatever is found. */
+
+// Folders that hold games, per platform. Steam's own libraries are
+// added separately because they can be on any disk.
+function gameRoots() {
+    const roots = [];
+    const ekle = (p) => { if (p && fs.existsSync(p)) roots.push(p); };
+
+    for (const lib of steamLibraries()) ekle(path.join(lib, 'common'));
+
+    if (IS_WINDOWS) {
+        const pf = process.env['ProgramFiles'] || 'C:\\Program Files';
+        const pf86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
+        ekle(path.join(pf, 'Epic Games'));
+        ekle(path.join(pf86, 'Epic Games'));
+        ekle(path.join(pf, 'GOG Galaxy', 'Games'));
+        ekle('C:\\GOG Games');
+        // Where the Xbox app puts things. Flight Simulator lives here,
+        // and it is the one place people never think to look.
+        ekle('C:\\XboxGames');
+        ekle(path.join(pf, 'Ubisoft', 'Ubisoft Game Launcher', 'games'));
+        ekle(path.join(pf86, 'Ubisoft', 'Ubisoft Game Launcher', 'games'));
+        ekle(path.join(pf86, 'Origin Games'));
+        ekle(path.join(pf, 'EA Games'));
+        // Not WindowsApps: Windows locks it down hard enough that
+        // reading it throws, and nothing there is launchable by path.
+    } else {
+        const home = os.homedir();
+        ekle(path.join(home, 'Games'));
+        ekle(path.join(home, 'Games', 'Heroic'));
+        ekle(path.join(home, '.var', 'app', 'com.heroicgameslauncher.hgl', 'config', 'legendary'));
+        ekle(path.join(home, 'GOG Games'));
+        ekle('/opt/games');
+        ekle(path.join(home, '.local', 'share', 'lutris'));
+    }
+
+    return [...new Set(roots)];
+}
+
+function normalizeTitle(s) {
+    return (s || '')
+        .toLowerCase()
+        // Roman numerals and edition noise are the two things that stop
+        // an otherwise obvious match: "Game II" vs "Game 2",
+        // "Game - Definitive Edition" vs "Game".
+        .replace(/[\u2122\u00ae]/g, '')
+        .replace(/\b(goty|game of the year|definitive|deluxe|ultimate|complete|remastered|enhanced|edition)\b/g, '')
+        .replace(/[^a-z0-9]/g, '');
+}
+
+/* Score how well a folder name matches a game title. Returns 0 when it
+   is not a match at all, so a bad guess is never offered. */
+function titleScore(folderName, title) {
+    const f = normalizeTitle(folderName);
+    const t = normalizeTitle(title);
+    if (!f || !t) return 0;
+    if (f === t) return 100;
+    if (f.startsWith(t) || t.startsWith(f)) return 80;
+    if (f.includes(t) || t.includes(f)) return 60;
+
+    // A last resort for titles that get abbreviated on disk. Requires
+    // most of the shorter string to appear in order in the longer one,
+    // which is strict enough that unrelated games do not collide.
+    const [kisa, uzun] = f.length < t.length ? [f, t] : [t, f];
+    if (kisa.length < 4) return 0;
+    let i = 0;
+    for (const ch of uzun) if (ch === kisa[i]) i++;
+    if (i === kisa.length && kisa.length / uzun.length > 0.6) return 40;
+    return 0;
+}
+
+/* Find where a game is installed.
+
+   Returns the candidates it is confident about, best first. An empty
+   list means "I could not find it" — which is a real answer, and the
+   reason the caller still offers a Browse button. */
+function findGameLocation({ name, appid } = {}) {
+    const bulunanlar = [];
+
+    // 1. Steam knows exactly. No searching, no guessing.
+    if (appid) {
+        const state = appInstallState(appid);
+        if (state.found && state.path && fs.existsSync(state.path)) {
+            bulunanlar.push({
+                path: state.path,
+                exe: resolveExecutable(state.path, name || state.name),
+                source: 'steam',
+                confidence: 100
+            });
+        }
+    }
+
+    // 2. Everywhere else is a name search.
+    if (name) {
+        for (const root of gameRoots()) {
+            let entries;
+            try {
+                entries = fs.readdirSync(root, { withFileTypes: true });
+            } catch (e) {
+                continue;
+            }
+            for (const e of entries) {
+                if (!e.isDirectory()) continue;
+                const puan = titleScore(e.name, name);
+                if (puan < 40) continue;
+                const full = path.join(root, e.name);
+                if (bulunanlar.some(b => b.path === full)) continue;
+                bulunanlar.push({
+                    path: full,
+                    exe: resolveExecutable(full, name),
+                    source: 'scan',
+                    confidence: puan
+                });
+            }
+        }
+    }
+
+    // A folder with nothing runnable in it is not an answer, unless
+    // Steam vouched for it — some games are launched through Steam
+    // itself and have no binary worth naming.
+    return bulunanlar
+        .filter(b => b.exe || b.source === 'steam')
+        .sort((a, b) => b.confidence - a.confidence)
+        .slice(0, 5);
+}
+
 module.exports = {
     findProcesses,
     killTree,
@@ -854,6 +991,7 @@ module.exports = {
     protonVersions,
     wineAvailable,
     resolveExecutable,
+    findGameLocation,
     planLaunch,
     describe
 };

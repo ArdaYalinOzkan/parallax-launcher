@@ -23,6 +23,17 @@ on:
 
 permissions:
   contents: write        # needed to create the release and attach files
+  # Build provenance. Every released file gets a signed statement saying
+  # which commit, which workflow, and which runner produced it, so anyone
+  # can check that the download really came from the source in this
+  # repository and not from somebody's laptop:
+  #
+  #     gh attestation verify Parallax-Launcher.AppImage --owner ArdaYalinOzkan
+  #
+  # Readable source proves what the code says. This proves the file you
+  # downloaded is that code.
+  id-token: write        # to sign the attestation
+  attestations: write    # to store it against the release
 
 jobs:
   linux:
@@ -86,6 +97,16 @@ jobs:
       - name: List what was produced
         working-directory: App_Core
         run: ls -lh dist/ | grep -vE '^total|linux-unpacked|builder-'
+
+      # Only for a real release. A dry run's files are never published,
+      # so there is nothing for anybody to verify.
+      - name: Attest what was built
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            App_Core/dist/*.AppImage
+            App_Core/dist/*.deb
 
       # Kept for the dry run, where nothing is published — so there is
       # still something to download and try.
@@ -162,6 +183,12 @@ jobs:
         working-directory: App_Core
         shell: bash
         run: ls -lh dist/ | grep -viE 'total|win-unpacked|builder-'
+
+      - name: Attest what was built
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: App_Core/dist/*.exe
 
       - name: Keep the build
         uses: actions/upload-artifact@v4

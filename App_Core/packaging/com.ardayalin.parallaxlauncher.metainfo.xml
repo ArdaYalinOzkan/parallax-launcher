@@ -60,6 +60,15 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="3.6.0" date="2026-08-25">
+      <description>
+        <p>Games can be sorted by the colour of their cover art.</p>
+        <p>A game's page shows how much room it takes on disk.</p>
+        <p>Adding a game now finds where it is installed by itself, and the
+           button on an uninstalled game looks for it on this computer before
+           asking Steam to download anything.</p>
+      </description>
+    </release>
     <release version="3.0.0" date="2026-08-24">
       <description>
         <p>The first release.</p>

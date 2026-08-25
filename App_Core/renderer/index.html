@@ -223,7 +223,7 @@
                                 <path d="M10.6 10.6L14.5 14.5" stroke="currentColor"
                                     stroke-width="1.6" stroke-linecap="round" />
                             </svg>
-                            <input type="text" id="searchInput" placeholder="Search your collection..."
+                            <input type="text" id="searchInput" placeholder="Search games"
                                 class="premium-input-pill" autocomplete="off" spellcheck="false"
                                 data-i18n-placeholder="SEARCH_COLLECTION">
                             <button type="button" id="searchClear" class="search-clear hidden"
@@ -268,9 +268,9 @@
                                 <div class="filter-group sort-group">
                                     <span class="filter-label" data-i18n="SORT_BY">SORT BY</span>
                                     <select id="sortFilter" class="filter-select">
-                                        <option value="none" data-i18n="DEFAULT">Default</option>
-                                        <option value="playtime" data-i18n="PLAY_TIME_MAX">Play Time (Max)</option>
                                         <option value="alphabetical" data-i18n="NAME_AZ">Name (A-Z)</option>
+                                        <option value="playtime" data-i18n="PLAY_TIME_MAX">Play Time (Max)</option>
+                                        <option value="color" data-i18n="SORT_COLOR">Cover Colour</option>
                                     </select>
                                 </div>
                             </div>
@@ -319,7 +319,14 @@
                                 <button id="playBtn" class="play-btn" data-i18n="PLAY">PLAY</button>
 
                                 <!-- Shown instead of Play when the game is not
-                                     installed. Steam does the downloading. -->
+                                     installed, and it does the whole job: it
+                                     looks for the game on this computer first,
+                                     and only turns to Steam if it is genuinely
+                                     not here. One button, because from where
+                                     the person is standing there is one
+                                     question — "I want to play this" — and
+                                     which of the two answers applies is
+                                     something the program can work out. -->
                                 <button id="installBtn" class="play-btn install-btn hidden"
                                     data-i18n="INSTALL">INSTALL</button>
 
@@ -368,6 +375,15 @@
                                     <span class="status-label" data-i18n="STATUS">STATUS</span>
                                     <span id="detailsStatus" class="game-status-text">Installed</span>
                                 </div>
+
+                                <!-- Measured from the folder itself rather than
+                                     asked of Steam: a game put here by hand has
+                                     no Steam record, and the question "how much
+                                     room is this taking" is the same either way. -->
+                                <div class="status-container" id="diskSizeBox">
+                                    <span class="status-label" data-i18n="DISK_SIZE">On Disk</span>
+                                    <span id="detailsDiskSize" class="game-platform">—</span>
+                                </div>
                             </div>
 
                             <!-- Asset Edit Section (Now on the Right) -->
@@ -405,9 +421,6 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="section-title" data-i18n="INTERNAL_NOTES">INTERNAL NOTES</p>
-                        <p id="detailsNotes" class="game-notes"></p>
-
                         <div id="dangerZone" class="danger-zone hidden">
                             <button id="deleteGameBtn" class="delete-game-btn" data-i18n="DELETE_GAME">DELETE GAME FROM
                                 COLLECTION</button>
@@ -698,6 +711,23 @@
             <div id="infoMessage" class="info-message"></div>
             <div class="modal-footer" style="margin-top: 20px;">
                 <button id="closeInfoBtn" class="confirm-btn" data-i18n="GOT_IT">GOT IT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Asked only when the search came up empty and there is more than
+         one thing left to try. -->
+    <div id="choiceModal" class="modal hidden" style="z-index: 5100;">
+        <div class="modal-overlay" id="choiceModalOverlay"></div>
+        <div class="modal-content account-choice-card info-card">
+            <div class="modal-header">
+                <h2 class="notification-title" id="choiceTitle">&nbsp;</h2>
+            </div>
+            <div id="choiceMessage" class="info-message"></div>
+            <div class="modal-footer" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                <button id="choicePrimaryBtn" class="confirm-btn" style="width: 100%;">&nbsp;</button>
+                <button id="choiceSecondaryBtn" class="minimal-cancel-btn" style="width: 100%;">&nbsp;</button>
+                <button id="choiceCancelBtn" class="minimal-text-btn" data-i18n="CANCEL">CANCEL</button>
             </div>
         </div>
     </div>

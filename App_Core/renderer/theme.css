@@ -1315,12 +1315,37 @@ body {
 }
 
 /* A deeper scrim so titles hold against bright key art */
+/* The shade under a banner exists to keep the title readable, and
+   nothing else.
+
+   It was four stops with a steep middle — .78 opaque an eighth of the
+   way up, .18 by not quite half — and a ramp that abrupt reads as an
+   edge, a band across the picture where the darkness suddenly gives
+   way. A straight alpha ramp always does that; the eye finds the join.
+
+   So this is still one gradient, but its stops follow a cosine rather
+   than a line: dense where the change is fast, sparse where it is
+   slow, which is what a smooth fade actually looks like. It clears
+   entirely at 72% — above that the picture is the picture. */
 .banner-overlay {
     background: linear-gradient(to top,
             var(--ink-base) 0%,
-            rgba(9, 11, 16, .88) 22%,
-            rgba(9, 11, 16, .35) 55%,
-            rgba(9, 11, 16, .1) 100%);
+            rgba(9, 11, 16, 0.990) 4.5%,
+            rgba(9, 11, 16, 0.962) 9.0%,
+            rgba(9, 11, 16, 0.916) 13.5%,
+            rgba(9, 11, 16, 0.854) 18.0%,
+            rgba(9, 11, 16, 0.778) 22.5%,
+            rgba(9, 11, 16, 0.691) 27.0%,
+            rgba(9, 11, 16, 0.598) 31.5%,
+            rgba(9, 11, 16, 0.500) 36.0%,
+            rgba(9, 11, 16, 0.402) 40.5%,
+            rgba(9, 11, 16, 0.309) 45.0%,
+            rgba(9, 11, 16, 0.222) 49.5%,
+            rgba(9, 11, 16, 0.146) 54.0%,
+            rgba(9, 11, 16, 0.084) 58.5%,
+            rgba(9, 11, 16, 0.038) 63.0%,
+            rgba(9, 11, 16, 0.010) 67.5%,
+            rgba(9, 11, 16, 0.000) 72.0%);
 }
 
 .game-title,
@@ -1375,6 +1400,7 @@ body {
     border-color: rgba(255, 255, 255, .7);
     color: #fff;
 }
+
 
 .game-playtime,
 .game-platform,
@@ -1899,6 +1925,7 @@ body {
 .action-container .install-btn.hidden {
     display: none !important;
 }
+
 
 
 /* --------------------------------------------------------------

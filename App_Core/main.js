@@ -135,6 +135,92 @@ const deletedVaultPath = path.join(userDataPath, '.deleted_vault');
         console.error('Could not move the deleted-account vault:', err.message);
     }
 })();
+/* The Notes field is gone from the game page, so the text behind it has
+   to go too — leaving it in the file would mean carrying writing nobody
+   can read or delete.
+
+   Everything Parallax itself ever wrote there was the same sentence
+   ("Imported from Steam."), and that is simply dropped. Anything else is
+   something a person typed, so it is copied to notes-backup.txt beside
+   the library before the line goes. Deleting is the instruction; doing
+   it without leaving a way back is not.
+
+   Runs once. The marker sits in userData rather than in the account, so
+   adding an account later does not put it back. */
+(function stripGameNotes() {
+    const isaret = path.join(userDataPath, '.notes-stripped');
+    if (fs.existsSync(isaret)) return;
+    if (!fs.existsSync(accountsPath)) return;
+
+    const BOILERPLATE = ['imported from steam.', 'new entry.', ''];
+    let hesapSayisi = 0, silinen = 0, yedeklenen = 0;
+
+    let hesaplar;
+    try {
+        hesaplar = fs.readdirSync(accountsPath, { withFileTypes: true })
+            .filter(d => d.isDirectory()).map(d => d.name);
+    } catch {
+        return;
+    }
+
+    for (const hesap of hesaplar) {
+        const dosya = path.join(accountsPath, hesap, 'Library.txt');
+        if (!fs.existsSync(dosya)) continue;
+
+        let metin;
+        try {
+            metin = fs.readFileSync(dosya, 'utf-8');
+        } catch (err) {
+            console.error('Could not read ' + dosya + ':', err.message);
+            continue;
+        }
+
+        const satirlar = metin.split(/\r?\n/);
+        const tutulan = [];
+        const yazilmis = [];
+        let adSonGorulen = '';
+
+        for (const satir of satirlar) {
+            const ad = satir.match(/^Name:\s*(.*)$/);
+            if (ad) adSonGorulen = ad[1].trim();
+
+            const not = satir.match(/^Notes:\s*(.*)$/);
+            if (!not) { tutulan.push(satir); continue; }
+
+            const icerik = not[1].trim();
+            if (!BOILERPLATE.includes(icerik.toLowerCase())) {
+                yazilmis.push((adSonGorulen || 'Unknown') + ': ' + icerik.replace(/\\n/g, '\n  '));
+            }
+            silinen++;
+        }
+
+        if (!silinen) continue;
+
+        try {
+            if (yazilmis.length) {
+                const yedek = path.join(accountsPath, hesap, 'notes-backup.txt');
+                fs.writeFileSync(yedek,
+                    'Notes kept from the old game pages, saved here when the field was removed.\n\n' +
+                    yazilmis.join('\n\n') + '\n', 'utf-8');
+                yedeklenen += yazilmis.length;
+            }
+            fs.writeFileSync(dosya, tutulan.join('\n'), 'utf-8');
+            hesapSayisi++;
+        } catch (err) {
+            console.error('Could not rewrite ' + dosya + ':', err.message);
+        }
+    }
+
+    try {
+        fs.writeFileSync(isaret, new Date().toISOString(), 'utf-8');
+    } catch { }
+
+    if (hesapSayisi) {
+        console.log('Removed ' + silinen + ' note field(s) from ' + hesapSayisi +
+            ' library file(s)' + (yedeklenen ? '; ' + yedeklenen + ' written note(s) backed up' : ''));
+    }
+})();
+
 let cachedSteamApps = [];
 
 function copyFolderSync(from, to) {
@@ -659,11 +745,20 @@ ipcMain.handle('select-image', async () => {
 });
 
 ipcMain.handle('select-exe', async () => {
+    // The filter used to be .exe and nothing else, which on Linux hides
+    // exactly the files somebody is looking for: a native game is
+    // usually an extensionless binary, or .x86_64, or a .sh. They were
+    // there in the folder and the dialog would not show them.
+    const filters = Platform.IS_WINDOWS
+        ? [{ name: 'Executables', extensions: ['exe'] }]
+        : [
+            { name: 'Games', extensions: ['x86_64', 'x86', 'sh', 'AppImage', 'exe'] },
+            { name: 'All files', extensions: ['*'] }
+        ];
+
     const result = await dialog.showOpenDialog({
         properties: ['openFile'],
-        filters: [
-            { name: 'Executables', extensions: ['exe'] }
-        ]
+        filters
     });
 
     if (result.canceled || result.filePaths.length === 0) {
@@ -1040,6 +1135,76 @@ ipcMain.handle('get-platform-info', () => {
  * named the same as the store listing. That guess is why 225 games
  * showed as not installed.
  */
+/* How much room a game is taking.
+
+   Measured by walking the folder rather than asked of Steam, because a
+   game somebody pointed at by hand has no Steam record and the question
+   is the same either way.
+
+   Walked with a depth limit and a file budget: a game directory is
+   usually a few thousand files, but a modded install can be hundreds of
+   thousands, and nobody wants a page that waits on a filesystem. Past
+   the budget it returns what it has and says so. */
+/* Where is this game installed?
+
+   Asked when a game is added, so that adding one does not immediately
+   turn into a hunt through the filesystem for its folder. Steam's own
+   records answer it exactly when there is an appid; everything else is
+   a search of the places games are kept. Returns an empty list when it
+   does not know, which is why the screen still offers Browse. */
+ipcMain.handle('find-game-location', async (event, query) => {
+    try {
+        return Platform.findGameLocation(query || {});
+    } catch (err) {
+        console.error('[find-game-location]', err.message);
+        return [];
+    }
+});
+
+ipcMain.handle('game-disk-size', async (event, dir) => {
+    if (!dir || !fs.existsSync(dir)) return { ok: false };
+
+    // A game's location may be recorded as the binary rather than the
+    // folder — both are accepted everywhere else, so both are accepted
+    // here, and the answer is the same either way: the folder's size.
+    try {
+        if (fs.statSync(dir).isFile()) dir = path.dirname(dir);
+    } catch {
+        return { ok: false };
+    }
+
+    const BUTCE = 60000;      // dosya sayısı
+    let bayt = 0, sayilan = 0, kesildi = false;
+
+    const yuru = (yol, derinlik) => {
+        if (kesildi || derinlik > 12) return;
+        let girdiler;
+        try {
+            girdiler = fs.readdirSync(yol, { withFileTypes: true });
+        } catch {
+            return;
+        }
+        for (const g of girdiler) {
+            if (sayilan >= BUTCE) { kesildi = true; return; }
+            const tam = path.join(yol, g.name);
+            if (g.isDirectory()) {
+                yuru(tam, derinlik + 1);
+            } else if (g.isFile()) {
+                sayilan++;
+                try { bayt += fs.statSync(tam).size; } catch { }
+            }
+        }
+    };
+
+    try {
+        yuru(dir, 0);
+    } catch (err) {
+        return { ok: false, error: err.message };
+    }
+
+    return { ok: true, bytes: bayt, files: sayilan, truncated: kesildi };
+});
+
 ipcMain.handle('scan-installed', () => {
     if (!libraryManager) return { success: false, error: 'No account loaded' };
 

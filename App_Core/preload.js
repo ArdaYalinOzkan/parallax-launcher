@@ -11,6 +11,8 @@ contextBridge.exposeInMainWorld('api', {
     // What OS we are on, where Steam is, which Proton builds exist.
     getPlatformInfo: () => ipcRenderer.invoke('get-platform-info'),
     scanInstalled: () => ipcRenderer.invoke('scan-installed'),
+    gameDiskSize: (dir) => ipcRenderer.invoke('game-disk-size', dir),
+    findGameLocation: (query) => ipcRenderer.invoke('find-game-location', query),
     previewLaunch: (game) => ipcRenderer.invoke('preview-launch', game),
     backfillArtwork: (opts) => ipcRenderer.invoke('backfill-artwork', opts),
     steamUri: (action, appId) => ipcRenderer.invoke('steam-uri', { action, appId }),

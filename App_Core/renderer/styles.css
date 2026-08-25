@@ -281,6 +281,18 @@ body {
     animation: drawLogo 2s var(--t-main) forwards;
 }
 
+/* The big mark on the account screen waits for the loading veil to
+   lift. Paused rather than delayed, because a delay would still be
+   counting down behind the veil and the drawing would be half over by
+   the time anybody could see it. */
+.parallax-logo path {
+    animation-play-state: paused;
+}
+
+body.booted .parallax-logo path {
+    animation-play-state: running;
+}
+
 @keyframes drawLogo {
     to {
         stroke-dashoffset: 0;
@@ -1633,6 +1645,7 @@ body {
 .play-btn.hidden {
     display: none !important;
 }
+
 
 .banner-section {
     background-repeat: no-repeat !important;

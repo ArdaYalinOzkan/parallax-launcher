@@ -28,7 +28,7 @@ let appSettings = {
     // How the shelf is ordered. Unlike the two filters beside it, this
     // is a lasting preference rather than a way of looking at the
     // library for a moment, so it survives closing the app.
-    sortBy: 'none',
+    sortBy: 'playtime',
     uiSounds: false,
     uiVolume: 100,
     autoCheckUpdates: true,
@@ -147,10 +147,10 @@ const editGameBtn = document.getElementById('editGame');
 const detailsTitle = document.getElementById('detailsTitle');
 const detailsBanner = document.getElementById('detailsBanner');
 const detailsBannerImg = document.getElementById('detailsBannerImg');
-const detailsNotes = document.getElementById('detailsNotes');
 const detailsPlayTime = document.getElementById('detailsPlayTime');
 const detailsPlatform = document.getElementById('detailsPlatform');
 const detailsStatus = document.getElementById('detailsStatus');
+const detailsDiskSize = document.getElementById('detailsDiskSize');
 const platformSelect = document.getElementById('platformSelect');
 const playBtn = document.getElementById('playBtn');
 
@@ -489,6 +489,12 @@ if (platformFilter) platformFilter.addEventListener('change', () => handleFilter
 if (statusFilter) statusFilter.addEventListener('change', () => handleFilters());
 if (sortFilter) sortFilter.addEventListener('change', async () => {
     appSettings.sortBy = sortFilter.value;
+
+    /* The hues are read while the covers are warmed at start-up, so this
+       normally finds nothing left to do. It is here for the covers that
+       arrived since — a game added this session, or artwork that landed
+       after the shelf was drawn. */
+    if (sortFilter.value === 'color') await ensureCoverHues(currentLibrary);
     await saveAppSettings();
     handleFilters();
 });
@@ -534,9 +540,8 @@ function handleFilters() {
         });
     } else if (sortValue === 'alphabetical') {
         filteredGames.sort((a, b) => a.Name.localeCompare(b.Name));
-    } else {
-        // Default: Newest to oldest (Reverse of addition order)
-        filteredGames.reverse();
+    } else if (sortValue === 'color') {
+        filteredGames = sortByCoverColour(filteredGames);
     }
 
     renderGames(filteredGames);
@@ -1151,7 +1156,6 @@ function toggleEditMode() {
         editGameBtn.classList.add('active');
         document.body.classList.add('edit-mode-active');
         detailsTitle.contentEditable = "true";
-        detailsNotes.contentEditable = "true";
         detailsPlayTime.contentEditable = "true";
 
         const gameId = detailsTitle.dataset.gameId;
@@ -1164,9 +1168,14 @@ function toggleEditMode() {
         detailsPlatform.classList.add('hidden');
         platformSelect.classList.remove('hidden');
 
-        // Remove the time unit suffix for easier editing
+        // The unit comes off so the field is just a number to type over,
+        // and the stored value goes back in unrounded: what is displayed is
+        // rounded to a tenth, and saving that back would quietly file down
+        // everyone's hours a minute at a time.
         const hoursLabel = translations[currentLanguage].HOURS;
-        detailsPlayTime.textContent = detailsPlayTime.textContent.replace(' ' + hoursLabel, '').trim();
+        detailsPlayTime.textContent = (game && game.PlayTime)
+            ? String(game.PlayTime)
+            : detailsPlayTime.textContent.replace(' ' + hoursLabel, '').trim();
 
         playBtn.classList.add('hidden');
         assetEditMode.classList.remove('hidden');
@@ -1177,14 +1186,12 @@ function toggleEditMode() {
         editGameBtn.classList.remove('active');
         document.body.classList.remove('edit-mode-active');
         detailsTitle.contentEditable = "false";
-        detailsNotes.contentEditable = "false";
         detailsPlayTime.contentEditable = "false";
 
         const gameId = detailsTitle.dataset.gameId;
         const game = currentLibrary.find(g => g.Id === gameId);
         if (game) {
             game.Name = detailsTitle.innerText.trim();
-            game.Notes = detailsNotes.innerText.trim();
             game.Platform = platformSelect.value;
             game.PlayTime = detailsPlayTime.textContent.trim();
 
@@ -1194,7 +1201,9 @@ function toggleEditMode() {
 
             const hoursLabel = translations[currentLanguage].HOURS;
             if (!detailsPlayTime.textContent.includes(hoursLabel)) {
-                detailsPlayTime.textContent = game.PlayTime + " " + hoursLabel;
+                const saat = parseFloat(game.PlayTime);
+                detailsPlayTime.textContent = (isNaN(saat) ? game.PlayTime : saat.toFixed(1)) +
+                    " " + hoursLabel;
             }
         }
 
@@ -1339,6 +1348,11 @@ function resetDeleteButton() {
 }
 
 function updateStatusTextImmediately(status) {
+    const acikOyun = currentLibrary.find(g => g.Id === detailsTitle.dataset.gameId);
+    if (acikOyun) {
+        diskSizeCache.delete(acikOyun.Path);
+        paintDiskSize(acikOyun);
+    }
     detailsStatus.textContent = translations[currentLanguage][status.toUpperCase()] || status;
     if (status === 'Uninstalled') {
         detailsStatus.classList.add('uninstalled');
@@ -1349,7 +1363,6 @@ function updateStatusTextImmediately(status) {
 
 async function saveGameChanges() {
     const updatedName = detailsTitle.innerText.trim();
-    const updatedNotes = detailsNotes.innerText;
     const updatedPlatform = platformSelect.value;
     const updatedPlayTime = detailsPlayTime.textContent.split(' ')[0].trim() || '0.0';
     const updatedPath = (locationPath.textContent !== translations[currentLanguage].NOT_SET && locationPath.textContent !== 'NOT SET') ? locationPath.textContent : '';
@@ -1359,7 +1372,6 @@ async function saveGameChanges() {
     const gameIndex = currentLibrary.findIndex(g => g.Id === gameId);
     if (gameIndex !== -1) {
         currentLibrary[gameIndex].Name = updatedName;
-        currentLibrary[gameIndex].Notes = updatedNotes;
         currentLibrary[gameIndex].Category = updatedPlatform;
         currentLibrary[gameIndex].Platform = updatedPlatform;
         currentLibrary[gameIndex].PlayTime = updatedPlayTime;
@@ -1577,6 +1589,60 @@ function renderGames(games) {
     gameGrid.appendChild(shelf);
 }
 
+
+// ================================================================
+// DISK SIZE
+// ================================================================
+// Measured by walking the folder, which is slow enough to be worth
+// keeping: a game's size does not change while you are looking at its
+// page. Cleared when a game is installed or removed, since those are
+// the two moments it does change.
+const diskSizeCache = new Map();
+
+function formatDiskSize(bytes) {
+    const gb = bytes / 1e9;
+    if (gb >= 1) return gb.toLocaleString(currentLanguage, { maximumFractionDigits: 1 }) + ' GB';
+    const mb = bytes / 1e6;
+    if (mb >= 1) return mb.toLocaleString(currentLanguage, { maximumFractionDigits: 0 }) + ' MB';
+    return (bytes / 1e3).toLocaleString(currentLanguage, { maximumFractionDigits: 0 }) + ' KB';
+}
+
+async function paintDiskSize(game) {
+    if (!detailsDiskSize) return;
+
+    // The page can be left while the walk is still running, so every
+    // result is checked against the game still on screen.
+    const token = game.Id;
+    detailsDiskSize.dataset.for = token;
+
+    if (!game.Path) {
+        detailsDiskSize.textContent = '—';
+        return;
+    }
+
+    const cached = diskSizeCache.get(game.Path);
+    if (cached !== undefined) {
+        detailsDiskSize.textContent = cached;
+        return;
+    }
+
+    detailsDiskSize.textContent = '…';
+    let sonuc;
+    try {
+        sonuc = await window.api.gameDiskSize(game.Path);
+    } catch {
+        sonuc = null;
+    }
+    if (detailsDiskSize.dataset.for !== token) return;
+
+    let metin = '—';
+    if (sonuc && sonuc.ok) {
+        metin = (sonuc.truncated ? '> ' : '') + formatDiskSize(sonuc.bytes);
+        diskSizeCache.set(game.Path, metin);
+    }
+    detailsDiskSize.textContent = metin;
+}
+
 // ================================================================
 // GAME DETAILS
 // ================================================================
@@ -1584,8 +1650,9 @@ function showGameDetails(game) {
     detailsTitle.innerText = game.Name;
     detailsTitle.dataset.gameId = game.Id;
     detailsTitle.dataset.originalName = game.Name; // Restore for legacy lookup compatibility
-    detailsNotes.innerText = game.Notes || "";
-    detailsPlayTime.textContent = (game.PlayTime || '0.0') + " " + translations[currentLanguage].HOURS;
+    const saat = parseFloat(game.PlayTime);
+    detailsPlayTime.textContent = (isNaN(saat) ? (game.PlayTime || '0.0') : saat.toFixed(1)) +
+        " " + translations[currentLanguage].HOURS;
     detailsPlatform.textContent = translations[currentLanguage][(game.Platform || 'PC').toUpperCase()] || (game.Platform || 'PC');
     platformSelect.value = game.Platform || 'PC';
 
@@ -1596,6 +1663,8 @@ function showGameDetails(game) {
     } else {
         detailsStatus.classList.remove('uninstalled');
     }
+
+    paintDiskSize(game);
 
     const pathText = game.Path || translations[currentLanguage].NOT_SET;
     locationPath.textContent = pathText;
@@ -1645,8 +1714,14 @@ function updatePlayButtonState(game) {
         // A game you own but have not installed used to leave this
         // screen with nothing on it at all. Steam can install it, so
         // offer that instead of a dead end.
-        const canInstall = game && game.SteamAppId;
-        if (installBtn) installBtn.classList.toggle('hidden', !canInstall);
+        // Shown for every game that is not installed, with or without a
+        // Steam id. Without one it cannot install anything, but it can
+        // still go and look — and looking is the first thing it does.
+        if (installBtn) {
+            installBtn.classList.remove('hidden');
+            installBtn.disabled = false;
+            installBtn.textContent = translations[currentLanguage].INSTALL || 'INSTALL';
+        }
         return;
     }
 
@@ -1686,9 +1761,19 @@ function transitionScreen(from, to, callback) {
     }
 
     // Phase 2: Fade IN 'to' screen
-    // Step A: Prepare state (invisible but in layout)
+    /* Step A: prepare, at a hundredth of one per cent rather than zero.
+
+       A fully transparent element is not painted at all — the browser
+       has nothing to show, so it does no work. That is why giving the
+       shelf a frame to draw in did nothing: at opacity 0 there was
+       nothing to draw. The paint then landed inside the fade, and one
+       116ms frame carried the screen from 0.03 straight to 0.46, which
+       is the jump that read as no animation at all.
+
+       At 0.01 the work happens, and 0.01 of two hundred covers is not
+       something an eye can find. */
     to.style.transition = 'none';
-    to.style.opacity = '0';
+    to.style.opacity = '0.01';
     to.classList.remove('hidden');
     to.classList.add('active');
     to.style.pointerEvents = 'auto';
@@ -1696,15 +1781,35 @@ function transitionScreen(from, to, callback) {
     // Step B: Force browser to calculate styles (The 'Magic' Reflow)
     void to.offsetWidth;
 
-    // Step C: Trigger transition
-    requestAnimationFrame(() => {
-        to.style.transition = 'opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-        to.style.opacity = '1';
+    /* Step C: let one frame paint at zero opacity before the fade
+       starts.
 
-        if (callback) {
-            // Callback after transition finishes
-            setTimeout(callback, 500);
-        }
+       Reflow arranges the boxes but does not draw them, and drawing a
+       library of two hundred covers is the expensive part. Starting the
+       fade on the next frame meant that frame carried both the paint
+       and the first step of the animation — so the first visit to the
+       shelf jumped straight to full instead of fading, while every
+       later visit was smooth because the painting was already done.
+
+       Two frames apart, the paint happens while the screen is still
+       invisible and the fade has nothing to do but fade. */
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            /* Two frames is not enough time to raster a shelf of two
+               hundred covers — measured at 117ms for one frame, which
+               is seven frames' worth of work. Waiting it out here costs
+               a sixth of a second before anything moves, which nobody
+               can see, and buys a fade that nobody has to squint at. */
+            setTimeout(() => {
+                to.style.transition = 'opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                to.style.opacity = '1';
+
+                if (callback) {
+                    // Callback after transition finishes
+                    setTimeout(callback, 500);
+                }
+            }, 160);
+        });
     });
 
     // Mark current source as inactive
@@ -1725,6 +1830,47 @@ function showError(msg) {
  * Plain information — no tick, no "success". Used when the launcher
  * has done its part and the person still has something to do.
  */
+/* A question with two real answers.
+
+   Resolves to 'primary', 'secondary', or null if it was dismissed —
+   dismissing is an answer too, and it means do nothing. */
+function showChoice({ title, message, primary, secondary }) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('choiceModal');
+        const head = document.getElementById('choiceTitle');
+        const body = document.getElementById('choiceMessage');
+        const birinci = document.getElementById('choicePrimaryBtn');
+        const ikinci = document.getElementById('choiceSecondaryBtn');
+        const iptal = document.getElementById('choiceCancelBtn');
+        const ortu = document.getElementById('choiceModalOverlay');
+
+        if (!modal || !birinci || !ikinci) { resolve(null); return; }
+
+        head.textContent = title || '';
+        body.innerHTML = message || '';
+        birinci.textContent = primary || 'OK';
+        ikinci.textContent = secondary || '';
+        iptal.textContent = translations[currentLanguage].CANCEL || 'CANCEL';
+
+        const kapat = (cevap) => {
+            modal.classList.add('hidden');
+            birinci.onclick = ikinci.onclick = iptal.onclick = null;
+            if (ortu) ortu.onclick = null;
+            document.removeEventListener('keydown', tusla);
+            resolve(cevap);
+        };
+        const tusla = (e) => { if (e.key === 'Escape') kapat(null); };
+
+        birinci.onclick = () => kapat('primary');
+        ikinci.onclick = () => kapat('secondary');
+        iptal.onclick = () => kapat(null);
+        if (ortu) ortu.onclick = () => kapat(null);
+        document.addEventListener('keydown', tusla);
+
+        modal.classList.remove('hidden');
+    });
+}
+
 function showInfo(msg, title) {
     const modal = document.getElementById('infoModal');
     const body = document.getElementById('infoMessage');
@@ -1922,6 +2068,10 @@ async function initApp() {
         // Put the shelf back in the order it was left in. Assigning
         // `.value` raises no event, so the grid is sorted by the
         // handleFilters() that runs once the library is on screen.
+        /* 'none' was the old default and its option is gone, so anyone
+           upgrading has a saved value the dropdown cannot show — which
+           would leave it blank and sorting by nothing. */
+        if (appSettings.sortBy === 'none') appSettings.sortBy = 'playtime';
         if (sortFilter && appSettings.sortBy) sortFilter.value = appSettings.sortBy;
 
         setBootProgress(5, 8, 'BOOT_PREPARING');
@@ -2015,17 +2165,60 @@ function afterPaint(extraMs = 0) {
     });
 }
 
-function setBootProgress(done, total, key) {
-    /* getElementById rather than the el() helper: this runs during
-       start-up, before that helper's const has been initialised. */
+/* The bar reaches the end here, a beat before the veil lifts, so that
+   "Ready" is a moment rather than a wait. */
+const BOOT_FILL_MS = 2000;
+
+let bootReal = 0;          // how much of the work is genuinely done, 0..1
+let bootKey = 'BOOT_PREPARING';
+let bootPaintTimer = null;
+
+/* What the bar shows is the slower of two things: how far the work has
+   got, and how far the clock has got towards BOOT_FILL_MS.
+
+   Neither alone is right. On this machine the work is often finished
+   inside a second, and a bar that jumps to full and then sits there for
+   two more seconds saying "Ready" is worse than no bar — it tells you
+   the wait is over while you keep waiting. But pacing purely by the
+   clock would be theatre: a slow disk or a large library has to be
+   allowed to say so.
+
+   Taking the minimum gives both. Fast work is held to the clock and
+   fills smoothly; slow work outlasts the clock and the bar reports it
+   honestly, and the veil then lifts as soon as it is really done. */
+function paintBoot() {
     const fill = document.getElementById('bootFill');
     const status = document.getElementById('bootStatus');
-    if (fill) fill.style.width = (total ? Math.round((done / total) * 100) : 0) + '%';
-    if (status && key) {
+
+    const elapsed = performance.now() - bootShownAt;
+    const shown = Math.min(bootReal, elapsed / BOOT_FILL_MS, 1);
+
+    if (fill) fill.style.width = (shown * 100).toFixed(1) + '%';
+
+    if (status) {
         const table = (typeof translations !== 'undefined' && translations[currentLanguage]) || {};
+        const key = shown >= 1 ? 'BOOT_READY' : bootKey;
         status.removeAttribute('data-i18n');
         status.textContent = table[key] || key;
     }
+
+    if (shown >= 1 && bootPaintTimer) {
+        clearInterval(bootPaintTimer);
+        bootPaintTimer = null;
+    }
+}
+
+function setBootProgress(done, total, key) {
+    bootReal = total ? Math.min(done / total, 1) : 0;
+    if (key) bootKey = key;
+
+    /* The work can finish before the clock does, and then nothing calls
+       this again — so the bar has to keep drawing itself until it has
+       caught up with the time. */
+    if (!bootPaintTimer) {
+        bootPaintTimer = setInterval(paintBoot, 80);
+    }
+    paintBoot();
 }
 
 async function hideBootVeil() {
@@ -2033,6 +2226,131 @@ async function hideBootVeil() {
     if (left > 0) await new Promise(r => setTimeout(r, left));
     const veil = bootVeilEl();
     if (veil) veil.classList.add('done');
+
+    /* The mark draws itself over two seconds, and the veil stands for
+       three — so on a first launch the whole animation played behind it
+       and the account screen appeared with the drawing already over.
+       It is held still until this moment instead. */
+    document.body.classList.add('booted');
+}
+
+/* ----------------------------------------------------------------
+   The colour of a cover
+
+   Sorting a shelf by colour only works if "the colour" of a picture
+   means something, and the average of every pixel does not: a dark
+   poster with one red logo averages to near-black, and near-black has
+   no hue at all. So pixels are weighted by how much colour they
+   actually carry — saturation, damped at the very light and very dark
+   ends — and the hues are then averaged as directions on the colour
+   wheel rather than as numbers. Averaging 350° and 10° as numbers gives
+   180°, which is cyan; averaging them as directions gives 0°, which is
+   red, and red is the answer.
+
+   The result is one hue per cover, and sorting by it walks the shelf
+   from red through orange, yellow, green, blue and violet — a rainbow
+   made of box art.
+   ---------------------------------------------------------------- */
+
+/** Cover path → { hue, weight }. Filled while the covers are warmed. */
+const coverHues = new Map();
+
+/** Reused rather than made per image: two hundred canvases is two
+ *  hundred pieces of GPU memory for no reason. */
+let hueCanvas = null;
+
+function readCoverHue(img) {
+    const N = 24;
+    if (!hueCanvas) {
+        hueCanvas = document.createElement('canvas');
+        hueCanvas.width = N;
+        hueCanvas.height = N;
+    }
+    const ctx = hueCanvas.getContext('2d', { willReadFrequently: true });
+
+    let data;
+    try {
+        ctx.clearRect(0, 0, N, N);
+        ctx.drawImage(img, 0, 0, N, N);
+        data = ctx.getImageData(0, 0, N, N).data;
+    } catch {
+        // A picture the canvas will not let us read. Nothing to do.
+        return null;
+    }
+
+    let x = 0, y = 0, weight = 0;
+
+    for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] < 128) continue;
+
+        const r = data[i] / 255, g = data[i + 1] / 255, b = data[i + 2] / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        const delta = max - min;
+        if (delta < 0.05) continue;                 // grey carries no hue
+
+        const light = (max + min) / 2;
+        const sat = delta / (1 - Math.abs(2 * light - 1));
+        // Colour that is nearly black or nearly white says little about
+        // what the cover looks like, however saturated it measures.
+        const w = sat * (1 - Math.abs(2 * light - 1));
+        if (w < 0.06) continue;
+
+        let h;
+        if (max === r) h = ((g - b) / delta) % 6;
+        else if (max === g) h = (b - r) / delta + 2;
+        else h = (r - g) / delta + 4;
+        h *= 60;
+        if (h < 0) h += 360;
+
+        const rad = h * Math.PI / 180;
+        x += Math.cos(rad) * w;
+        y += Math.sin(rad) * w;
+        weight += w;
+    }
+
+    if (weight < 0.4) return null;                  // effectively colourless
+
+    let hue = Math.atan2(y, x) * 180 / Math.PI;
+    if (hue < 0) hue += 360;
+    return { hue, weight };
+}
+
+/** Reads the hue of every cover that has not been read yet. */
+async function ensureCoverHues(games) {
+    const eksik = [];
+    for (const g of games) {
+        const p = resolvePath(g.Cover);
+        if (p && !coverHues.has(p)) eksik.push(p);
+    }
+    if (!eksik.length) return;
+
+    await Promise.all(eksik.map(url => new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+            coverHues.set(url, readCoverHue(img));
+            resolve();
+        };
+        img.onerror = () => { coverHues.set(url, null); resolve(); };
+        img.src = url;
+    })));
+}
+
+/**
+ * Red first, violet last, and everything without a colour after them.
+ * A cover that is grey, or black and white, has no place on a rainbow;
+ * putting it at the end keeps the gradient clean instead of dropping a
+ * grey card into the middle of the oranges.
+ */
+function sortByCoverColour(games) {
+    const renkli = [], renksiz = [];
+    for (const g of games) {
+        const c = coverHues.get(resolvePath(g.Cover));
+        (c ? renkli : renksiz).push(g);
+    }
+    renkli.sort((a, b) => coverHues.get(resolvePath(a.Cover)).hue
+        - coverHues.get(resolvePath(b.Cover)).hue);
+    renksiz.sort((a, b) => a.Name.localeCompare(b.Name));
+    return renkli.concat(renksiz);
 }
 
 /**
@@ -2066,7 +2384,15 @@ async function warmArt(covers, banners) {
                 const url = urls[next++];
                 await new Promise(resolve => {
                     const img = new Image();
-                    const finish = () => { tick(); resolve(); };
+                    const finish = () => {
+                        // The picture is decoded and in hand — the one
+                        // moment reading its colour costs nothing extra.
+                        if (decode && !coverHues.has(url)) {
+                            coverHues.set(url, readCoverHue(img));
+                        }
+                        tick();
+                        resolve();
+                    };
                     img.onload = () => ((decode && img.decode) ? img.decode().then(finish, finish) : finish());
                     img.onerror = finish;
                     img.src = url;
@@ -2093,9 +2419,19 @@ async function warmArt(covers, banners) {
  */
 async function collectArt(accounts) {
     const covers = [], banners = [];
+    const previous = currentAccountId;
+
     for (const acc of accounts) {
         try {
             await window.api.setAccount(acc.id);
+            /* resolvePath turns './Vault_Assets/…' into a real file URL
+               using whichever account is current, and at start-up none
+               is — so without this the warm-up asked for paths that do
+               not exist and fetched nothing at all. It looked as though
+               it worked, because by the time anybody noticed the shelf
+               had loaded the covers itself. */
+            currentAccountId = acc.id;
+
             const data = await window.api.getLibrary();
             for (const g of (data.games || [])) {
                 const c = resolvePath(g.Cover); if (c) covers.push(c);
@@ -2105,6 +2441,8 @@ async function collectArt(accounts) {
             console.warn('[Boot] could not read', acc.id, e);
         }
     }
+
+    currentAccountId = previous;
     return { covers, banners };
 }
 
@@ -2558,18 +2896,32 @@ function renderSuggestions(results) {
 }
 
 async function executeAddGame(name, steamApp) {
+    const appId = (steamApp && steamApp.appid) ? steamApp.appid.toString() : '';
+
+    // Look for the game before adding it, rather than handing somebody an
+    // entry with no location and letting them go and find it. Steam's
+    // records answer this exactly when there is an appid; otherwise the
+    // usual install folders get searched by name. An empty answer is fine
+    // and common — the entry is still added, just without a path.
+    let bulunan = [];
+    try {
+        bulunan = await window.api.findGameLocation({ name, appid: appId });
+    } catch (err) {
+        console.warn('Could not search for the game folder:', err);
+    }
+    const konum = bulunan && bulunan.length ? bulunan[0] : null;
+
     const newGame = {
         Id: generateUniqueId(),
         OriginalName: name,
         Name: name,
-        Path: "",
+        Path: konum ? konum.path : "",
         Category: 'Games',
-        Platform: (steamApp && steamApp.appid) ? 'Steam' : 'PC',
-        Status: 'Uninstalled',
+        Platform: appId ? 'Steam' : 'PC',
+        Status: konum ? 'Installed' : 'Uninstalled',
         Cover: PLACEHOLDER_COVER,
         Banner: PLACEHOLDER_BANNER,
-        Notes: translations[currentLanguage].ADD_STORY || 'Add your story here.',
-        SteamAppId: (steamApp && steamApp.appid) ? steamApp.appid.toString() : ''
+        SteamAppId: appId
     };
 
     const success = await window.api.addGame(newGame);
@@ -2583,6 +2935,11 @@ async function executeAddGame(name, steamApp) {
         gameSearchInput.value = '';
         selectedSteamApp = null;
         handleFilters(); // Refresh display - will show "Syncing"
+
+        if (konum) {
+            console.log('Found ' + name + ' at ' + konum.path +
+                ' (' + konum.source + ', ' + konum.confidence + ')');
+        }
 
         // TRIGGER AUTO-FETCH FOR ALL GAMES
         autoFetchAssets(newGame.Id, name);
@@ -3888,32 +4245,118 @@ function detailsGameForAction() {
     return currentLibrary.find(g => g.Id === detailsTitle.dataset.gameId);
 }
 
+/* Record that a game has been found, wherever it was found.
+
+   One place for it, because the three ways it can happen — the search
+   found it, Steam finished downloading it, the person pointed at it —
+   all leave the same four things needing an update. */
+async function markGameFound(game, konum) {
+    game.Path = konum;
+    game.Status = 'Installed';
+    await window.api.updateLibrary({ profile: userProfile, games: currentLibrary });
+
+    locationPath.textContent = konum;
+    updateStatusTextImmediately('Installed');
+    updatePlayButtonState(game);
+    diskSizeCache.delete(konum);
+    paintDiskSize(game);
+    handleFilters();
+}
+
+async function locateGameManually(game) {
+    const secilen = await window.api.selectExe();
+    if (!secilen) return false;
+    await markGameFound(game, secilen);
+    return true;
+}
+
+async function startSteamInstall(game) {
+    const res = await window.api.steamUri('install', game.SteamAppId);
+    if (!res.success) {
+        showError(translations[currentLanguage].INSTALL_FAILED || `Could not reach Steam: ${res.error}`);
+        return;
+    }
+    // Steam opens its own download dialog and waits for a click —
+    // say so plainly, because otherwise nothing appears to happen
+    // and the download never starts.
+    showInfo(
+        (translations[currentLanguage].INSTALL_INFO ||
+         'Steam has opened its download window for <strong>{name}</strong>. ' +
+         'Press <strong>Download</strong> there to start it.<br><br>' +
+         'You can come back here afterwards — the progress will show on this screen, ' +
+         'and the game switches to Play on its own when it finishes.')
+            .replace('{name}', game.Name),
+        translations[currentLanguage].INSTALL_INFO_TITLE || 'One step in Steam'
+    );
+
+    // Steam does the downloading, but you should not have to go and
+    // watch it there — follow its own manifest and show it here.
+    watchInstall(game);
+}
+
+/* One button for "I want to play this".
+
+   It looks on this computer before it asks Steam for anything. A game
+   that is already sitting on the disk — moved from another machine,
+   installed while Parallax was not watching, shared through a family —
+   used to be a dead end here: the button offered to install something
+   that was already there, or offered nothing at all.
+
+   So: search first. Found, and there is nothing to install. Not found,
+   and the question of what to do next is a real question, which is when
+   it gets asked. */
 if (installBtnEl) {
     installBtnEl.onclick = async () => {
         const game = detailsGameForAction();
-        if (!game || !game.SteamAppId) return;
+        if (!game || installBtnEl.disabled) return;
 
-        const res = await window.api.steamUri('install', game.SteamAppId);
-        if (!res.success) {
-            showError(translations[currentLanguage].INSTALL_FAILED || `Could not reach Steam: ${res.error}`);
+        const t = translations[currentLanguage];
+        const oncekiMetin = installBtnEl.textContent;
+        installBtnEl.disabled = true;
+        installBtnEl.textContent = t.LOOKING_FOR_IT || 'LOOKING…';
+
+        let bulunan = [];
+        try {
+            bulunan = await window.api.findGameLocation({ name: game.Name, appid: game.SteamAppId });
+        } catch (err) {
+            console.warn('Could not search for the game folder:', err);
+        }
+
+        installBtnEl.disabled = false;
+        installBtnEl.textContent = oncekiMetin;
+
+        // It was here all along. Nothing to install, nothing to ask.
+        if (bulunan && bulunan.length) {
+            await markGameFound(game, bulunan[0].path);
             return;
         }
-        // Steam opens its own download dialog and waits for a click —
-        // say so plainly, because otherwise nothing appears to happen
-        // and the download never starts.
-        showInfo(
-            (translations[currentLanguage].INSTALL_INFO ||
-             'Steam has opened its download window for <strong>{name}</strong>. ' +
-             'Press <strong>Download</strong> there to start it.<br><br>' +
-             'You can come back here afterwards — the progress will show on this screen, ' +
-             'and the game switches to Play on its own when it finishes.')
-                .replace('{name}', game.Name),
-            translations[currentLanguage].INSTALL_INFO_TITLE || 'One step in Steam'
-        );
 
-        // Steam does the downloading, but you should not have to go and
-        // watch it there — follow its own manifest and show it here.
-        watchInstall(game);
+        // Genuinely not on this computer. Steam can fetch it only if the
+        // account owns it, and there is no way to know that from here —
+        // so both answers are offered rather than guessed at.
+        if (game.SteamAppId) {
+            const secim = await showChoice({
+                title: t.NOT_ON_THIS_PC || 'Not on this computer',
+                message: (t.NOT_ON_THIS_PC_MSG ||
+                    'Parallax looked through your game folders and could not find ' +
+                    '<strong>{name}</strong> on this computer.<br><br>' +
+                    'Steam can download it, if this account owns it. If you already ' +
+                    'have the game somewhere else — another drive, another launcher, ' +
+                    'or shared with you — point Parallax at it instead.')
+                    .replace('{name}', game.Name),
+                primary: t.INSTALL_VIA_STEAM || 'Download it from Steam',
+                secondary: t.LOCATE_GAME || 'I already have it'
+            });
+
+            if (secim === 'primary') await startSteamInstall(game);
+            else if (secim === 'secondary') await locateGameManually(game);
+            return;
+        }
+
+        // No Steam id, so there is nothing to download and only one
+        // thing left worth doing. Asking first would be asking a
+        // question with a single answer.
+        await locateGameManually(game);
     };
 }
 

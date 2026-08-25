@@ -142,7 +142,6 @@ UseGameMode: ${game.UseGameMode || 'inherit'}
 UseMangoHud: ${game.UseMangoHud || 'inherit'}
 Id: ${game.Id || ''}
 OriginalName: ${game.OriginalName || game.Name || ''}
-Notes: ${(game.Notes || '').replace(/(\r\n|\n|\r)/g, '\\n')}
 ---
 `;
         });
@@ -179,7 +178,6 @@ UseGameMode: ${game.UseGameMode || 'inherit'}
 UseMangoHud: ${game.UseMangoHud || 'inherit'}
 Id: ${game.Id || ''}
 OriginalName: ${game.OriginalName || game.Name || ''}
-Notes: ${(game.Notes || 'New entry.').replace(/(\r\n|\n|\r)/g, '\\n')}
 ---
 `;
         });

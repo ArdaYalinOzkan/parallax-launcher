@@ -134,11 +134,21 @@ Free software under the **GNU General Public License version 3**. Use it,
 study it, change it, pass it on — and anything built from it stays free
 software under the same licence.
 
-Two conditions are added under section 7 of that licence: the credit
+Three conditions are added under section 7 of that licence: the credit
 *"Parallax Launcher, originally created by Arda Yalın Özkan"* must stay
-visible in any version, and a modified version must be marked as different
-from the original. Neither restricts what you may do with the program; they
-keep the record of where it came from intact.
+visible in any version; a modified version must be marked as different from
+the original; and the Parallax name, logo and icon are not licensed along
+with the code, so a fork ships under a name of its own. None of them
+restricts what you may do with the program. They keep the record of where
+it came from intact, and keep one Parallax rather than several.
+
+Verifying a download is a separate question from reading the source, and it
+has a separate answer. Every released file is signed with a build
+attestation naming the commit and the workflow that produced it:
+
+```
+gh attestation verify Parallax-Launcher.AppImage --owner ArdaYalinOzkan
+```
 
 The full licence text is in [LICENSE](LICENSE); the additional terms are in [NOTICE](NOTICE).
 
