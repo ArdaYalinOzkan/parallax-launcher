@@ -845,34 +845,42 @@ a:hover { text-decoration-color: currentColor; }
 
    A real <select>, not a menu built out of divs: the browser already
    knows how to open one on a phone, how to reach it from the keyboard,
-   and how to read it out. Only its skin is ours. */
+   and how to read it out. Only its skin is ours — and it is the app's
+   skin, down to the two-gradient chevron, so the page and the program
+   it describes do not look like they came from different places. */
 .langpick__slot { display: inline-flex; }
 
 .langpick {
     appearance: none;
     -webkit-appearance: none;
-    padding: 5px 26px 5px 10px;
-    border: 1px solid var(--line);
+    background-color: rgba(255, 255, 255, .03);
+    border: 1px solid var(--line-faint);
     border-radius: var(--r-sm);
-    background-color: transparent;
-    color: var(--star-dim);
+    color: var(--star);
     font-family: var(--font-ui);
-    font-size: 0.82rem;
-    line-height: 1.4;
+    font-size: 0.76rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    padding: 7px 30px 7px 12px;
+    text-transform: none;
     cursor: pointer;
-    transition: color var(--t-fast), border-color var(--t-fast);
+    outline: none;
 
-    /* The caret, drawn rather than fetched. */
-    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%238A94A5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    /* Two gradients folded into an arrowhead — the same one the app
+       draws, rather than an image that would have to match it. */
+    background-image: linear-gradient(45deg, transparent 50%, var(--star-faint) 50%),
+        linear-gradient(135deg, var(--star-faint) 50%, transparent 50%);
+    background-position: calc(100% - 15px) center, calc(100% - 10px) center;
+    background-size: 5px 5px, 5px 5px;
     background-repeat: no-repeat;
-    background-position: right 9px center;
-    background-size: 10px;
+    transition: border-color var(--t-main), background-color var(--t-main), color var(--t-main);
 }
 
 .langpick:hover,
 .langpick:focus-visible {
-    color: var(--star-hi);
     border-color: var(--line-strong);
+    color: var(--star-hi);
+    background-color: rgba(255, 255, 255, .055);
 }
 
 /* The dropdown itself is drawn by the system, which does not inherit the
@@ -884,8 +892,8 @@ a:hover { text-decoration-color: currentColor; }
 
 @media (max-width: 640px) {
     .langpick {
-        padding: 4px 22px 4px 8px;
-        font-size: 0.76rem;
-        background-position: right 7px center;
+        font-size: 0.72rem;
+        padding: 6px 26px 6px 9px;
+        background-position: calc(100% - 13px) center, calc(100% - 9px) center;
     }
 }
