@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page not found — Parallax Launcher</title>
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#05060A">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="alternate icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+    <!-- Absolute, because this page is served for any path that does not
+         exist — including nested ones, where a relative link would look
+         for the stylesheet in a folder that is not there either. -->
+    <link rel="stylesheet" href="/style.css?v=20260826b">
+</head>
+
+<body>
+    <div class="sky" aria-hidden="true">
+        <div class="sky__layer sky__haze"></div>
+        <div class="sky__layer" id="skyFar"></div>
+        <div class="sky__layer" id="skyNear"></div>
+        <div class="sky__grain" id="skyGrain"></div>
+    </div>
+
+    <div class="page">
+        <header class="top">
+            <div class="wrap top__in">
+                <a class="brand" href="/">
+                    <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                        <path d="M50.00 15.00 L32.68 25.00 L32.68 45.00 L50.00 55.00 L67.32 45.00 L67.32 25.00 Z" stroke="#EEF1F6" stroke-width="5" />
+                        <path d="M32.68 45.00 L15.36 55.00 L15.36 75.00 L32.68 85.00 L50.00 75.00 L50.00 55.00 Z" stroke="#EEF1F6" stroke-width="5" />
+                        <path d="M67.32 45.00 L50.00 55.00 L50.00 75.00 L67.32 85.00 L84.64 75.00 L84.64 55.00 Z" stroke="#EEF1F6" stroke-width="5" />
+                    </svg>
+                    <span>Parallax</span>
+                </a>
+            </div>
+        </header>
+
+        <main>
+            <section class="hero wrap">
+                <p class="label rise rise--1" id="nfCode">404</p>
+                <h1 class="rise rise--2" style="max-width: 17ch;" id="nfTitle">Page not found</h1>
+                <p class="lede rise rise--3" style="max-width: 58ch;" id="nfBody">
+                    This address does not point to a page. The link may be out of
+                    date, or the address may have been typed incorrectly.
+                </p>
+                <p class="note rise rise--3" style="max-width: 58ch;" id="nfNote">
+                    Parallax is under active development and its pages are still
+                    being reorganised, so an address that worked before may have
+                    moved.
+                </p>
+                <p class="hero__actions rise rise--4" style="margin-top: 26px;">
+                    <a class="btn btn--primary" href="/" id="nfHomeBtn">Main site</a>
+                    <a class="btn btn--ghost" href="https://help.parallaxlauncher.com/" id="nfGuides">All guides</a>
+                </p>
+            </section>
+        </main>
+
+        <footer class="foot">
+            <div class="wrap foot__in">
+                <div id="nfFoot">
+                    Parallax Launcher — created by Arda Yalın Özkan.
+                </div>
+                <div>
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher" id="nfSource">Source</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        /* The text lives in this file rather than in the shared table.
+           A page whose whole job is to appear when something is missing
+           should not itself depend on a 290 KB dictionary having
+           loaded. The language is read the same way every other page
+           reads it: a cookie on the parent domain, so a choice made on
+           either site is honoured here too. */
+        (function () {
+            var T = {
+                en: { t: 'Page not found',
+                      b: 'This address does not point to a page. The link may be out of date, or the address may have been typed incorrectly.',
+                      n: 'Parallax is under active development and its pages are still being reorganised, so an address that worked before may have moved.',
+                      g: 'All guides', h: 'Main site', f: 'Parallax Launcher — created by Arda Yalın Özkan.', s: 'Source' },
+                tr: { t: 'Sayfa bulunamadı',
+                      b: 'Bu adres bir sayfaya karşılık gelmiyor. Bağlantı güncelliğini yitirmiş ya da adres yanlış yazılmış olabilir.',
+                      n: 'Parallax geliştirilmeye devam ediyor ve sayfaları hâlâ yeniden düzenleniyor. Daha önce çalışan bir adres taşınmış olabilir.',
+                      g: 'Tüm rehberler', h: 'Ana site', f: 'Parallax Launcher — yapan: Arda Yalın Özkan.', s: 'Kaynak kodu' },
+                de: { t: 'Seite nicht gefunden',
+                      b: 'Diese Adresse führt zu keiner Seite. Der Link ist möglicherweise veraltet oder die Adresse wurde falsch eingegeben.',
+                      n: 'Parallax wird laufend weiterentwickelt und die Seiten werden noch umgestellt. Eine Adresse, die früher funktioniert hat, kann umgezogen sein.',
+                      g: 'Alle Anleitungen', h: 'Hauptseite', f: 'Parallax Launcher — erstellt von Arda Yalın Özkan.', s: 'Quelltext' },
+                ru: { t: 'Страница не найдена',
+                      b: 'По этому адресу страницы нет. Возможно, ссылка устарела или адрес введён неверно.',
+                      n: 'Parallax продолжает разрабатываться, и его страницы ещё перестраиваются, поэтому адрес, который работал раньше, мог измениться.',
+                      g: 'Все руководства', h: 'Основной сайт', f: 'Parallax Launcher — автор Arda Yalın Özkan.', s: 'Исходный код' },
+                uk: { t: 'Сторінку не знайдено',
+                      b: 'За цією адресою сторінки немає. Можливо, посилання застаріло або адресу введено неправильно.',
+                      n: 'Parallax продовжує розроблятися, і його сторінки ще перебудовуються, тож адреса, яка працювала раніше, могла змінитися.',
+                      g: 'Усі посібники', h: 'Основний сайт', f: 'Parallax Launcher — автор Arda Yalın Özkan.', s: 'Вихідний код' },
+                pt: { t: 'Página não encontrada',
+                      b: 'Este endereço não corresponde a nenhuma página. A ligação pode estar desactualizada ou o endereço pode ter sido escrito incorrectamente.',
+                      n: 'O Parallax continua em desenvolvimento e as suas páginas ainda estão a ser reorganizadas, pelo que um endereço que funcionava antes pode ter mudado.',
+                      g: 'Todos os guias', h: 'Site principal', f: 'Parallax Launcher — feito por Arda Yalın Özkan.', s: 'Código-fonte' },
+                zh: { t: '未找到页面',
+                      b: '该地址没有对应的页面。链接可能已过期，或者地址输入有误。',
+                      n: 'Parallax 仍在持续开发中，页面也还在重新整理，因此之前可用的地址可能已经变更。',
+                      g: '全部指南', h: '主站', f: 'Parallax Launcher，作者 Arda Yalın Özkan。', s: '源代码' },
+                ko: { t: '페이지를 찾을 수 없습니다',
+                      b: '이 주소에 해당하는 페이지가 없습니다. 링크가 오래되었거나 주소를 잘못 입력했을 수 있습니다.',
+                      n: 'Parallax는 계속 개발 중이며 페이지도 아직 정리되는 중이라, 전에 열리던 주소가 옮겨졌을 수 있습니다.',
+                      g: '전체 안내서', h: '기본 사이트', f: 'Parallax Launcher — 만든 사람 Arda Yalın Özkan.', s: '소스 코드' }
+            };
+
+            function pick() {
+                try {
+                    var q = new URLSearchParams(location.search).get('lang');
+                    if (q && T[q]) return q;
+                } catch (e) { }
+                try {
+                    var hit = document.cookie.split('; ').find(function (c) { return c.indexOf('parallaxLang=') === 0; });
+                    if (hit) {
+                        var v = decodeURIComponent(hit.slice(13));
+                        if (T[v]) return v;
+                    }
+                } catch (e) { }
+                try {
+                    var s = localStorage.getItem('parallaxLang');
+                    if (s && T[s]) return s;
+                } catch (e) { }
+                var langs = navigator.languages || [navigator.language || 'en'];
+                for (var i = 0; i < langs.length; i++) {
+                    var base = String(langs[i]).slice(0, 2).toLowerCase();
+                    if (T[base]) return base;
+                }
+                return 'en';
+            }
+
+            var lang = pick(), t = T[lang];
+            document.documentElement.lang = lang;
+            document.title = t.t + ' — Parallax Launcher';
+            document.getElementById('nfTitle').textContent = t.t;
+            document.getElementById('nfBody').textContent = t.b;
+            document.getElementById('nfNote').textContent = t.n;
+            document.getElementById('nfGuides').textContent = t.g;
+            document.getElementById('nfHomeBtn').textContent = t.h;
+            document.getElementById('nfFoot').textContent = t.f;
+            document.getElementById('nfSource').textContent = t.s;
+        })();
+    </script>
+    <script src="/site.js?v=20260826b"></script>
+</body>
+
+</html>
