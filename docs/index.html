@@ -4,23 +4,38 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Page not found — Parallax Launcher</title>
-    <meta name="robots" content="noindex">
+    <title>Parallax Launcher — a game library for your own computer</title>
+    <meta name="description" content="A desktop application that collects the games installed on your computer into one library, adds their cover images and starts them. It reads Steam's own installation records, and keeps all of its data on your machine. Free software under the GNU GPL v3.">
     <meta name="theme-color" content="#05060A">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="alternate icon" href="/favicon.ico" sizes="any">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+
+    <meta property="og:title" content="Parallax Launcher">
+    <meta property="og:description" content="A desktop application that collects the games installed on your computer into one library, adds their cover images and starts them.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://parallaxlauncher.com/">
+
+    <!-- Renamed rather than replaced: browsers cache a favicon by URL and
+         ignore the usual headers, so the old one would have stayed on
+         screen for anyone who had already visited. -->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="alternate icon" href="favicon.ico" sizes="any">
+    <!-- iOS asks for these by name, without being told to, the moment
+         somebody considers keeping the page on their home screen. They
+         were not here, so every visit from an iPhone left two 404s in
+         the log — which is how they were found. Solid ground rather
+         than transparent: iOS composites the icon itself and gives it
+         its own rounded corners. -->
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
-    <!-- Absolute, because this page is served for any path that does not
-         exist — including nested ones, where a relative link would look
-         for the stylesheet in a folder that is not there either. -->
-    <link rel="stylesheet" href="/style.css?v=20260826b">
+    <link rel="stylesheet" href="style.css?v=20260826d">
 </head>
 
 <body>
+    <!-- The sky is built in script so the star positions differ on
+         every visit, the same way they do on every launch of the app. -->
     <div class="sky" aria-hidden="true">
         <div class="sky__layer sky__haze"></div>
         <div class="sky__layer" id="skyFar"></div>
@@ -31,7 +46,7 @@
     <div class="page">
         <header class="top">
             <div class="wrap top__in">
-                <a class="brand" href="/">
+                <a class="brand" href="#top">
                     <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
                         <path d="M50.00 15.00 L32.68 25.00 L32.68 45.00 L50.00 55.00 L67.32 45.00 L67.32 25.00 Z" stroke="#EEF1F6" stroke-width="5" />
                         <path d="M32.68 45.00 L15.36 55.00 L15.36 75.00 L32.68 85.00 L50.00 75.00 L50.00 55.00 Z" stroke="#EEF1F6" stroke-width="5" />
@@ -39,95 +54,311 @@
                     </svg>
                     <span>Parallax</span>
                 </a>
+                <nav class="top__links">
+                    <a href="#get" data-i18n="NAV_DOWNLOAD">Download</a>
+                    <a href="https://help.parallaxlauncher.com" data-optional data-i18n="NAV_HELP">Help</a>
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher" data-i18n="NAV_SOURCE">Source</a>
+                    <!-- The picker is built by i18n.js and dropped in here. -->
+                    <span class="langpick__slot" data-lang-mount></span>
+                </nav>
             </div>
         </header>
 
-        <main>
+        <main id="top">
             <section class="hero wrap">
-                <p class="label rise rise--1" id="nfCode">404</p>
-                <h1 class="rise rise--2" style="max-width: 17ch;" id="nfTitle">Page not found</h1>
-                <p class="lede rise rise--3" style="max-width: 58ch;" id="nfBody">
-                    This address does not point to a page. The link may be out of
-                    date, or the address may have been typed incorrectly.
+                <svg class="hero__mark rise rise--1" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                    <path d="M50.00 15.00 L32.68 25.00 L32.68 45.00 L50.00 55.00 L67.32 45.00 L67.32 25.00 Z" stroke="#EEF1F6" stroke-width="4" />
+                    <path d="M32.68 45.00 L15.36 55.00 L15.36 75.00 L32.68 85.00 L50.00 75.00 L50.00 55.00 Z" stroke="#EEF1F6" stroke-width="4" />
+                    <path d="M67.32 45.00 L50.00 55.00 L50.00 75.00 L67.32 85.00 L84.64 75.00 L84.64 55.00 Z" stroke="#EEF1F6" stroke-width="4" />
+                </svg>
+
+                <h1 class="rise rise--2" data-i18n="HERO_H1">Parallax Launcher</h1>
+
+                <p class="lede rise rise--3" data-i18n="HERO_LEDE">
+                    A desktop application that collects the games installed on your computer
+                    into a single library, adds their cover art and starts them. It reads
+                    Steam's own installation records, and all of its data is stored on your
+                    machine.
                 </p>
-                <p class="hero__actions rise rise--4" style="margin-top: 26px;">
+
+                <div class="hero__actions rise rise--4">
+                    <!-- To the install page, which starts the download and then
+                         says what to do with it. The file on its own says
+                         nothing. -->
+                    <a class="btn btn--primary" id="dlPrimary"
+                        href="https://help.parallaxlauncher.com/install.html?start=1">
+                        <span id="dlPrimaryLabel">Download for Linux</span>
+                        <span class="btn__meta" id="dlVersion">AppImage</span>
+                    </a>
+                    <a class="btn btn--ghost" href="https://github.com/ArdaYalinOzkan/parallax-launcher"
+                        data-i18n="HERO_SOURCE">Read the source</a>
+                </div>
+
+                <p class="hero__note rise rise--4" data-i18n="HERO_NOTE">Free software under the GNU GPL v3.</p>
+
+                <figure class="shot rise rise--4" style="margin-block-end: 0;">
+                    <div class="shot__bar" aria-hidden="true">
+                        <span class="shot__dot"></span><span class="shot__dot"></span><span class="shot__dot"></span>
+                    </div>
+                    <img data-shot src="shot-library.jpg" width="1920" height="1080" loading="eager"
+                        data-slot="The library — a wall of cover art" data-i18n-attr="data-slot:SHOT_LIBRARY"
+                        alt="The Parallax Launcher library: a grid of game cover art over a dark starfield.">
+                </figure>
+            </section>
+
+            <section id="what" class="wrap">
+                <span class="label" data-i18n="LBL_WHAT">Features</span>
+                <h2 data-i18n="WHAT_H2">How Parallax finds your games</h2>
+                <p class="lede" data-i18n="WHAT_LEDE">
+                    Parallax reads the installation records Steam keeps on disk rather than
+                    searching folders, so the library reflects what is actually installed.
+                </p>
+
+                <div class="grid" style="margin-top: 34px;">
+                    <div class="cell">
+                        <span class="cell__num" data-i18n="F1_LBL">Detection</span>
+                        <h3 data-i18n="F1_H">Installed games</h3>
+                        <p data-i18n="F1_P">
+                            Steam library folders and installation manifests are read directly,
+                            across every drive, including the correct title and application id
+                            for each game.
+                        </p>
+                    </div>
+                    <div class="cell">
+                        <span class="cell__num" data-i18n="F2_LBL">Launching</span>
+                        <h3 data-i18n="F2_H">Starting a game</h3>
+                        <p data-i18n="F2_P">
+                            A game can be started through Steam or run directly, so that the
+                            Steam window does not open. The method is set per game, and the
+                            exact command to be run is shown before it runs.
+                        </p>
+                    </div>
+                    <div class="cell">
+                        <span class="cell__num" data-i18n="F3_LBL">Artwork</span>
+                        <h3 data-i18n="F3_H">Cover images</h3>
+                        <p data-i18n="F3_P">
+                            Cover images and banners for Steam games are downloaded from Steam
+                            and require no account or API key. Adding a SteamGridDB key extends
+                            this to games sold elsewhere.
+                        </p>
+                    </div>
+                    <div class="cell">
+                        <span class="cell__num" data-i18n="F4_LBL">Play time</span>
+                        <h3 data-i18n="F4_H">Recorded hours</h3>
+                        <p data-i18n="F4_P">
+                            Parallax records the sessions it starts and merges them with the
+                            play time Steam recorded previously. The higher value is used, so
+                            existing records are never reduced.
+                        </p>
+                    </div>
+                    <div class="cell">
+                        <span class="cell__num" data-i18n="F5_LBL">Compatibility</span>
+                        <h3 data-i18n="F5_H">Proton and Wine</h3>
+                        <p data-i18n="F5_P_html">
+                            Runtime selection per game, launch options using Steam's
+                            <code>%command%</code> syntax, environment variables, GameMode and
+                            MangoHud.
+                        </p>
+                    </div>
+                    <div class="cell">
+                        <span class="cell__num" data-i18n="F6_LBL">Data</span>
+                        <h3 data-i18n="F6_H">Local storage</h3>
+                        <p data-i18n="F6_P">
+                            The library is a plain text file and the images are ordinary image
+                            files. Nothing is uploaded and no account is required.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="wrap">
+                <span class="label" data-i18n="LBL_UPCLOSE">Compatibility</span>
+                <h2 data-i18n="UPCLOSE_H2">Compatibility settings</h2>
+                <p class="lede" data-i18n="UPCLOSE_LEDE">
+                    Each game has its own runtime settings. The command that will be used to
+                    start the game is shown as the settings are changed.
+                </p>
+
+                <div class="pair">
+                    <figure class="shot">
+                        <img data-shot src="shot-game.jpg" width="1440" height="810" loading="lazy"
+                            data-slot="A game's page — cover, playtime, Play" data-i18n-attr="data-slot:SHOT_GAME"
+                            alt="A single game's page in Parallax Launcher.">
+                    </figure>
+                    <figure class="shot">
+                        <img data-shot src="shot-settings.png" width="1440" height="810" loading="lazy"
+                            data-slot="Properties — runtime, launch options, what will run" data-i18n-attr="data-slot:SHOT_SETTINGS"
+                            alt="The per-game compatibility settings in Parallax Launcher.">
+                    </figure>
+                </div>
+            </section>
+
+            <section class="wrap">
+                <span class="label" data-i18n="LBL_LANGS">Languages</span>
+                <h2 data-i18n="LANGS_H2">Available in eight languages</h2>
+                <p class="lede" data-i18n="LANGS_LEDE">
+                    The interface is fully translated into English, Turkish, German, Russian,
+                    Ukrainian, Portuguese, Simplified Chinese and Korean.
+                </p>
+                <div class="langs" style="margin-top: 24px;">
+                    <span class="lang">English</span>
+                    <span class="lang">Türkçe</span>
+                    <span class="lang">Deutsch</span>
+                    <span class="lang">Português&nbsp;(Brasil)</span>
+                    <span class="lang">Русский</span>
+                    <span class="lang">Українська</span>
+                    <span class="lang">简体中文</span>
+                    <span class="lang">한국어</span>
+                </div>
+            </section>
+
+            <section id="get" class="wrap">
+                <span class="label" data-i18n="LBL_GET">Download</span>
+                <h2 data-i18n="GET_H2">Download</h2>
+                <p class="lede" data-i18n="GET_LEDE">
+                    All three packages are built from the same source by the same automated
+                    process, and each updates itself.
+                </p>
+
+                <div class="files">
+                    <div class="file">
+                        <div class="file__name">.AppImage <span class="chip" data-i18n="CHIP_UPDATES">Updates itself</span><span class="file__count" id="countAppImage"></span></div>
+                        <div class="file__for" data-i18n="APPIMAGE_FOR">Any Linux distribution</div>
+                        <p data-i18n="APPIMAGE_P_html">
+                            A single file that requires no installation. Downloaded files are
+                            not executable by default, so allow execution first: right-click,
+                            Properties, and enable the option to run the file as a program.
+                        </p>
+                        <a class="btn btn--primary" id="dlAppImage"
+                            href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
+                            <span data-i18n="BTN_APPIMAGE">Download AppImage</span> <span class="btn__meta" id="sizeAppImage"></span>
+                        </a>
+                    </div>
+
+                    <div class="file">
+                        <div class="file__name">.deb <span class="chip" data-i18n="CHIP_UPDATES">Updates itself</span><span class="file__count" id="countDeb"></span></div>
+                        <div class="file__for" data-i18n="DEB_FOR">Debian · Ubuntu · Mint</div>
+                        <p data-i18n="DEB_P_html">
+                            Installs in the same way as your other software and appears in the
+                            application menu. Updates are installed through <code>dpkg</code>,
+                            which asks for your password.
+                        </p>
+                        <a class="btn btn--ghost" id="dlDeb"
+                            href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
+                            <span data-i18n="BTN_DEB">Download .deb</span> <span class="btn__meta" id="sizeDeb"></span>
+                        </a>
+                    </div>
+
+                    <div class="file">
+                        <div class="file__name">.exe <span class="chip" data-i18n="CHIP_UPDATES">Updates itself</span><span class="file__count" id="countWin"></span></div>
+                        <div class="file__for" data-i18n="EXE_FOR">Windows 10 · 11</div>
+                        <p data-i18n="EXE_P">
+                            A standard installer that asks where to install the program and
+                            creates the shortcuts. It checks for new versions and installs them
+                            when you confirm.
+                        </p>
+                        <a class="btn btn--ghost" id="dlWin"
+                            href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases/latest">
+                            <span data-i18n="BTN_WIN">Download for Windows</span> <span class="btn__meta" id="sizeWin"></span>
+                        </a>
+                    </div>
+                </div>
+
+
+
+                <!-- Uninstalling. Worth saying plainly: the AppImage is one
+                     file, but it does put an entry in the menu, so deleting
+                     the file alone leaves that behind. -->
+                <div class="removal">
+                    <h3 data-i18n="REMOVAL_H">Removing Parallax</h3>
+                    <p data-i18n="REMOVAL_DATA_html">
+                        Your library, settings and artwork are stored in
+                        <code>~/.config/parallax-launcher</code> on Linux and
+                        <code>%APPDATA%\parallax-launcher</code> on Windows. None of the steps
+                        below affect that folder, so reinstalling continues from the same state.
+                        Delete it manually if you want everything removed.
+                    </p>
+
+                    <!-- One at a time. Only one of the three applies to any
+                         given reader, and <details> means the closed ones cost
+                         nothing and need no script to open. -->
+                    <details class="removal__item">
+                        <summary>.AppImage</summary>
+                        <div class="removal__body">
+                            <p data-i18n="REMOVAL_APPIMAGE_P">
+                                Delete the file. The menu entry and icon it created remain and
+                                can be removed with:
+                            </p>
+                            <div class="snippet">
+                                <button class="snippet__copy" type="button" data-copy
+                                    aria-label="Copy these commands" data-i18n="COPY" data-i18n-attr="aria-label:COPY_ARIA">Copy</button>
+                                <pre><code>rm ~/.local/share/applications/parallax-launcher.desktop
+rm ~/.local/share/icons/hicolor/256x256/apps/parallax-launcher.png
+rm -r ~/.cache/parallax-launcher-updater</code></pre>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="removal__item">
+                        <summary>.deb</summary>
+                        <div class="removal__body">
+                            <p data-i18n="REMOVAL_DEB_P">
+                                Remove it as you would any other package. If you added the
+                                repository, remove that as well:
+                            </p>
+                            <div class="snippet">
+                                <button class="snippet__copy" type="button" data-copy
+                                    aria-label="Copy these commands" data-i18n="COPY" data-i18n-attr="aria-label:COPY_ARIA">Copy</button>
+                                <pre><code>sudo apt remove parallax-launcher
+sudo rm /etc/apt/sources.list.d/parallax.list</code></pre>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="removal__item">
+                        <summary>Windows</summary>
+                        <div class="removal__body">
+                            <p data-i18n="REMOVAL_WIN_P">
+                                Open Settings, then Apps, select Parallax Launcher and choose
+                                Uninstall.
+                            </p>
+                        </div>
+                    </details>
+                </div>
+
+                <p style="margin-top: 26px; font-size: .84rem; color: var(--star-faint);"
+                    data-i18n="REPO_NOTE_html">
+                    On Debian and Ubuntu you can add the package repository instead and let your
+                    system manage updates. The commands are listed in the guides.
                 </p>
             </section>
+
         </main>
 
         <footer class="foot">
             <div class="wrap foot__in">
-                <div id="nfFoot">
-                    Parallax Launcher — created by Arda Yalın Özkan.
+                <div data-i18n="FOOT_BY_html">
+                    Parallax Launcher — created by Arda Yalın Özkan.<br>
+                    Free software under the
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/blob/main/LICENSE">GNU GPL v3</a>.
                 </div>
                 <div>
-                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher" id="nfSource">Source</a>
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher" data-i18n="FOOT_SOURCE">Source</a> ·
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/releases" data-i18n="FOOT_RELEASES">Releases</a> ·
+                    <a href="https://github.com/ArdaYalinOzkan/parallax-launcher/issues" data-i18n="FOOT_ISSUES">Report a problem</a>
                 </div>
+            </div>
+            <!-- Said once, at the bottom, because the screenshots are of a
+                 real library and the covers in them belong to other people. -->
+            <div class="wrap foot__fine" data-i18n="FOOT_FINE">
+                The games shown in the screenshots are from one user's library. Their titles and
+                artwork belong to their publishers and are not part of this project.
             </div>
         </footer>
     </div>
 
-    <script>
-        /* The text lives in this file rather than in the shared table.
-           A page whose whole job is to appear when something is missing
-           should not itself depend on a 290 KB dictionary having
-           loaded. The language is read the same way every other page
-           reads it: a cookie on the parent domain, so a choice made on
-           either site is honoured here too. */
-        (function () {
-            var T = {
-                en: { t: 'Page not found',
-                      b: 'This address does not point to a page. The link may be out of date, or the address may have been typed incorrectly.', h: 'Main site', f: 'Parallax Launcher — created by Arda Yalın Özkan.', s: 'Source' },
-                tr: { t: 'Sayfa bulunamadı',
-                      b: 'Bu adres bir sayfaya karşılık gelmiyor. Bağlantı güncelliğini yitirmiş ya da adres yanlış yazılmış olabilir.', h: 'Ana site', f: 'Parallax Launcher — yapan: Arda Yalın Özkan.', s: 'Kaynak kodu' },
-                de: { t: 'Seite nicht gefunden',
-                      b: 'Diese Adresse führt zu keiner Seite. Der Link ist möglicherweise veraltet oder die Adresse wurde falsch eingegeben.', h: 'Hauptseite', f: 'Parallax Launcher — erstellt von Arda Yalın Özkan.', s: 'Quelltext' },
-                ru: { t: 'Страница не найдена',
-                      b: 'По этому адресу страницы нет. Возможно, ссылка устарела или адрес введён неверно.', h: 'Основной сайт', f: 'Parallax Launcher — автор Arda Yalın Özkan.', s: 'Исходный код' },
-                uk: { t: 'Сторінку не знайдено',
-                      b: 'За цією адресою сторінки немає. Можливо, посилання застаріло або адресу введено неправильно.', h: 'Основний сайт', f: 'Parallax Launcher — автор Arda Yalın Özkan.', s: 'Вихідний код' },
-                pt: { t: 'Página não encontrada',
-                      b: 'Este endereço não corresponde a nenhuma página. A ligação pode estar desactualizada ou o endereço pode ter sido escrito incorrectamente.', h: 'Site principal', f: 'Parallax Launcher — feito por Arda Yalın Özkan.', s: 'Código-fonte' },
-                zh: { t: '未找到页面',
-                      b: '该地址没有对应的页面。链接可能已过期，或者地址输入有误。', h: '主站', f: 'Parallax Launcher，作者 Arda Yalın Özkan。', s: '源代码' },
-                ko: { t: '페이지를 찾을 수 없습니다',
-                      b: '이 주소에 해당하는 페이지가 없습니다. 링크가 오래되었거나 주소를 잘못 입력했을 수 있습니다.', h: '기본 사이트', f: 'Parallax Launcher — 만든 사람 Arda Yalın Özkan.', s: '소스 코드' }
-            };
-
-            function pick() {
-                try {
-                    var q = new URLSearchParams(location.search).get('lang');
-                    if (q && T[q]) return q;
-                } catch (e) { }
-                try {
-                    var hit = document.cookie.split('; ').find(function (c) { return c.indexOf('parallaxLang=') === 0; });
-                    if (hit) {
-                        var v = decodeURIComponent(hit.slice(13));
-                        if (T[v]) return v;
-                    }
-                } catch (e) { }
-                try {
-                    var s = localStorage.getItem('parallaxLang');
-                    if (s && T[s]) return s;
-                } catch (e) { }
-                var langs = navigator.languages || [navigator.language || 'en'];
-                for (var i = 0; i < langs.length; i++) {
-                    var base = String(langs[i]).slice(0, 2).toLowerCase();
-                    if (T[base]) return base;
-                }
-                return 'en';
-            }
-
-            var lang = pick(), t = T[lang];
-            document.documentElement.lang = lang;
-            document.title = t.t + ' — Parallax Launcher';
-            document.getElementById('nfTitle').textContent = t.t;
-            document.getElementById('nfBody').textContent = t.b;
-            document.getElementById('nfFoot').textContent = t.f;
-            document.getElementById('nfSource').textContent = t.s;
-        })();
-    </script>
-    <script src="/site.js?v=20260826b"></script>
+    <script src="i18n.js?v=20260826d"></script>
+    <script src="site.js?v=20260826d"></script>
 </body>
 
 </html>
